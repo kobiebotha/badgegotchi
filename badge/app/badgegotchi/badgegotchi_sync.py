@@ -10,9 +10,9 @@ import time
 from badgegotchi_pairing import PENDING
 from badgegotchi_private import PrivateFile
 from badgegotchi_http import Gateway, HTTPS, split_https
+from badgegotchi_stream import StreamLines
 
 MAX_EVENTS = 16
-MAX_LINE = 8192
 
 
 def uuid(entropy):
@@ -131,7 +131,7 @@ class Sync:
         self.request = None
         self.checkpoint = None
         self.target = None
-        self.buffer = b""
+        self.lines = StreamLines()
         self.connected = False
         self.synced = False
         self.status = "CONNECTING"
@@ -155,7 +155,7 @@ class Sync:
             self._control("stop")
             self.core_started = False
         self.operation = None
-        self.buffer = b""
+        self.lines = StreamLines()
         self.connected = self.synced = False
 
     def close(self):
@@ -293,7 +293,7 @@ class Sync:
                 self._control("subscriptions", json.dumps({"subscribe": {"stream": {"name": name}, "ttl": 300}}))
             self.core_started = True
             self._instructions(self._control("start", json.dumps({"checkpoint_mode": "requests", "include_defaults": False,
-                               "active_streams": [{"name": name} for name in self.streams]})))
+                               "parameters": {}, "active_streams": [{"name": name} for name in self.streams]})))
             return
         if self.phase == "seed":
             accepted = self._checkpoint_request(self.checkpoint)
@@ -321,8 +321,7 @@ class Sync:
                 self._disconnect()
                 self.phase = "token"
                 return
-            if b"\n" in self.buffer:
-                self._line()
+            if self._line():
                 return
             data = self.stream.step()
             if self.stream.status is not None and not self.connected:
@@ -336,23 +335,17 @@ class Sync:
             if data is PENDING:
                 return
             if data is None:
-                if self.buffer:
-                    raise ValueError("Truncated PowerSync line")
+                self.lines.finish()
                 self._retry()
                 return
-            self.buffer += data
-            # One native line per foreground frame. Leave the remaining bytes
-            # queued and pause socket reads while the core applies this line.
+            self.lines.feed(data)
+            # One bounded native record per foreground frame. The parser splits
+            # large history batches without retaining the whole service line.
             self._line()
 
     def _line(self):
-        position = self.buffer.find(b"\n")
-        if position < 0:
-            if len(self.buffer) > MAX_LINE:
-                raise ValueError("PowerSync line exceeds limit")
-            return
-        if position > MAX_LINE:
-            raise ValueError("PowerSync line exceeds limit")
-        line, self.buffer = self.buffer[:position].rstrip(b"\r"), self.buffer[position + 1:]
-        if line:
-            self._instructions(self._control("line_text", line.decode()))
+        line = self.lines.pop()
+        if line is None:
+            return False
+        self._instructions(self._control("line_text", line))
+        return True

@@ -13,14 +13,14 @@ import zipfile
 
 BADGE = Path(__file__).resolve().parents[1]
 REPO = BADGE.parent
-VERSION = "0.1.0-alpha.3"
+VERSION = "0.1.0-alpha.4"
 APP_ID = "badgegotchi"
 SOURCE_FILES = (
     "__init__.py", "badgegotchi_state.py", "badgegotchi_view.py",
     "badgegotchi_storage.py", "badgegotchi_runtime.py", "badgegotchi_identity.py", "icon.png",
     "badgegotchi_client.py", "badgegotchi_config.py", "badgegotchi_entropy.py",
     "badgegotchi_http.py", "badgegotchi_pairing.py", "badgegotchi_private.py",
-    "badgegotchi_sync.py", "ca/sectigo-r46.der",
+    "badgegotchi_sync.py", "badgegotchi_stream.py", "ca/sectigo-r46.der",
     "assets/capybara.png", "README.md", "THIRD_PARTY_NOTICES.txt",
     "licenses/PowerSync-Apache-2.0.txt", "licenses/PowerSync-NOTICE.txt",
     "licenses/MicroPython-MIT.txt", "licenses/Badgegotchi-CC0.txt",

@@ -4,6 +4,23 @@ Prepared 2026-10-20. This document describes the next implementation; it does
 not claim that pairing or live badge sync already works. No device, cloud
 configuration, or deployment was changed while preparing this handoff.
 
+## Current resumption point — October 20, 2026
+
+The owner-approved development activation and requested pair-once wellness flow
+are now verified. Alpha.4 is installed on the original Badgeware firmware. Physical
+A/B/C pairing, saved authentication, actual PowerSync checkpoints, two badge water
+uploads, one approved web movement download, and Home/reopen without another code
+all passed. Pairing and legacy progress are preserved; queues are empty and the
+40 KiB database passes integrity checks. See [completed activation status](../badge-pairing-activation.md)
+and [alpha.4 evidence](../../badge/evidence/sync-fix-alpha4.json) before taking any
+next action. Do not rerun activation or ask the owner to pair again.
+
+The original design and historical baseline below remain reference material.
+Shared timer writes, live revocation/radio-loss/token-expiry qualification,
+power-loss/capacity recovery and public rollout are separate remaining work.
+The final browser test used localhost; no agent Git push or Vercel deployment
+was performed and the public installer still serves alpha.2.
+
 ## Goal and explicit user requirements
 
 Connect the installed Badgegotchi Badgeware app to the existing account and

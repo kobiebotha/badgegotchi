@@ -1,0 +1,156 @@
+{
+  "checked_at": "2026-10-20T22:19:13.727272+00:00",
+  "status": "installed_pair_once_two_way_sync_and_reopen_verified",
+  "package": "badge/dist/badgegotchi-0.1.0-alpha.4-790d77aec90d.zip",
+  "package_sha256": "790d77aec90d6b5a4c8c28571c67daf88b6001dee8bc3ab9841197acb14ea523",
+  "files": 28,
+  "native_unchanged": true,
+  "native_sha256": "802223bc6d2f7daea4c04b975bf2c6208068ef968891557e726bd485d3efafa8",
+  "failure_causes": [
+    "PowerSync PSYNC_S2001 rejected top-level parameters:null; start options now supply {}",
+    "Service returned 28-30 historical operations in a 15-16 KiB NDJSON data line, exceeding the old 8192-byte whole-line bound"
+  ],
+  "fixes": [
+    "Explicit empty object for connection parameters",
+    "Incremental data-envelope parser preserves each raw operation and emits one bounded core record per foreground frame"
+  ],
+  "bounds": {
+    "socket_fragment_bytes": 512,
+    "native_record_bytes": 8192,
+    "envelope_bytes": 1024,
+    "json_depth": 16,
+    "database_bytes": 131072,
+    "projection_rows": 3,
+    "projection_payload_bytes": 1536
+  },
+  "host_checks": {
+    "parser_and_supervisor_tests_passed": 16,
+    "real_core_subprocess_tests_passed": 2,
+    "packaging_tests_passed": 14,
+    "checked_update_tests_passed": 5,
+    "independent_parser_review": "no blocking findings; chunk sizes 1 through 512 tested",
+    "full_capacity_native_stress_run": false
+  },
+  "hardware_checks": {
+    "runtime": "existing Badgeware / MicroPython 1.29.0, unchanged firmware",
+    "source_loaded_in_memory": true,
+    "saved_credential_reused": true,
+    "gateway_http_status": 200,
+    "checkpoint_seed_http_status": 200,
+    "checkpoint_barrier_http_status": 200,
+    "stream_http_status": 200,
+    "actual_completed_checkpoint": true,
+    "completed_sync_generation": 1,
+    "projection_kinds": [
+      "pet",
+      "summary"
+    ],
+    "projection_rows": 2,
+    "queue_count": 0,
+    "sql_crud_count": 0,
+    "database_bytes": 38912,
+    "integrity_check": "ok",
+    "rssi_dbm": -51,
+    "synthetic_parser_bytes": 27929,
+    "synthetic_parser_operations": 30,
+    "synthetic_fragment_sizes": [
+      1,
+      7,
+      512
+    ],
+    "synthetic_parser_passed": true,
+    "legacy_equals_pre_pairing_snapshot": true,
+    "state_backup": "badge/dist/backups/state-before-alpha4-20261020.sqlite",
+    "state_backup_sha256": "42f9c618107b18701b58ad45eec2c18ef82191bee38737066dccbc88c934f6f4"
+  },
+  "remaining": [],
+  "tested_source_sha256": {
+    "badgegotchi_stream.py": "271d82a0b005059152196254ba835e4b87ace35066ff584e6800cc599a1ee4b1",
+    "badgegotchi_sync.py": "a7106fb8931beca661b76e731933b0e45c60d00ed38c532c35c43bf3c8eb8993"
+  },
+  "installed_bytes": 1108254,
+  "installation": {
+    "checked_at": "2026-10-20T22:22:21.504470+00:00",
+    "installed": true,
+    "previous_version": "0.1.0-alpha.3",
+    "host_backup": "badge/dist/backups/app-before-alpha4-20261020",
+    "badge_backup": "/system/.badgegotchi-update-v_fimbht/previous",
+    "verified_app_files": 28,
+    "installed_bytes": 1108254,
+    "unrelated_files_unchanged": 167,
+    "preservation_tree_sha256": "4b02d5229fab4028ddca8d22afb8688be79f4b575ff0924e9679f405df195f74",
+    "usb_safely_ejected": true,
+    "installed_source_sha256_verified_on_badge": true,
+    "pairing_file_unchanged": true,
+    "journal_empty_or_absent": true,
+    "normal_restart_requested": true
+  },
+  "normal_app": {
+    "launch_without_abc_confirmed_by_owner": true,
+    "synced_before_water": true,
+    "physical_c_presses_confirmed_by_owner": 2,
+    "water_event_utc_times": [
+      "2026-10-20T22:22:44Z",
+      "2026-10-20T22:23:52Z"
+    ],
+    "canonical_hydration_events_today": 2,
+    "durable_upload_receipts": 2,
+    "accepted_events_per_receipt": [
+      1,
+      1
+    ],
+    "browser_hydration_count": 2,
+    "supabase_projection_hydration_count": 2,
+    "synced_after_water_confirmed_by_owner": true,
+    "passive_error_monitor": "completed; no BADGEGOTCHI error lines",
+    "badge_account_water": 2,
+    "badge_account_move": 1,
+    "badge_queue_count": 0,
+    "web_to_badge_movement_verified": true,
+    "home_reopen_without_code": true,
+    "synced_after_reopen": true,
+    "no_duplicate_uploads_after_reopen": true
+  },
+  "completed_at": "2026-10-20T22:31:47.646159+00:00",
+  "final_verification": {
+    "checked_at": "2026-10-20T22:30:18.876885+00:00",
+    "status": "installed_pair_once_and_two_way_sync_verified",
+    "package_sha256": "790d77aec90d6b5a4c8c28571c67daf88b6001dee8bc3ab9841197acb14ea523",
+    "pairing": "physical ABC entry and matching-ID approval; saved credential unchanged",
+    "normal_launch_without_code": true,
+    "physical_c_presses": 2,
+    "canonical_water_events": 2,
+    "upload_receipts": 2,
+    "browser_water_count": 2,
+    "approved_web_movement_event": 1,
+    "badge_water_count": 2,
+    "badge_movement_count": 1,
+    "queue_count_verified_on_badge": 0,
+    "inflight_upload_verified_on_badge": false,
+    "home_reopen_without_code_confirmed": true,
+    "synced_after_reopen_confirmed": true,
+    "no_duplicate_uploads_after_reopen": true,
+    "last_synced_at": 1792535260000000,
+    "integrity": "ok",
+    "database_bytes": 40960,
+    "database_backup": "badge/dist/backups/state-verified-alpha4-20261020.sqlite",
+    "database_backup_sha256": "48bd32f372bd56e8f85034ee50e223ac534fa18527ef050369471acbff5491c3",
+    "all_buckets_at_applied_position": true,
+    "legacy_unchanged_verified_on_badge": true,
+    "pairing_fingerprint_unchanged": true,
+    "journal_empty_after_close": true,
+    "unrelated_files_preserved": 167,
+    "web_screenshot": "/private/tmp/badge-alpha4-web-roundtrip.jpg",
+    "cleanup_restart": "completed; normal hardware reset requested and expected USB disconnect observed",
+    "remaining_limits": [
+      "Verified with local signed-in web app; Vercel publication not performed",
+      "Timer controls remain local",
+      "Radio-loss recovery, timed refresh, live revocation timing and power-loss behavior not qualified in this run"
+    ]
+  },
+  "release_limits": [
+    "Verified with local signed-in web app; Vercel publication not performed",
+    "Timer controls remain local",
+    "Radio-loss recovery, timed refresh, live revocation timing and power-loss behavior not qualified in this run"
+  ]
+}

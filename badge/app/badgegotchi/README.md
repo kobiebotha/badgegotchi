@@ -1,9 +1,10 @@
 # Badgegotchi — pairing candidate
 
-Version `0.1.0-alpha.3` adds one-time account pairing to the Tufty 2350
-Badgeware app. The candidate includes the client implementation; cloud
-activation and live device pairing/sync qualification are still pending. It has
-not replaced the qualified local alpha.2 installer release.
+Version `0.1.0-alpha.4` supports one-time account pairing on the Tufty 2350
+Badgeware app. It corrects the PowerSync request format and processes batched
+projection changes incrementally. The development gateway is activated and
+physical A/B/C enrollment is verified. This candidate still needs final
+installed-app qualification before replacing the public alpha.2 release.
 
 ## Pair once
 
@@ -72,7 +73,7 @@ Use a qualified release after its backend has been activated:
 5. Select `badgegotchi` in the launcher and complete pairing.
 
 The RP2350 BOOTSEL drive is a different mode. This package contains no UF2 image.
-The alpha.3 update and its first pairing still require live qualification.
+Use the checked updater to preserve the existing app and saved pairing.
 
 ## Data and limits
 

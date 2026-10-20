@@ -1,0 +1,94 @@
+{
+  "checked_at": "2026-10-20T21:53:28.031Z",
+  "instance": "6ad76c8f2f27853eb0b0a128",
+  "service_change_only": "client_auth.jwks_uri",
+  "supabase_browser_auth_preserved": true,
+  "existing_jwks_preserved": true,
+  "guarded_streams_exact_match": true,
+  "active_version": "4",
+  "source_connected": true,
+  "replication_errors": [],
+  "lag_bytes": [
+    0
+  ],
+  "tables": [
+    "sessions",
+    "wellness_events",
+    "daily_activity_summary",
+    "pet_sessions",
+    "pet_events",
+    "badge_projection"
+  ],
+  "actual_badge_pairing_tested": false,
+  "migrations": [
+    "20261020204932_badge_pairing_gateway",
+    "20261020214705_badge_projection_replication_grant"
+  ],
+  "gateway_checks": [
+    {
+      "test": "public_jwks",
+      "status": 200,
+      "exact_public_allowlist": true,
+      "key_count": 1,
+      "cache_control": "public, max-age=60",
+      "pass": true
+    },
+    {
+      "test": "owner_create_missing_auth",
+      "status": 401,
+      "error": "unauthorized",
+      "no_token": true,
+      "pass": true
+    },
+    {
+      "test": "owner_create_invalid_bearer",
+      "status": 401,
+      "error": "unauthorized",
+      "no_token": true,
+      "pass": true
+    },
+    {
+      "test": "candidate_credential_token_rejected",
+      "status": 401,
+      "error": "unauthorized",
+      "no_token": true,
+      "pass": true
+    }
+  ],
+  "signer_before_trust_http": 401,
+  "signer_after_trust_http": 200,
+  "synthetic_checkpoint": {
+    "last_op_id": "262160",
+    "buckets": [
+      {
+        "bucket": "badge_projection|0.3.6[\"c68a725f-abaf-4c55-a52a-f0a077318afe\"]",
+        "count": 0,
+        "checksum": 0,
+        "priority": 3,
+        "subscriptions": [
+          {
+            "sub": 0
+          }
+        ]
+      }
+    ],
+    "streams": [
+      {
+        "name": "badge_projection",
+        "is_default": false,
+        "errors": []
+      }
+    ]
+  },
+  "replication_grant": {
+    "projection_select": true,
+    "projection_insert": false,
+    "private_grants": 0,
+    "existing_role_bypassrls": true
+  },
+  "key_backup_verified": true,
+  "temporary_plaintext_secrets_removed": true,
+  "vercel_deployed": false,
+  "physical_badge_installed": false,
+  "live_owner_session_verified": false
+}

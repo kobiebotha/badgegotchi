@@ -400,10 +400,10 @@ class SyncTests(unittest.TestCase):
 
     def test_coalesced_lines_are_drained_without_additional_socket_read(self):
         self.ready()
-        self.sync.buffer = b'{"a":1}\n{"b":2}\n'
+        self.sync.lines.feed(b'{"a":1}\n{"b":2}\n')
         before = list(self.sync.stream.parts)
         self.sync.step()
-        self.assertEqual(self.sync.buffer, b'{"b":2}\n')
+        self.assertEqual(self.sync.lines.pending[self.sync.lines.offset:], b'{"b":2}\n')
         self.assertEqual(self.sync.stream.parts, before)
 
 
@@ -434,6 +434,7 @@ class RealCoreSupervisorTests(unittest.TestCase):
                 class FixtureStream(StreamFake):
                     def __init__(self, *args, **kwargs):
                         super().__init__(*args, **kwargs)
+                        self.request_body = copy.deepcopy(args[1])
                         payload = {"kind": "summary", "payload": json.dumps({"hydration_count": 5})}
                         lines = [
                             {"checkpoint": {"last_op_id": "1", "write_checkpoint": "9007199254740994",
@@ -449,6 +450,16 @@ class RealCoreSupervisorTests(unittest.TestCase):
                 for _ in range(4):
                     sync.step()
                 self.assertEqual(sync.phase, "stream")
+                # The service rejects top-level parameters:null, but requires
+                # nullable fields on each subscription. Inspect the actual core
+                # request passed to HTTP instead of the fake core's start input.
+                request = sync.stream.request_body
+                self.assertIsInstance(request["parameters"], dict)
+                self.assertEqual(request["parameters"], {})
+                self.assertTrue(request["raw_data"])
+                self.assertEqual(request["streams"], {"include_defaults": False,
+                    "subscriptions": [{"stream": "badge_projection", "parameters": None,
+                                       "override_priority": None}]})
                 self.assertFalse(sync.synced)
                 self.assertEqual(store.projection(), [])
                 sync.step()

@@ -1,11 +1,13 @@
 # Installable Badgegotchi app
 
-The `0.1.0-alpha.3` candidate adds one-time A/B/C account pairing, automatic
+The `0.1.0-alpha.4` candidate adds one-time A/B/C account pairing, automatic
 reconnect, durable water/movement uploads to Supabase, and a bounded PowerSync
 projection to the ordinary Badgeware app. Its 40-minute focus / 10-minute break
-timer remains local. The implementation is present; cloud activation and live
-device pairing/sync qualification are pending. The qualified alpha.2 installer
-release remains unchanged until a candidate is explicitly staged and published.
+timer remains local. Cloud activation and physical A/B/C pairing passed.
+Alpha.4 corrects the stream request and incrementally processes batched history;
+its installed-app wellness roundtrip and Home/reopen checks passed. The qualified
+alpha.2 installer release remains unchanged until a candidate is explicitly
+staged and published.
 
 Supported runtime: the measured Pimoroni Tufty 2350, MicroPython 1.29.0,
 `bw-1.29.0-gc` dated 2026-09-22 (GNU 13.3.1 MinSizeRel), `_mpy=7942`, softfp.
@@ -98,7 +100,8 @@ configuration to be activated before pairing can work.
 `badge/tools/update.py` verifies every installed app file against the old ZIP,
 backs it up outside the badge, stages and verifies the replacement, then swaps
 only the app directory. It retains the previous directory on the badge too.
-The alpha.1 to alpha.2 update has device qualification; alpha.3 does not yet.
+The alpha.2, alpha.3 and alpha.4 checked updates have device verification with
+backups and preservation checks. See the versioned evidence below.
 Run the tool without `--install` first, then use a new host backup path:
 
 ```sh
@@ -165,8 +168,15 @@ the [reconnect source audit](evidence/network-reconnect-alpha3.md), and
 [network preflight](../experiments/badge-pairing-preflight/) do not establish
 completion of the live account flow.
 
-The alpha.3 device update, full browser-to-badge pairing, authenticated uploads,
-PowerSync checkpoint convergence, restart/reconnect, and revocation still require
-live qualification after cloud activation. Power-loss recovery, indefinite
-operation, and fixed-arena exhaustion remain unqualified. No cloud deployment,
-web installer publication, or live-sync success is asserted by this candidate.
+The approved development gateway, guarded streams and badge JWT trust are
+activated. Physical A/B/C pairing and matching-ID approval succeeded. Alpha.4
+fixes the request format and streams large history batches incrementally; its
+source completed an authenticated PowerSync checkpoint on the badge. The checked
+alpha.4 update is installed with the saved pairing unchanged. Two physical water
+presses reached Supabase and the web app exactly once each; one approved web
+movement reached the badge. Home/reopen reached SYNCED without another code.
+Final checks found a healthy 40 KiB DB, fully applied checkpoint, empty queues,
+and unchanged legacy progress. See [activation status](../docs/badge-pairing-activation.md)
+and [alpha.4 evidence](evidence/sync-fix-alpha4.json) for the exact completed checks.
+Live revocation timing, power-loss recovery, indefinite operation, and fixed-arena
+exhaustion remain unqualified. The public installer still serves alpha.2.
