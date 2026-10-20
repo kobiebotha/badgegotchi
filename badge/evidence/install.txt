@@ -1,0 +1,7 @@
+{
+  "installed": true,
+  "version": "0.1.0-alpha.1",
+  "target": "/Volumes/TUFTY/apps/badgegotchi",
+  "files": 19,
+  "bytes": 1034133
+}

@@ -1,0 +1,55 @@
+{"stage":"empty_core","mode":"compact_churn_repro","db_bytes":0,"pages":0,"freelist_pages":0,"arena_used":48064,"arena_highwater":56576,"journal_sampled_max":0,"max_sql_bytes":29,"max_wire_line_bytes":0,"sqlite":"3.54.1","powersync":"0.5.4/cratesio","library_sha256":"93f9db4e4d4232444be07657fe18b7f9b27210fa52ba255e84c536583b347c98"}
+{"stage":"schema","mode":"compact_churn_repro","db_bytes":45056,"pages":44,"freelist_pages":0,"arena_used":141376,"arena_highwater":184000,"journal_sampled_max":1024,"max_sql_bytes":456,"max_wire_line_bytes":0,"schema_tables":3}
+{"stage":"checkpoint_published","mode":"compact_churn_repro","db_bytes":55296,"pages":54,"freelist_pages":0,"arena_used":154112,"arena_highwater":188416,"journal_sampled_max":10784,"max_sql_bytes":1144,"max_wire_line_bytes":1104,"checkpoint_result":"[{\"LogLine\":{\"severity\":\"DEBUG\",\"line\":\"Validated and applied checkpoint\"}},{\"LogLine\":{\"severity\":\"DEBUG\",\"line\":\"Applied checkpoint request id 1\"}},{\"DidCompleteSync\":{\"applied_checkpoint_request_id\":\"1\"}},{\"UpdateSyncStatus\":{\"status\":{\"connected\":true,\"connecting\":false,\"priority_status\":[{\"priority\":2147483647,\"last_synced_at\":1792528505305000,\"has_synced\":true}],\"downloading\":null,\"streams\":[],\"internal_last_applied_checkpoint_request_id\":\"1\"}}}]","oplog_rows":11}
+{"stage":"checkpoint_churn_1","mode":"compact_churn_repro","db_bytes":56320,"pages":55,"freelist_pages":1,"arena_used":154112,"arena_highwater":193344,"journal_sampled_max":16920,"max_sql_bytes":1146,"max_wire_line_bytes":1106,"oplog_rows":11}
+{"stage":"checkpoint_churn_10","mode":"compact_churn_repro","db_bytes":56320,"pages":55,"freelist_pages":1,"arena_used":154112,"arena_highwater":193856,"journal_sampled_max":16920,"max_sql_bytes":1149,"max_wire_line_bytes":1109,"oplog_rows":11}
+{"stage":"checkpoint_churn_100","mode":"compact_churn_repro","db_bytes":57344,"pages":56,"freelist_pages":1,"arena_used":154112,"arena_highwater":193856,"journal_sampled_max":16920,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"oplog_rows":11}
+{"stage":"outbox_1","mode":"compact_churn_repro","db_bytes":57344,"pages":56,"freelist_pages":1,"arena_used":155904,"arena_highwater":196032,"journal_sampled_max":16920,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"local_actions":1,"crud_rows":1}
+{"stage":"outbox_8","mode":"compact_churn_repro","db_bytes":64512,"pages":63,"freelist_pages":0,"arena_used":155904,"arena_highwater":196032,"journal_sampled_max":16920,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"local_actions":8,"crud_rows":8}
+{"stage":"captured_upload","mode":"compact_churn_repro","db_bytes":65536,"pages":64,"freelist_pages":0,"arena_used":156032,"arena_highwater":196032,"journal_sampled_max":16920,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"capture_bytes":878}
+{"stage":"outbox_16","mode":"compact_churn_repro","db_bytes":73728,"pages":72,"freelist_pages":0,"arena_used":156032,"arena_highwater":196096,"journal_sampled_max":16920,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"local_actions":16,"crud_rows":16}
+{"stage":"outbox_24","mode":"compact_churn_repro","db_bytes":86016,"pages":84,"freelist_pages":0,"arena_used":156032,"arena_highwater":196096,"journal_sampled_max":16920,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"local_actions":24,"crud_rows":24}
+{"stage":"outbox_32","mode":"compact_churn_repro","db_bytes":94208,"pages":92,"freelist_pages":0,"arena_used":156032,"arena_highwater":196096,"journal_sampled_max":16920,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"local_actions":32,"crud_rows":32}
+{"stage":"outbox_48","mode":"compact_churn_repro","db_bytes":112640,"pages":110,"freelist_pages":0,"arena_used":156032,"arena_highwater":196096,"journal_sampled_max":17936,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"local_actions":48,"crud_rows":48}
+{"stage":"about_to_enqueue","mode":"compact_churn_repro","action":64}
+{"stage":"outbox_64","mode":"compact_churn_repro","db_bytes":130048,"pages":127,"freelist_pages":0,"arena_used":156032,"arena_highwater":196096,"journal_sampled_max":17936,"max_sql_bytes":1152,"max_wire_line_bytes":1112,"local_actions":64,"crud_rows":64}
+{"stage":"about_to_enqueue","mode":"compact_churn_repro","action":65}
+Fatal Python error: Segmentation fault
+
+Current thread 0x00000001e74a7f80 (most recent call first):
+  File "/Users/kobie/projects/powersync/skunkworks/badgegotchi/badge/tests/test_storage.py", line 205 in exec
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 46 in execute
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 187 in enqueue
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 75 in transaction
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 189 in <module>
+
+Current thread's C stack trace (most recent call first):
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at _Py_DumpStack+0x44 [0x102c62e5c]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at faulthandler_dump_c_stack+0x58 [0x102c7584c]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at faulthandler_fatal_error+0x140 [0x102c75710]
+  Binary file "/usr/lib/system/libsystem_platform.dylib", at _sigtramp+0x38 [0x181988144]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at sqlite3_step+0x2e4 [0x1084a37bc]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at sqlite3_step+0x2e4 [0x1084a37bc]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at _ZN14powersync_core5utils8database9Statement4step17hbcbc89a967088cfeE+0x1c [0x10858cea0]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at _ZN14powersync_core5utils8database9Statement4exec17hfbd3b569b64f32e2E+0x24 [0x10858ce34]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at _ZN14powersync_core9crud_vtab6update17h6e4b629c16d08a23E+0x3dc [0x10858b888]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at sqlite3VdbeExec+0x504c [0x1084d2038]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at sqlite3_step+0x1e0 [0x1084a36b8]
+  Binary file "/Users/kobie/projects/powersync/skunkworks/badgegotchi/experiments/badgeware-native/powersync-audit/build/fixture-host.dylib", at sqlite3_exec+0x1a4 [0x1084a4678]
+  Binary file "/usr/lib/libffi.dylib", at ffi_call_SYSV+0x50 [0x196e1d050]
+  Binary file "/usr/lib/libffi.dylib", at ffi_call_int+0x4f4 [0x196e26614]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload/_ctypes.cpython-314-darwin.so", at _ctypes_callproc+0x2f4 [0x1023d7458]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload/_ctypes.cpython-314-darwin.so", at PyCFuncPtr_call+0x1a8 [0x1023d4938]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at _PyObject_MakeTpCall+0x78 [0x102a9f158]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at _PyEval_EvalFrameDefault+0x5d44 [0x102bd2a34]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at PyEval_EvalCode+0xf8 [0x102bcc7a4]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at run_mod+0xac [0x102c462d8]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at _PyRun_File+0xb0 [0x102c44cf4]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at _PyRun_SimpleFile+0x104 [0x102c44210]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at _PyRun_AnyFile+0x50 [0x102c43e7c]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at pymain_run_file_obj+0xa4 [0x102c72794]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at pymain_run_file+0x4c [0x102c72554]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at Py_RunMain+0x378 [0x102c71c5c]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at pymain_main+0xec [0x102c720ac]
+  Binary file "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python", at Py_BytesMain+0x2c [0x102c7214c]
+  Binary file "/usr/lib/dyld", at start+0x1a20 [0x1815a7e80]

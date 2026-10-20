@@ -2,6 +2,11 @@
 
 Prepared 2026-10-20. Continue this work in a new chat.
 
+**Completed:** the [native feasibility report](../../experiments/badgeware-native/README.md)
+records the successful staged tests. The subsequent [installable app](../../badge/README.md)
+and its [qualification](../../badge/evidence/qualification.md) now implement the
+ordinary Badgeware app path. The original handoff below is retained as context.
+
 ## Goal and user decision
 
 Determine whether Badgegotchi can run SQLite and the real PowerSync core as an ordinary app on the badge’s existing Badgeware firmware. Preserve the launcher, other apps, settings, and existing data.

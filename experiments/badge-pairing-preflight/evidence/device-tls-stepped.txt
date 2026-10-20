@@ -1,0 +1,12 @@
+TLS_RUNTIME Mbed TLS 3.6.6
+RTC_UTC (2026, 10, 20, 20, 35, 19, 1, 293)
+WIFI_CONNECTED False
+WIFI_RSSI_DBM -90
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True phase dns type OSError error dns: send to 8.8.8.8 failed: [Errno 113] EHOSTUNREACH max_tls_step_ms 0 elapsed_ms 6
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True phase dns type OSError error dns: send to 8.8.8.8 failed: [Errno 113] EHOSTUNREACH max_tls_step_ms 0 elapsed_ms 5
+HTTPS_FAILURE 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com hostname 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com trust True phase dns type OSError error dns: send to 8.8.8.8 failed: [Errno 113] EHOSTUNREACH max_tls_step_ms 0 elapsed_ms 6
+HTTPS_FAILURE 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com hostname 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com trust True phase dns type OSError error dns: send to 8.8.8.8 failed: [Errno 113] EHOSTUNREACH max_tls_step_ms 0 elapsed_ms 6
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust False phase dns type OSError error dns: send to 8.8.8.8 failed: [Errno 113] EHOSTUNREACH max_tls_step_ms 0 elapsed_ms 6
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True phase dns type OSError error dns: send to 8.8.8.8 failed: [Errno 113] EHOSTUNREACH max_tls_step_ms 0 elapsed_ms 5
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True phase dns type OSError error dns: send to 8.8.8.8 failed: [Errno 113] EHOSTUNREACH max_tls_step_ms 0 elapsed_ms 5
+TLS_PROBE_COMPLETE

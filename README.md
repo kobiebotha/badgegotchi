@@ -6,6 +6,13 @@ for Vercel. Browser SQLite stores timer and wellness actions locally and syncs
 with Supabase. Pet reactions run in a Supabase Edge Function using OpenAI; the
 browser does not hold a model or OpenAI key.
 
+The [installable Badgeware app](badge/README.md) adds a local focus timer and
+saved pet/wellness totals to the existing Tufty 2350 launcher. It bundles SQLite
+and the real PowerSync core; badge account pairing and live sync are later work.
+Install it by copying an app folder, with no firmware replacement.
+The [next-step handoff](docs/handoffs/badge-pairing-powersync.md) covers live badge
+sync and a web **Pair a badge** flow using physical A/B/C button sequences.
+
 ## Run the React app
 
 ```sh
@@ -26,7 +33,7 @@ Supabase backend accepts `web` pet event sources as of October 20, 2026.
 ```mermaid
 flowchart LR
   Web["React web app on Vercel"] <--> BrowserDB["PowerSync Web / browser SQLite"]
-  Badge["Future badge client"] <--> BadgeDB["Badge SQLite"]
+  Badge["Badgeware app: local alpha"] <--> BadgeDB["Badge SQLite / PowerSync core"]
   BrowserDB -->|"Timer / wellness uploads"| REST["Supabase Data API + RLS"]
   BrowserDB -->|"Pet-event uploads"| AI["Authenticated pet-ai function"]
   BadgeDB -.->|"Same upload contract"| AI
@@ -97,7 +104,8 @@ the deployed `pet-ai` function, or OpenAI inference. SQL assertions in
 
 The app provides the 40-minute focus timer, 10-minute breaks, wellness
 logging, daily totals, original animal artwork, and cloud pet reactions.
-Badge firmware integration is separate from the web app. Initial
+The Badgeware app currently provides local timer and wellness persistence;
+its cloud integration is separate from the web app. Initial
 pet names and biographies are currently deterministic; event reactions are
 AI-generated.
 

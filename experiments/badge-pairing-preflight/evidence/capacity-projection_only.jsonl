@@ -1,0 +1,18 @@
+{"stage":"empty_core","mode":"projection_only","db_bytes":0,"pages":0,"freelist_pages":0,"arena_used":48064,"arena_highwater":56576,"journal_sampled_max":0,"max_sql_bytes":29,"max_wire_line_bytes":0,"sqlite":"3.54.1","powersync":"0.5.4/cratesio","library_sha256":"93f9db4e4d4232444be07657fe18b7f9b27210fa52ba255e84c536583b347c98"}
+{"stage":"schema","mode":"projection_only","error":"out of memory","arena_used":57280,"arena_highwater":257408,"db_bytes":0,"journal_sampled_max":512}
+Traceback (most recent call last):
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 123, in <module>
+    transaction(lambda:scalar('SELECT powersync_replace_schema(%s)' % quote(compact(schema))))
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 72, in transaction
+    result = callback()
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 123, in <lambda>
+    transaction(lambda:scalar('SELECT powersync_replace_schema(%s)' % quote(compact(schema))))
+                       ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 52, in scalar
+    result = execute(sql)
+  File "/tmp/badge-pairing-preflight/capacity_fixture.py", line 43, in execute
+    rows = core.exec(sql)
+  File "/Users/kobie/projects/powersync/skunkworks/badgegotchi/badge/tests/test_storage.py", line 207, in exec
+    raise RuntimeError(self.library.sqlite3_errmsg(self.db).decode())
+RuntimeError: out of memory

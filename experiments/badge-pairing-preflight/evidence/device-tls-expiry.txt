@@ -1,0 +1,8 @@
+TLS_RUNTIME Mbed TLS 3.6.6
+RTC_UTC (2026, 10, 20, 20, 39, 22, 1, 293)
+WIFI_CONNECTED True
+WIFI_RSSI_DBM -87
+HTTPS_FAILURE expired.badssl.com hostname expired.badssl.com trust True phase tls_handshake type ValueError error 
+The certificate validity has expired
+ max_tls_step_ms 2 elapsed_ms 351
+TLS_PROBE_COMPLETE

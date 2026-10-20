@@ -8,13 +8,14 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "prebuild": "node --experimental-strip-types scripts/check-firmware.ts",
+    "prebuild": "node --experimental-strip-types scripts/check-app.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "test:watch": "vitest",
     "firmware:prepare": "node --experimental-strip-types scripts/prepare-firmware.ts",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "app:check": "node --experimental-strip-types scripts/check-app.ts"
   },
   "dependencies": {
     "@powersync/react": "2.1.0",

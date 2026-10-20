@@ -1,0 +1,4 @@
+build/
+*.mpy
+sqlite3-adapted.inc
+__pycache__/

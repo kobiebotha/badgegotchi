@@ -1,0 +1,8 @@
+dist/
+__pycache__/
+**/__pycache__/
+native/build/
+native/*.mpy
+native/*.elf
+native/sqlite3-adapted.inc
+native/.mpy_ld_cache-*/

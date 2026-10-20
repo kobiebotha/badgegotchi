@@ -126,21 +126,23 @@ the owner handles pushes.
 ### Badge installer
 
 Open `/install`, or choose **Set up a badge** from the header. This public page
-does not depend on sign-in and uses WebUSB/PICOBOOT in desktop Chrome or Edge.
-It verifies the published UF2 before connecting, asks for the badge model and
-firmware replacement confirmation, then writes, reads back, and reboots.
-Other browsers can download the same verified UF2 for manual BOOTSEL installation.
+does not depend on sign-in. It adds a new `apps/badgegotchi` directory to the
+ordinary Badgeware USB file drive, preserving the firmware, launcher, other apps,
+and data. It verifies every download before offering a ZIP or browser copy.
+Browser copy requires directory access and Web Locks, checks the Badgeware drive,
+refuses an existing app, and verifies each copied file. Other browsers can use
+the verified ZIP and file-manager instructions. Double-tap RESET for the file
+drive; BOOTSEL is not used.
 
-**No firmware release is published yet.** The shipped manifest explicitly contains
-`release: null`, so installation and download stay unavailable. The native
-RAM-only experiments are not a firmware release. A real Tufty build and physical
-USB qualification are still required. Wi-Fi setup and account pairing are
-separate follow-up work.
+The installable Tufty 2350 app is a local companion alpha using SQLite and real
+PowerSync core. Cloud sync, AI conversations, Wi-Fi setup, and account pairing
+are separate follow-up work. Read the exact build's physical qualification
+results before publishing it.
 
 See [badge installer development and release instructions](../docs/badge-installer.md).
-`npm run firmware:prepare -- --uf2 /path/to/badgegotchi.uf2 --version 0.1.0`
-stages a qualified image locally. Every build checks the manifest, file size,
-SHA-256, and UF2 structure. Nothing is deployed by these commands.
+From the repository root, `python3 badge/tools/package.py --stage-web` stages
+the package. `npm run app:check` (also run before each web build) checks the
+manifest, file sizes, and SHA-256 digests. Nothing is deployed by these commands.
 
 - Focus lasts 40 minutes and breaks last 10 minutes, with pause, resume, stop,
   completion, and timestamp-based recovery after backgrounding.

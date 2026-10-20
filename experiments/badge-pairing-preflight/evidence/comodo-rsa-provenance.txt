@@ -1,0 +1,3 @@
+Source: /opt/homebrew/etc/openssl@3/cert.pem
+subject=C=GB, ST=Greater Manchester, L=Salford, O=COMODO CA Limited, CN=COMODO RSA Certification Authority
+SHA256 52f0e1c4e58ec629291b60317f074671b85d7ea80d5b07273463534b32b40234

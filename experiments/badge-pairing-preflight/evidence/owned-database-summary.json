@@ -1,0 +1,25 @@
+{
+  "file_bytes": 33792,
+  "sha256": "b7b8b7ae101e80848bdbef61db85b69e212a252ca5cb385cf4ce2714dc9aadae",
+  "user_version": 2,
+  "page_size": 1024,
+  "page_count": 33,
+  "freelist_count": 0,
+  "integrity_check": "ok",
+  "pending_crud": 0,
+  "tables": [
+    "ps_migration",
+    "ps_untyped",
+    "ps_crud",
+    "sqlite_sequence",
+    "ps_tx",
+    "ps_kv",
+    "ps_buckets",
+    "ps_oplog",
+    "ps_updated_rows",
+    "ps_stream_subscriptions",
+    "ps_sync_state",
+    "ps_data_local__badge_state"
+  ],
+  "before_after_byte_identical": true
+}

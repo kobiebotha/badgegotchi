@@ -1,0 +1,112 @@
+{
+  "appId": "badgegotchi",
+  "files": [
+    {
+      "bytes": 2814,
+      "path": "README.md",
+      "sha256": "00e317e47e12541bfdcf3ac95592e3b79a6696b03515333cbb9465adfe4fcfeb"
+    },
+    {
+      "bytes": 1280,
+      "path": "THIRD_PARTY_NOTICES.txt",
+      "sha256": "cdfa830f9da76775cfb59d49e2fce809139a6c44497651b7015fba203174667e"
+    },
+    {
+      "bytes": 3591,
+      "path": "__init__.py",
+      "sha256": "7ea68bb228f411abfc2c2550240cc455169b2d8c6b6d5dbde183910d51e5b30a"
+    },
+    {
+      "bytes": 4022,
+      "path": "assets/capybara.png",
+      "sha256": "b7bf0a2b95239b8ff740da5090a5d6b8e4a02f623f50c1d30d853eca60f23dd3"
+    },
+    {
+      "bytes": 179,
+      "path": "badgegotchi_identity.py",
+      "sha256": "94323ea709618b6cc00bdd22c93eba2ed6879efbc94c849f8a97b817b4eef625"
+    },
+    {
+      "bytes": 737049,
+      "path": "badgegotchi_native.mpy",
+      "sha256": "802223bc6d2f7daea4c04b975bf2c6208068ef968891557e726bd485d3efafa8"
+    },
+    {
+      "bytes": 2356,
+      "path": "badgegotchi_runtime.py",
+      "sha256": "d0b4210834c5ff6bc864514aaeadc7bfdd409ea16fffd27cae53ab63c517b547"
+    },
+    {
+      "bytes": 4662,
+      "path": "badgegotchi_state.py",
+      "sha256": "b5b867d00f687e7f8f2d6e3b07b20532c9f753b49ef6daa8fd4fdd4f6c820166"
+    },
+    {
+      "bytes": 12303,
+      "path": "badgegotchi_storage.py",
+      "sha256": "c711a5a71aaafe412436ad442cfbe6b6e2376d15762274fefbd581bf0ae3bf60"
+    },
+    {
+      "bytes": 5404,
+      "path": "badgegotchi_view.py",
+      "sha256": "39626ff5fbe6fb9f391780761e30b077b0946c289a4b12e3aca0b6f1f70bc890"
+    },
+    {
+      "bytes": 123,
+      "path": "icon.png",
+      "sha256": "eff6ed5657e0ba0a83b2302d02e96caf328345c59abbc2d9f089a0495480e7f3"
+    },
+    {
+      "bytes": 7048,
+      "path": "licenses/Badgegotchi-CC0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "bytes": 52360,
+      "path": "licenses/Compiler-runtime.txt",
+      "sha256": "6a57108f1330eeec216c2da84109480b0a605fe1f314d63d53f2f76f00992911"
+    },
+    {
+      "bytes": 3419,
+      "path": "licenses/MicroPython-MIT.txt",
+      "sha256": "80d3459978572b5bbb1dd274a98b01a625aeff467588ad69cefdf7eb607c1306"
+    },
+    {
+      "bytes": 76870,
+      "path": "licenses/Newlib.txt",
+      "sha256": "9a59b4ee3af067045fe0ea78786201c42d54756fe48cbccf44f3dfc398474717"
+    },
+    {
+      "bytes": 10175,
+      "path": "licenses/PowerSync-Apache-2.0.txt",
+      "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0"
+    },
+    {
+      "bytes": 36,
+      "path": "licenses/PowerSync-NOTICE.txt",
+      "sha256": "028e51bfcfd35acea0dac4598d9d83af3234d9a0e29d0c057c979e7e3e2c284c"
+    },
+    {
+      "bytes": 106993,
+      "path": "licenses/Rust-dependencies.txt",
+      "sha256": "7c09006d51cf12797bd12af4d137d836c7271f6b7c12ad7cff3f0d4ab7fe23b0"
+    }
+  ],
+  "native": {
+    "badgeware": "bw-1.29.0-gc",
+    "board": "tufty",
+    "bytes": 737049,
+    "file": "badgegotchi_native.mpy",
+    "floatAbi": "softfp",
+    "micropython": "1.29.0",
+    "mpy": 7942,
+    "powersync": "0.5.4",
+    "powersyncArchiveSha256": "d5b146ff16d488beb8038a43d32754c4c7e2a1fcfb1543033bf13c6a52b20e60",
+    "powersyncCommit": "0ed9f4edba418a4f8ae7cb0594da683cd79a81b5",
+    "sha256": "802223bc6d2f7daea4c04b975bf2c6208068ef968891557e726bd485d3efafa8",
+    "sqlite": "3.54.1"
+  },
+  "runtimeMpy": 7942,
+  "schemaVersion": 1,
+  "version": "0.1.0-alpha.1"
+}

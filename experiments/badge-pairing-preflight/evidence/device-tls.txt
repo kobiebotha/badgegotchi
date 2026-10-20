@@ -1,0 +1,8 @@
+TLS_RUNTIME Mbed TLS 3.6.6
+RTC_UTC (2026, 10, 20, 20, 32, 41, 1, 293)
+TLS_CONTEXT_API ['__class__', '__name__', '__bases__', '__del__', '__dict__', 'get_ciphers', 'load_cert_chain', 'load_verify_locations', 'set_ciphers', 'wrap_socket']
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True phase dns type OSError error -2 max_tls_step_ms 0 elapsed_ms 6867
+HTTPS_FAILURE 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com hostname 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com trust True phase tls_context type TypeError error function doesn't take keyword arguments max_tls_step_ms 0 elapsed_ms 1203
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname wrong-host.invalid trust True phase tcp type OSError error [Errno 110] ETIMEDOUT max_tls_step_ms 0 elapsed_ms 3025
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust False phase tls_handshake type OSError error (-30336, 'MBEDTLS_ERR_SSL_CA_CHAIN_REQUIRED') max_tls_step_ms 1 elapsed_ms 761
+TLS_PROBE_COMPLETE

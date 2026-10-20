@@ -1,0 +1,12 @@
+TLS_RUNTIME Mbed TLS 3.6.6
+RTC_UTC (2026, 10, 20, 20, 38, 18, 1, 293)
+WIFI_CONNECTED True
+WIFI_RSSI_DBM -85
+HTTPS_RESULT 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com hostname 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com trust True status b'HTTP/1.1 404 Not Found' cipher ('TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256', 'TLSv1.2') dns_ms 47 tcp_ms 65 max_tls_step_ms 316 elapsed_ms 927 heap_delta_bytes 53984
+HTTPS_FAILURE 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com hostname wrong-host.invalid trust True phase tls_handshake type ValueError error 
+The certificate Common Name (CN) does not match with the expected CN
+
+The certificate is not correctly signed by the trusted CA
+ max_tls_step_ms 3 elapsed_ms 168
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust False phase tls_handshake type OSError error (-30336, 'MBEDTLS_ERR_SSL_CA_CHAIN_REQUIRED') max_tls_step_ms 2 elapsed_ms 676
+TLS_PROBE_COMPLETE

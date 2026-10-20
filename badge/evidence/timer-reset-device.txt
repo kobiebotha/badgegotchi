@@ -1,0 +1,4 @@
+RESET_ELAPSED_TIMER_PASS 60 2340000
+ORIGINAL_USER_PROGRESS_RESTORED {"remaining_ms": 2243961, "pet_count": 6, "phase": "focus", "running": false, "water_count": 1, "focus_count": 0, "stretch_count": 1, "clock_saved_s": null}
+CORE_AND_INTEGRITY_PASS 0.5.4/cratesio
+DATABASE_CLOSED_SAFE_TO_RESET

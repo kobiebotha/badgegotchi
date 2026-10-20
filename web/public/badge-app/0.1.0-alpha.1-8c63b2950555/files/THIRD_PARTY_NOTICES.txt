@@ -1,0 +1,23 @@
+Badgegotchi application source: repository CC0 license (licenses/Badgegotchi-CC0.txt).
+
+Capybara artwork: copied unchanged from Manrich121/pomogotchi, revision 10c33f5,
+flutter_pomogotchi/assets/animals/capybara.png.
+https://github.com/Manrich121/pomogotchi/blob/10c33f5/flutter_pomogotchi/assets/animals/capybara.png
+This package does not assert a new license over the source artwork.
+The launcher heart icon originated in this project's Pomogotchi badge preview.
+
+PowerSync SQLite core 0.5.4, commit 0ed9f4edba418a4f8ae7cb0594da683cd79a81b5:
+Copyright 2023 Journey Mobile, Inc. Apache License 2.0; license and NOTICE
+included under licenses/. App-side changes add a Badgeware native-module and
+filesystem callback adapter; the pinned Rust core source is unmodified.
+https://github.com/powersync-ja/powersync-sqlite-core
+
+MicroPython dynamic runtime headers and native linker:
+pimoroni/micropython 41d1e007537f9b15cf13a9436228dd59d6485eca.
+MIT license included under licenses/.
+
+SQLite 3.54.1: public domain, https://www.sqlite.org/copyright.html.
+Amalgamation adapted for native PIC and writable-static-data restrictions;
+the adaptation script and source hash are recorded in the source repository.
+
+Rust and Arm runtime dependency license notices are included under licenses/.

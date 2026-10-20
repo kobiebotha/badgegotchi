@@ -1,0 +1,9 @@
+{
+  "updated": true,
+  "from": "0.1.0-alpha.1",
+  "to": "0.1.0-alpha.2",
+  "host_backup": "/Users/kobie/projects/powersync/skunkworks/badgegotchi/badge/dist/backups/alpha1-before-timer-update",
+  "disk_backup": "/Volumes/TUFTY/.badgegotchi-update-isucsb8q/previous",
+  "files": 19,
+  "bytes": 1037531
+}

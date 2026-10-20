@@ -1,0 +1,32 @@
+PASS candidate edition-3 config compiles all nine streams
+PASS browser issuer receives all five own full-history table fixtures
+PASS badge receives only own projections and exactly eight valid activity slots
+PASS owner B receives no owner A rows
+PASS unknown owner receives no rows
+PASS badge issuer without scope cannot fall back to browser streams
+PASS badge issuer with null scope cannot fall back to browser streams
+PASS unsupported badge scope receives no streams
+PASS badge without trusted device identity receives no streams
+PASS wrong issuer with otherwise valid badge claims receives no streams
+PASS missing issuer receives no streams
+PASS development token with no configured issuer receives no streams
+PASS lookalike browser issuer cannot receive full history
+PASS Supabase browser issuer cannot opt into badge streams by setting badge scope
+PASS forged connection parameters cannot expand badge scope or change owner
+PASS forged subscription parameters and explicit full-stream names cannot expand badge access
+PASS both forged parameter channels cannot substitute for missing trusted claims
+PASS browser connection and subscription parameters cannot access owner B or badge projections
+PASS include_defaults=false plus explicit requests preserves badge authorization
+PASS include_defaults=false and no explicit requests receives nothing
+PASS new full-history data cannot increase badge rows
+PASS LIMIT 1 rejected by compiler
+PASS ORDER BY id DESC rejected by compiler
+{
+  "command": "node /tmp/badge-pairing-preflight/check-streams.mjs",
+  "node": "v25.9.0",
+  "source": "/Users/kobie/projects/powersync/powersync-service",
+  "sourceCommit": "8a0fdc806eb2dd8a0d4a96bcd98d0b0a25176a20",
+  "packageVersion": "0.43.0",
+  "passed": 23,
+  "scope": "Local compiled query and bucket evaluator proof only; no JWT signature checks, deployed-service compatibility, database cardinality constraints, or device storage qualification."
+}

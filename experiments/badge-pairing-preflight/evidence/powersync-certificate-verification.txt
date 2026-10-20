@@ -1,0 +1,8 @@
+Connecting to 107.21.156.74
+depth=2 C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication Root R46
+verify return:1
+depth=1 C=AT, O=ZeroSSL GmbH, CN=ZeroSSL RSA DV SSL CA 2
+verify return:1
+depth=0 CN=*.powersync.journeyapps.com
+verify return:1
+DONE

@@ -1,0 +1,130 @@
+{
+  "connections": [
+    {
+      "id": "default",
+      "postgres_uri": "postgresql://db.bfccerfayrfolisawokp.supabase.co:5432/postgres",
+      "connected": true,
+      "errors": []
+    }
+  ],
+  "active_sync_rules": {
+    "version_label": "3",
+    "connections": [
+      {
+        "id": "default",
+        "tag": "default",
+        "slot_name": "powersync_6ad76c8f2f27853eb0b0a128_2_5adc",
+        "initial_replication_done": true,
+        "last_lsn": "00000000/D6000B68",
+        "last_keepalive_ts": "2026-10-20T20:33:18.625Z",
+        "last_checkpoint_ts": "2026-10-20T20:33:18.626Z",
+        "replication_lag_bytes": 0,
+        "wal_status": "reserved",
+        "safe_wal_size": 553645152,
+        "max_slot_wal_keep_size": 536870912,
+        "tables": [
+          {
+            "schema": "public",
+            "name": "sessions",
+            "replication_id": [
+              "id",
+              "owner_id",
+              "day_key",
+              "type",
+              "planned_duration_seconds",
+              "state",
+              "outcome",
+              "started_at",
+              "last_resumed_at",
+              "paused_at",
+              "ended_at",
+              "remaining_seconds_at_pause"
+            ],
+            "data_queries": true,
+            "parameter_queries": false,
+            "errors": []
+          },
+          {
+            "schema": "public",
+            "name": "wellness_events",
+            "replication_id": [
+              "id",
+              "owner_id",
+              "day_key",
+              "type",
+              "occurred_at"
+            ],
+            "data_queries": true,
+            "parameter_queries": false,
+            "errors": []
+          },
+          {
+            "schema": "public",
+            "name": "daily_activity_summary",
+            "replication_id": [
+              "id",
+              "owner_id",
+              "day_key",
+              "ended_focus_count",
+              "ended_break_count",
+              "hydration_count",
+              "movement_count",
+              "last_hydration_at",
+              "hydration_timer_anchor_at",
+              "hydration_reminder_active",
+              "updated_at"
+            ],
+            "data_queries": true,
+            "parameter_queries": false,
+            "errors": []
+          },
+          {
+            "schema": "public",
+            "name": "pet_sessions",
+            "replication_id": [
+              "id",
+              "owner_id",
+              "animal_id",
+              "bio_name",
+              "bio_summary",
+              "latest_speech",
+              "latest_event_id",
+              "last_error",
+              "created_at",
+              "updated_at",
+              "latest_event_sequence"
+            ],
+            "data_queries": true,
+            "parameter_queries": false,
+            "errors": []
+          },
+          {
+            "schema": "public",
+            "name": "pet_events",
+            "replication_id": [
+              "id",
+              "owner_id",
+              "pet_session_id",
+              "event_type",
+              "source_device",
+              "status",
+              "reaction_speech",
+              "error_message",
+              "created_at",
+              "claimed_at",
+              "completed_at",
+              "event_sequence",
+              "lease_token",
+              "lease_until",
+              "attempts"
+            ],
+            "data_queries": true,
+            "parameter_queries": false,
+            "errors": []
+          }
+        ]
+      }
+    ],
+    "errors": []
+  }
+}

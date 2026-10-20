@@ -1,0 +1,91 @@
+{
+  "before_count": 200,
+  "after_count": 240,
+  "protected_existing_count": 196,
+  "protected_existing_hashes": 170,
+  "added": [
+    "/state/badgegotchi/owner.txt",
+    "/state/badgegotchi/state.sqlite",
+    "/system/apps/._badgegotchi",
+    "/system/apps/badgegotchi/._README.md",
+    "/system/apps/badgegotchi/._THIRD_PARTY_NOTICES.txt",
+    "/system/apps/badgegotchi/.___init__.py",
+    "/system/apps/badgegotchi/._assets",
+    "/system/apps/badgegotchi/._badgegotchi-package.json",
+    "/system/apps/badgegotchi/._badgegotchi_identity.py",
+    "/system/apps/badgegotchi/._badgegotchi_native.mpy",
+    "/system/apps/badgegotchi/._badgegotchi_runtime.py",
+    "/system/apps/badgegotchi/._badgegotchi_state.py",
+    "/system/apps/badgegotchi/._badgegotchi_storage.py",
+    "/system/apps/badgegotchi/._badgegotchi_view.py",
+    "/system/apps/badgegotchi/._icon.png",
+    "/system/apps/badgegotchi/._licenses",
+    "/system/apps/badgegotchi/README.md",
+    "/system/apps/badgegotchi/THIRD_PARTY_NOTICES.txt",
+    "/system/apps/badgegotchi/__init__.py",
+    "/system/apps/badgegotchi/assets/._capybara.png",
+    "/system/apps/badgegotchi/assets/capybara.png",
+    "/system/apps/badgegotchi/badgegotchi-package.json",
+    "/system/apps/badgegotchi/badgegotchi_identity.py",
+    "/system/apps/badgegotchi/badgegotchi_native.mpy",
+    "/system/apps/badgegotchi/badgegotchi_runtime.py",
+    "/system/apps/badgegotchi/badgegotchi_state.py",
+    "/system/apps/badgegotchi/badgegotchi_storage.py",
+    "/system/apps/badgegotchi/badgegotchi_view.py",
+    "/system/apps/badgegotchi/icon.png",
+    "/system/apps/badgegotchi/licenses/._Badgegotchi-CC0.txt",
+    "/system/apps/badgegotchi/licenses/._Compiler-runtime.txt",
+    "/system/apps/badgegotchi/licenses/._MicroPython-MIT.txt",
+    "/system/apps/badgegotchi/licenses/._Newlib.txt",
+    "/system/apps/badgegotchi/licenses/._PowerSync-Apache-2.0.txt",
+    "/system/apps/badgegotchi/licenses/._PowerSync-NOTICE.txt",
+    "/system/apps/badgegotchi/licenses/._Rust-dependencies.txt",
+    "/system/apps/badgegotchi/licenses/Badgegotchi-CC0.txt",
+    "/system/apps/badgegotchi/licenses/Compiler-runtime.txt",
+    "/system/apps/badgegotchi/licenses/MicroPython-MIT.txt",
+    "/system/apps/badgegotchi/licenses/Newlib.txt",
+    "/system/apps/badgegotchi/licenses/PowerSync-Apache-2.0.txt",
+    "/system/apps/badgegotchi/licenses/PowerSync-NOTICE.txt",
+    "/system/apps/badgegotchi/licenses/Rust-dependencies.txt"
+  ],
+  "removed": [
+    "/system/.fseventsd/000000000fad240e",
+    "/system/.fseventsd/000000000fad240f",
+    "/system/.fseventsd/fseventsd-uuid"
+  ],
+  "changed": {
+    "/state/loading.log": {
+      "before": [
+        [
+          32768,
+          0,
+          0,
+          0,
+          0,
+          0,
+          9847,
+          1792524829,
+          1792524829,
+          1792524829
+        ],
+        null
+      ],
+      "after": [
+        [
+          32768,
+          0,
+          0,
+          0,
+          0,
+          0,
+          10230,
+          1792525749,
+          1792525749,
+          1792525749
+        ],
+        null
+      ]
+    }
+  },
+  "preservation_pass": true
+}

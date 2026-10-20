@@ -1,0 +1,118 @@
+"""Badgegotchi offline alpha. Badgeware owns the launcher and Home action."""
+
+import badgeware
+import machine
+from time import ticks_ms, ticks_diff, sleep_ms
+
+
+exit_requested = False
+home_pin = machine.Pin.board.BUTTON_HOME
+
+
+def request_exit(_pin=None):
+    # Badgeware's normal Home IRQ resets immediately. A flag keeps SQL and
+    # filesystem cleanup in the foreground, even if Home arrives during SQL.
+    global exit_requested
+    exit_requested = True
+
+
+home_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=request_exit)
+
+from badgegotchi_state import AppState
+from badgegotchi_view import AppView
+from badgegotchi_storage import Store
+
+
+badge.mode(HIRES | VSYNC)
+watchdog = machine.WDT(timeout=16000)
+view = AppView(screen, color, font, image, rect, "assets/capybara.png")
+view.message("Getting ready", "Your timer and totals stay on this badge.")
+badgeware.display.update()
+watchdog.feed()
+store = Store(heartbeat=watchdog.feed)
+state = None
+failure = None
+failure_title = "Could not open"
+storage_ok = False
+
+try:
+    store.open()
+    state = AppState(store.load())
+    storage_ok = True
+except Exception as exc:
+    print("BADGEGOTCHI_OPEN_ERROR", type(exc).__name__, str(exc))
+    failure = "This badge could not open its saved data. Nothing was reset."
+
+last_tick = ticks_ms()
+buttons = ((BUTTON_A, "pet"), (BUTTON_B, "toggle"),
+           (BUTTON_C, "water"), (BUTTON_UP, "stretch"))
+
+
+def update():
+    global last_tick, failure, failure_title, storage_ok
+    watchdog.feed()
+    if exit_requested:
+        return True
+    now = ticks_ms()
+    elapsed = ticks_diff(now, last_tick)
+    last_tick = now
+    if failure is not None:
+        view.message(failure_title, failure, error=True)
+        return
+    held = [name for button, name in buttons if badge.held(button)]
+    if state.step(held, elapsed):
+        try:
+            store.save(state.snapshot())
+            state.saved()
+        except Exception as exc:
+            state.pause()
+            storage_ok = False
+            print("BADGEGOTCHI_SAVE_ERROR", type(exc).__name__, str(exc))
+            failure_title = "Save unavailable"
+            failure = "Saving stopped. Existing data was not reset. Press Home to exit."
+            view.message(failure_title, failure, error=True)
+            return
+    if exit_requested:
+        return True
+    view.draw(state)
+
+
+def on_exit():
+    # launch() calls this again after the module body returns. Cleanup belongs
+    # solely to the foreground finally block; this hook never re-enters SQL.
+    return None
+
+
+def closed_home(_pin):
+    badgeware.reset()
+
+
+try:
+    run(update)
+finally:
+    # Badgeware resets back to its existing launcher after the app returns.
+    # Closing is mandatory; a storage failure must never trigger a fresh DB.
+    try:
+        if storage_ok and state is not None:
+            # Home resets the VM. Preserve running + RTC anchor so reopening
+            # accounts for time in the launcher without a background task.
+            state.step((), ticks_diff(ticks_ms(), last_tick))
+            watchdog.feed()
+            store.save(state.snapshot())
+    except Exception as exc:
+        print("BADGEGOTCHI_EXIT_SAVE_ERROR", type(exc).__name__, str(exc))
+    finally:
+        store.close()
+
+if exit_requested:
+    view.message("Returning home", "Release Home to return to the launcher.")
+    badgeware.display.update()
+    # HOME is also BOOT, so resetting while it is held enters the bootloader.
+    while not home_pin.value():
+        watchdog.feed()
+        sleep_ms(10)
+    badgeware.reset()
+else:
+    # Bounded diagnostic runs may return normally. Their DB is closed, and
+    # Home should continue to work until Badgeware's next app installs its IRQ.
+    home_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=closed_home)

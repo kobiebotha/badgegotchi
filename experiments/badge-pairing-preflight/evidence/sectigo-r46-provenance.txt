@@ -1,0 +1,3 @@
+Source: /opt/homebrew/etc/openssl@3/cert.pem
+subject=C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication Root R46
+SHA256 7bb647a62aeeac88bf257aa522d01ffea395e0ab45c73f93f65654ec38f25a06

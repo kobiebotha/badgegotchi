@@ -1,0 +1,11 @@
+npm notice run badgegotchi-web@0.1.0 test
+npm notice run vitest run --configLoader runner --no-cache tests/domain.test.ts tests/connector.test.ts tests/connector.database.test.ts
+
+ RUN  v5.0.5 /Users/kobie/projects/powersync/skunkworks/badgegotchi/web
+
+
+ Test Files  3 passed (3)
+      Tests  34 passed (34)
+   Start at  14:42:47
+   Duration  145ms (transform 42%, import 33%, tests 20%, worker 4%)
+

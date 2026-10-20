@@ -1,0 +1,14 @@
+TLS_RUNTIME Mbed TLS 3.6.6
+RTC_UTC (2026, 10, 20, 20, 36, 26, 1, 293)
+WIFI_CONNECTED True
+WIFI_RSSI_DBM -80
+HTTPS_RESULT bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True status b'HTTP/1.1 404 Not Found' cipher ('TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256', 'TLSv1.2') dns_ms 1693 tcp_ms 2968 max_tls_step_ms 694 elapsed_ms 10423 heap_delta_bytes 283232
+HTTPS_RESULT bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True status b'HTTP/1.1 404 Not Found' cipher ('TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256', 'TLSv1.2') dns_ms 12 tcp_ms 2810 max_tls_step_ms 923 elapsed_ms 8630 heap_delta_bytes 136896
+HTTPS_FAILURE 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com hostname 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com trust True phase tls_handshake type ValueError error 
+The certificate is not correctly signed by the trusted CA
+ max_tls_step_ms 2 elapsed_ms 514
+HTTPS_FAILURE 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com hostname 6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com trust True phase dns type OSError error dns: no answer from 192.168.0.1 within 3000 ms max_tls_step_ms 2 elapsed_ms 3006
+HTTPS_FAILURE bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust False phase tls_handshake type OSError error TLS/write deadline max_tls_step_ms 2 elapsed_ms 7736
+PENDING_TLS_CANCEL bfccerfayrfolisawokp.supabase.co after_ms 1 max_step_ms 2
+HTTPS_RESULT bfccerfayrfolisawokp.supabase.co hostname bfccerfayrfolisawokp.supabase.co trust True status b'HTTP/1.1 404 Not Found' cipher ('TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256', 'TLSv1.2') dns_ms 247 tcp_ms 2648 max_tls_step_ms 730 elapsed_ms 4199 heap_delta_bytes 107392
+TLS_PROBE_COMPLETE

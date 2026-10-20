@@ -1,0 +1,5 @@
+ORIGINAL_V1 {"remaining_ms": 2243961, "pet_count": 6, "phase": "focus", "running": false, "water_count": 1, "focus_count": 0, "stretch_count": 1}
+MIGRATION_PRESERVED_ALL_VALUES {"remaining_ms": 2243961, "pet_count": 6, "phase": "focus", "running": false, "water_count": 1, "focus_count": 0, "stretch_count": 1, "clock_saved_s": null}
+TIMER_CANDIDATE {"remaining_ms": 2400000, "pet_count": 6, "phase": "focus", "running": true, "water_count": 1, "focus_count": 0, "stretch_count": 1, "clock_saved_s": 1792526881}
+RUNNING_SNAPSHOT_SAVED 0.5.4/cratesio
+DATABASE_CLOSED_SAFE_TO_RESET

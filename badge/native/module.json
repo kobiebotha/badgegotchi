@@ -1,0 +1,14 @@
+{
+  "file": "badgegotchi_native.mpy",
+  "bytes": 737049,
+  "sha256": "802223bc6d2f7daea4c04b975bf2c6208068ef968891557e726bd485d3efafa8",
+  "mpy": 7942,
+  "micropython": "1.29.0",
+  "badgeware": "bw-1.29.0-gc",
+  "board": "tufty",
+  "floatAbi": "softfp",
+  "powersync": "0.5.4",
+  "powersyncCommit": "0ed9f4edba418a4f8ae7cb0594da683cd79a81b5",
+  "powersyncArchiveSha256": "d5b146ff16d488beb8038a43d32754c4c7e2a1fcfb1543033bf13c6a52b20e60",
+  "sqlite": "3.54.1"
+}

@@ -1,0 +1,57 @@
+test_app_appearing_before_publication_is_not_replaced (test_packaging.PackagingTests.test_app_appearing_before_publication_is_not_replaced) ... ok
+test_bootsel_wrong_disk_and_low_space_do_not_mutate (test_packaging.PackagingTests.test_bootsel_wrong_disk_and_low_space_do_not_mutate) ... ok
+test_dry_run_performs_zero_volume_mutations (test_packaging.PackagingTests.test_dry_run_performs_zero_volume_mutations) ... ok
+test_duplicate_case_collisions_symlinks_and_nonapp_paths_rejected (test_packaging.PackagingTests.test_duplicate_case_collisions_symlinks_and_nonapp_paths_rejected) ... ok
+test_duplicate_json_fields_rejected (test_packaging.PackagingTests.test_duplicate_json_fields_rejected) ... ok
+test_existing_app_is_refused_and_unchanged (test_packaging.PackagingTests.test_existing_app_is_refused_and_unchanged) ... ok
+test_file_directory_conflict_rejected_before_installation (test_packaging.PackagingTests.test_file_directory_conflict_rejected_before_installation) ... ok
+test_final_readback_failure_cleans_only_its_new_app (test_packaging.PackagingTests.test_final_readback_failure_cleans_only_its_new_app) ... ok
+test_malicious_paths_are_rejected_without_volume_mutation (test_packaging.PackagingTests.test_malicious_paths_are_rejected_without_volume_mutation) ... ok
+test_native_mismatch_header_and_stale_app_identity_are_rejected (test_packaging.PackagingTests.test_native_mismatch_header_and_stale_app_identity_are_rejected) ... ok
+test_successful_install_verifies_all_content_and_preserves_other_apps (test_packaging.PackagingTests.test_successful_install_verifies_all_content_and_preserves_other_apps) ... ok
+test_symlinked_source_directory_is_not_packaged (test_packaging.PackagingTests.test_symlinked_source_directory_is_not_packaged) ... ok
+test_tampered_content_and_manifest_are_rejected (test_packaging.PackagingTests.test_tampered_content_and_manifest_are_rejected) ... ok
+test_zip_is_deterministic_and_whitelisted (test_packaging.PackagingTests.test_zip_is_deterministic_and_whitelisted) ... ok
+test_home_during_save_defers_sql_cleanup_and_reset_until_release (test_state.EntryLifecycleTests.test_home_during_save_defers_sql_cleanup_and_reset_until_release) ... ok
+test_normal_exit_keeps_running_saves_closes_without_forcing_reset (test_state.EntryLifecycleTests.test_normal_exit_keeps_running_saves_closes_without_forcing_reset) ... ok
+test_storage_errors_close_without_retrying_a_failed_save (test_state.EntryLifecycleTests.test_storage_errors_close_without_retrying_a_failed_save) ... ok
+test_away_completion_is_counted_once_and_does_not_chain (test_state.StateTests.test_away_completion_is_counted_once_and_does_not_chain) ... ok
+test_checkpoint_is_due_each_minute_not_each_frame (test_state.StateTests.test_checkpoint_is_due_each_minute_not_each_frame) ... ok
+test_clock_reset_or_backwards_pauses_without_credit (test_state.StateTests.test_clock_reset_or_backwards_pauses_without_credit) ... ok
+test_counter_cap_and_expiring_pet_animation (test_state.StateTests.test_counter_cap_and_expiring_pet_animation) ... ok
+test_focus_completion_saves_once_and_waits_for_break_start (test_state.StateTests.test_focus_completion_saves_once_and_waits_for_break_start) ... ok
+test_invalid_saved_state_is_rejected_not_replaced (test_state.StateTests.test_invalid_saved_state_is_rejected_not_replaced) ... ok
+test_launch_button_hold_is_drained_and_holds_do_not_repeat (test_state.StateTests.test_launch_button_hold_is_drained_and_holds_do_not_repeat) ... ok
+test_legacy_timer_has_no_anchor_and_remains_paused (test_state.StateTests.test_legacy_timer_has_no_anchor_and_remains_paused) ... ok
+test_negative_and_untrusted_large_elapsed_are_bounded (test_state.StateTests.test_negative_and_untrusted_large_elapsed_are_bounded) ... ok
+test_paused_timer_ignores_elapsed_time_away (test_state.StateTests.test_paused_timer_ignores_elapsed_time_away) ... ok
+test_reentry_counts_time_away_and_keeps_running (test_state.StateTests.test_reentry_counts_time_away_and_keeps_running) ... ok
+test_rtc_converts_micropython_2000_epoch_and_rejects_unset (test_state.StateTests.test_rtc_converts_micropython_2000_epoch_and_rejects_unset) ... ok
+test_start_pause_resume_credits_only_running_time (test_state.StateTests.test_start_pause_resume_credits_only_running_time) ... ok
+test_existing_name_collision_is_not_reused (test_storage.LoaderTests.test_existing_name_collision_is_not_reused) ... ok
+test_integrity_and_abi_reject_before_native_import (test_storage.LoaderTests.test_integrity_and_abi_reject_before_native_import) ... ok
+test_only_verified_directory_is_used_and_path_restored (test_storage.LoaderTests.test_only_verified_directory_is_used_and_path_restored) ... ok
+test_entropy_and_clock_callbacks (test_storage.OwnershipTests.test_entropy_and_clock_callbacks) ... ok
+test_hot_journal_is_retained_before_native_open (test_storage.OwnershipTests.test_hot_journal_is_retained_before_native_open) ... ok
+test_low_space_creates_no_directory (test_storage.OwnershipTests.test_low_space_creates_no_directory) ... ok
+test_runtime_rejection_creates_no_state (test_storage.OwnershipTests.test_runtime_rejection_creates_no_state) ... ok
+test_snapshot_validation_does_not_coerce_corrupt_values (test_storage.OwnershipTests.test_snapshot_validation_does_not_coerce_corrupt_values) ... ok
+test_unknown_files_and_wrong_markers_are_retained (test_storage.OwnershipTests.test_unknown_files_and_wrong_markers_are_retained) ... ok
+test_unrelated_directory_is_not_adopted (test_storage.OwnershipTests.test_unrelated_directory_is_not_adopted) ... ok
+test_vfs_exact_paths_and_truncate_failure (test_storage.OwnershipTests.test_vfs_exact_paths_and_truncate_failure) ... ok
+test_actual_local_only_core_retains_running_timer_and_clock (test_storage.RealCoreTests.test_actual_local_only_core_retains_running_timer_and_clock) ... ok
+test_corrupt_snapshot_is_retained (test_storage.RealCoreTests.test_corrupt_snapshot_is_retained) ... ok
+test_unknown_schema_version_stays_unchanged (test_storage.RealCoreTests.test_unknown_schema_version_stays_unchanged) ... ok
+test_v1_migration_preserves_existing_progress_and_totals (test_storage.RealCoreTests.test_v1_migration_preserves_existing_progress_and_totals) ... ok
+test_changed_app_refused_without_backup_or_mutation (test_update.UpdateTests.test_changed_app_refused_without_backup_or_mutation) ... ok
+test_dry_run_changes_nothing (test_update.UpdateTests.test_dry_run_changes_nothing) ... ok
+test_failed_publication_restores_previous_app (test_update.UpdateTests.test_failed_publication_restores_previous_app) ... ok
+test_failed_staging_keeps_previous_app (test_update.UpdateTests.test_failed_staging_keeps_previous_app) ... ok
+test_success_retains_previous_bytes_and_other_apps (test_update.UpdateTests.test_success_retains_previous_bytes_and_other_apps) ... ok
+
+----------------------------------------------------------------------
+Ran 50 tests in 0.153s
+
+OK
+BADGEGOTCHI_OPEN_ERROR ValueError invalid owner
+BADGEGOTCHI_SAVE_ERROR OSError save failed

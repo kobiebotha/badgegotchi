@@ -1,0 +1,40 @@
+{
+  "comparison": "Prior alpha.2 qualification versus current preflight; not a same-session before/after inventory",
+  "removed": [],
+  "added": [],
+  "changed": {
+    "/state/loading.log": {
+      "before": [
+        [
+          32768,
+          0,
+          0,
+          0,
+          0,
+          0,
+          11126,
+          1792527045,
+          1792527045,
+          1792527045
+        ],
+        null
+      ],
+      "after": [
+        [
+          32768,
+          0,
+          0,
+          0,
+          0,
+          0,
+          11574,
+          1792528537,
+          1792528537,
+          1792528537
+        ],
+        null
+      ]
+    }
+  },
+  "unchanged_hashed_files": 210
+}

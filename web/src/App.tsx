@@ -16,7 +16,7 @@ const BadgeInstaller = lazy(() =>
 );
 
 export function App() {
-  // Firmware is public and independent of account pairing. Keep recovery usable
+  // The app installer is public and independent of account pairing. Keep it usable
   // even when sign-in or the application backend is unavailable.
   if (window.location.pathname.replace(/\/+$/, "") === "/install") {
     return (
