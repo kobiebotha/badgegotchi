@@ -1,0 +1,48 @@
+.badge-pairing-dialog {
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 28px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 24px 80px #23342535;
+}
+.badge-pairing-dialog::backdrop { background: #252e2675; }
+.badge-pairing-dialog h3 { margin: 0 0 10px; font-size: 17px; }
+.badge-pairing-dialog p { font-size: 14px; }
+.pairing-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
+.pairing-heading .eyebrow { margin-bottom: 8px; }
+.pairing-heading h3 { margin: 0; }
+.pairing-code-panel { border-radius: 16px; padding: 22px; background: #edf1e6; }
+.pairing-code { display: block; font: 650 clamp(20px, 4.5vw, 30px)/1.6 ui-monospace, monospace; letter-spacing: 1px; white-space: nowrap; }
+.pairing-expiry, .pairing-hint, .pairing-install { color: #606954; }
+.pairing-expiry time { font-variant-numeric: tabular-nums; }
+.pairing-code-panel .pairing-expiry { font-size: 12px; margin-bottom: 24px; }
+.pairing-claims { border: 0; padding: 0; margin: 14px 0; }
+.pairing-claims legend { font-size: 12px; margin-bottom: 8px; }
+.pairing-claim, .pairing-match { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px 0; font-size: 14px; }
+.pairing-claim { border-top: 1px solid var(--line); }
+.pairing-claim strong { display: block; font: 650 22px/1.5 ui-monospace, monospace; }
+.pairing-match { align-items: flex-start; margin-bottom: 14px; }
+.pairing-claim input, .pairing-match input { width: 19px; height: 19px; flex: 0 0 19px; accent-color: var(--green); }
+.pairing-code-panel .pairing-hint { font-size: 12px; margin: 14px 0 0; }
+.pairing-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin: 18px 0 26px; }
+.pairing-success, .pairing-notice { color: #345538; background: #e5eedf; padding: 16px; border-radius: 14px; }
+.pairing-success p { margin: 0; }
+.paired-badges { padding-top: 24px; border-top: 1px solid var(--line); }
+.paired-badge-list { padding: 0; list-style: none; }
+.paired-badge-list li { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.paired-badge-list li > div:first-child > strong { margin-right: 12px; }
+.paired-badge-list li span { font-size: 12px; color: var(--muted); }
+.paired-badge-list small { display: block; line-height: 1.6; color: #606954; margin: 6px 0; }
+.pairing-revoke { margin-top: 14px; }
+.pairing-revoke .text-button { margin-left: 16px; }
+.pairing-install { margin: 24px 0 0; font-size: 12px !important; }
+.pairing-nav { background: none; border: 0; padding: 8px 0; text-decoration: underline; }
+@media (max-width: 600px) {
+  .badge-pairing-dialog { padding: 20px; }
+  .pairing-code-panel { padding: 16px; }
+  .header-actions { flex-wrap: wrap; justify-content: flex-end; gap: 8px 14px; }
+}

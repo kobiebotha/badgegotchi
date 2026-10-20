@@ -21,6 +21,8 @@ streams:
         remaining_seconds_at_pause
       FROM sessions
       WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/auth/v1'
+        AND auth.parameter('badge_scope') IS NULL
   wellness_events:
     auto_subscribe: true
     query: |
@@ -31,6 +33,8 @@ streams:
         occurred_at
       FROM wellness_events
       WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/auth/v1'
+        AND auth.parameter('badge_scope') IS NULL
   daily_activity_summary:
     auto_subscribe: true
     query: |
@@ -47,6 +51,8 @@ streams:
         updated_at
       FROM daily_activity_summary
       WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/auth/v1'
+        AND auth.parameter('badge_scope') IS NULL
   pet_sessions:
     auto_subscribe: true
     query: |
@@ -62,6 +68,8 @@ streams:
         updated_at
       FROM pet_sessions
       WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/auth/v1'
+        AND auth.parameter('badge_scope') IS NULL
   pet_events:
     auto_subscribe: true
     query: |
@@ -78,3 +86,14 @@ streams:
         completed_at
       FROM pet_events
       WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/auth/v1'
+        AND auth.parameter('badge_scope') IS NULL
+  badge_projection:
+    auto_subscribe: false
+    query: |
+      SELECT id, kind, payload
+      FROM badge_projection
+      WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/functions/v1/badge-gateway'
+        AND auth.parameter('badge_scope') = 'v1'
+        AND auth.parameter('device_id') IS NOT NULL

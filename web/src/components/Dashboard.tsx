@@ -41,6 +41,7 @@ import { ensurePet, resetPet } from "../lib/petCloud";
 import { signOut } from "../lib/database";
 import { messageFor } from "../lib/errors";
 import { Brand } from "./Brand";
+import { BadgePairing } from "./BadgePairing";
 
 function useClock() {
   const [now, setNow] = useState(() => new Date());
@@ -127,6 +128,7 @@ export function Dashboard({
   const petRequestInFlight = useRef(false);
   const [notice, setNotice] = useState("");
   const [dialog, setDialog] = useState<"reset" | "signout" | null>(null);
+  const [pairingOpen, setPairingOpen] = useState(false);
   const [pendingUploads, setPendingUploads] = useState(0);
   const resetRequest = useRef<{ id: string; animal: AnimalSpec } | null>(null);
   const initialPetRequested = useRef(false);
@@ -297,6 +299,7 @@ export function Dashboard({
       <header className="site-header">
         <Brand />
         <div className="header-actions">
+          <button className="installer-nav pairing-nav" onClick={() => setPairingOpen(true)}>Pair a badge</button>
           <a className="installer-nav" href="/install">Set up a badge</a>
           <span
             className={`sync-status ${syncError ? "has-error" : ""}`}
@@ -662,6 +665,7 @@ export function Dashboard({
           </>
         )}
       </div>
+      {pairingOpen && <BadgePairing userId={userId} onClose={() => setPairingOpen(false)} />}
       {dialog && (
         <ConfirmDialog
           title={

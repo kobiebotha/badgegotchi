@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "test": "deno test functions/pet-ai/handler_test.ts",
-    "check": "deno check functions/pet-ai/index.ts",
-    "lint": "deno lint functions/pet-ai"
+    "test": "deno test functions/pet-ai/handler_test.ts functions/badge-gateway/handler_test.ts",
+    "check": "deno check functions/pet-ai/index.ts functions/badge-gateway/index.ts",
+    "lint": "deno lint functions/pet-ai functions/badge-gateway"
   }
 }

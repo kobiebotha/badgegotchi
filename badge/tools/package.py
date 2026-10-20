@@ -13,11 +13,14 @@ import zipfile
 
 BADGE = Path(__file__).resolve().parents[1]
 REPO = BADGE.parent
-VERSION = "0.1.0-alpha.2"
+VERSION = "0.1.0-alpha.3"
 APP_ID = "badgegotchi"
 SOURCE_FILES = (
     "__init__.py", "badgegotchi_state.py", "badgegotchi_view.py",
     "badgegotchi_storage.py", "badgegotchi_runtime.py", "badgegotchi_identity.py", "icon.png",
+    "badgegotchi_client.py", "badgegotchi_config.py", "badgegotchi_entropy.py",
+    "badgegotchi_http.py", "badgegotchi_pairing.py", "badgegotchi_private.py",
+    "badgegotchi_sync.py", "ca/sectigo-r46.der",
     "assets/capybara.png", "README.md", "THIRD_PARTY_NOTICES.txt",
     "licenses/PowerSync-Apache-2.0.txt", "licenses/PowerSync-NOTICE.txt",
     "licenses/MicroPython-MIT.txt", "licenses/Badgegotchi-CC0.txt",
@@ -106,7 +109,7 @@ def build(app=BADGE / "app" / APP_ID, native=None, output=BADGE / "dist", web=No
     release = {
         "version": VERSION, "appId": APP_ID, "name": "Badgegotchi",
         "board": "tufty2350", "runtimeMpy": 7942,
-        "description": "Local alpha: focus timer, pet and saved wellness totals. Requires the qualified Badgeware 1.29.0 runtime. Cloud sync and AI are not connected.",
+        "description": "Pair once with the web app using A/B/C, then reconnect to sync account wellness and current account data. Timer remains local. Requires the reviewed Badgeware 1.29.0 runtime and activated badge gateway. Candidate awaits live qualification.",
         "zipUrl": base + "/" + filename, "zipSha256": digest, "zipBytes": len(archive),
         "files": [{"path": name, "url": base + "/files/" + name,
                    "bytes": len(data), "sha256": sha(data)}

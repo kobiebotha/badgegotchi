@@ -21,3 +21,14 @@ Amalgamation adapted for native PIC and writable-static-data restrictions;
 the adaptation script and source hash are recorded in the source repository.
 
 Rust and Arm runtime dependency license notices are included under licenses/.
+
+Public TLS trust anchor: ca/sectigo-r46.der
+Sectigo Public Server Authentication Root R46
+Subject and issuer: C=GB, O=Sectigo Limited,
+CN=Sectigo Public Server Authentication Root R46.
+SHA-256: 7bb647a62aeeac88bf257aa522d01ffea395e0ab45c73f93f65654ec38f25a06
+Source: /opt/homebrew/etc/openssl@3/cert.pem; extraction provenance is recorded in
+experiments/badge-pairing-preflight/evidence/sectigo-r46-provenance.txt.
+This public DER certificate is used as a TLS trust anchor. It contains no private
+key, device credential, or signing secret. Runtime-provided Google Trust Services
+roots are referenced by the application but are not copied into this package.

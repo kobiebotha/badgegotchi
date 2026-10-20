@@ -1,4 +1,4 @@
-"""Badgegotchi offline alpha. Badgeware owns the launcher and Home action."""
+"""Pair once, reconnect automatically. Badgeware owns launcher and Home."""
 
 import badgeware
 import machine
@@ -18,19 +18,21 @@ def request_exit(_pin=None):
 
 home_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=request_exit)
 
-from badgegotchi_state import AppState
+from badgegotchi_state import AppState, rtc_seconds
 from badgegotchi_view import AppView
 from badgegotchi_storage import Store
+from badgegotchi_client import Client
 
 
 badge.mode(HIRES | VSYNC)
 watchdog = machine.WDT(timeout=16000)
 view = AppView(screen, color, font, image, rect, "assets/capybara.png")
-view.message("Getting ready", "Your timer and totals stay on this badge.")
+view.message("Getting ready", "Opening saved progress and your account link.")
 badgeware.display.update()
 watchdog.feed()
 store = Store(heartbeat=watchdog.feed)
 state = None
+client = None
 failure = None
 failure_title = "Could not open"
 storage_ok = False
@@ -39,6 +41,7 @@ try:
     store.open()
     state = AppState(store.load())
     storage_ok = True
+    client = Client(store, heartbeat=watchdog.feed)
 except Exception as exc:
     print("BADGEGOTCHI_OPEN_ERROR", type(exc).__name__, str(exc))
     failure = "This badge could not open its saved data. Nothing was reset."
@@ -59,9 +62,22 @@ def update():
     if failure is not None:
         view.message(failure_title, failure, error=True)
         return
-    held = [name for button, name in buttons if badge.held(button)]
+    physical = [name for button, name in ((BUTTON_A, "A"), (BUTTON_B, "B"),
+                 (BUTTON_C, "C"), (BUTTON_UP, "UP"), (BUTTON_DOWN, "DOWN")) if badge.held(button)]
+    try:
+        client.step(physical, elapsed)
+    except Exception as exc:
+        print("BADGEGOTCHI_LINK_ERROR", type(exc).__name__)
+        failure_title = "Account link unavailable"
+        failure = "Saved progress and pairing data are retained. Press Home to exit."
+        view.message(failure_title, failure, error=True)
+        return
+    held = [name for button, name in buttons if badge.held(button)] if client.controls_enabled else ()
+    previous = {key: getattr(state, key) for key in ("water_count", "stretch_count")}
     if state.step(held, elapsed):
         try:
+            if client.ready:
+                client.record_events(state, previous, rtc_seconds)
             store.save(state.snapshot())
             state.saved()
         except Exception as exc:
@@ -74,7 +90,10 @@ def update():
             return
     if exit_requested:
         return True
-    view.draw(state)
+    if client.ready:
+        view.draw(state, client)
+    else:
+        view.pairing(client)
 
 
 def on_exit():
@@ -102,7 +121,11 @@ finally:
     except Exception as exc:
         print("BADGEGOTCHI_EXIT_SAVE_ERROR", type(exc).__name__, str(exc))
     finally:
-        store.close()
+        try:
+            if client is not None:
+                client.close()
+        finally:
+            store.close()
 
 if exit_requested:
     view.message("Returning home", "Release Home to return to the launcher.")

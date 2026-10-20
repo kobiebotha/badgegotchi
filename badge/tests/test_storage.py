@@ -261,9 +261,91 @@ class RealCoreTests(unittest.TestCase):
         self.store.open()
         old["clock_saved_s"] = None
         self.assertEqual(self.store.load(), old)
-        self.assertEqual(self.native.exec("PRAGMA user_version"), [["2"]])
+        self.assertEqual(self.native.exec("PRAGMA user_version"), [["3"]])
+        self.assertEqual(self.store.legacy(), old)
         self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
         self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
+
+    def test_v2_migration_retains_legacy_and_pins_account(self):
+        import json
+        self.store.open()
+        before = dict(storage.DEFAULTS, water_count=7, stretch_count=4)
+        self.store.save(before)
+        self.native.exec("PRAGMA user_version=2")
+        self.store.close()
+        self.store.open()
+        self.assertEqual(self.store.legacy(), before)
+        changed = dict(before, water_count=8)
+        self.store.save(changed)
+        self.assertEqual(self.store.legacy(), before)
+        owner = "11111111-1111-4111-8111-111111111111"
+        device = "22222222-2222-4222-8222-222222222222"
+        self.assertTrue(self.store.bind_account(owner, device))
+        self.assertFalse(self.store.bind_account(owner, device))
+        with self.assertRaisesRegex(ValueError, "Different account"):
+            self.store.bind_account(device, owner)
+        self.store.close()
+        self.store.open()
+        self.assertEqual(self.store.load(), changed)
+        self.assertFalse(self.store.bind_account(owner, device))
+        self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
+
+    def test_real_core_checkpoint_publishes_bounded_projection(self):
+        import json
+        self.store.open()
+        instructions = self.store.control("start", {"checkpoint_mode": "requests"})
+        self.assertIn("EstablishSyncStream", json.dumps(instructions))
+        # Synthetic fixture only: actual transport must seed from the service.
+        self.assertEqual(self.store.control("seed_checkpoint_request_id", "9007199254740993"), 9007199254740993)
+        self.store.control("line_text", {"checkpoint": {
+            "last_op_id": "1", "write_checkpoint": "9007199254740993",
+            "buckets": [{"bucket": "bounded-test", "checksum": 1, "priority": 3, "count": 1}]}})
+        body = {"kind": "summary", "payload": json.dumps({"hydration_count": 5})}
+        self.store.control("line_text", {"data": {"bucket": "bounded-test", "has_more": False,
+            "after": None, "next_after": "1", "data": [{"op_id": "1", "op": "PUT",
+                "object_type": "badge_projection", "object_id": "summary", "checksum": 1, "data": json.dumps(body)}]}})
+        completed = self.store.control("line_text", {"checkpoint_complete": {"last_op_id": "1"}})
+        self.assertIn("DidCompleteSync", json.dumps(completed))
+        self.assertEqual(self.store.projection(), [{"id": "summary", "kind": "summary", "payload": {"hydration_count": 5}}])
+        self.store.control("stop")
+        self.store.close()
+        self.store.open()
+        self.assertEqual(self.store.projection()[0]["payload"]["hydration_count"], 5)
+        self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
+        self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
+
+    def test_projection_budget_rejects_before_native_write(self):
+        self.store.open()
+        pages = self.native.exec("PRAGMA page_count")
+        with self.assertRaisesRegex(ValueError, "too large"):
+            self.store.control("line_text", "x" * 8193)
+        with self.assertRaisesRegex(ValueError, "Unexpected synced table"):
+            self.store.control("line_text", {"data": {"data": [{"op": "PUT", "object_type": "sessions"}]}})
+        with self.assertRaisesRegex(ValueError, "Unexpected sync buckets"):
+            self.store.control("line_text", {"checkpoint": {"buckets": [{}] * 5}})
+        self.assertEqual(self.native.exec("PRAGMA page_count"), pages)
+
+    def test_unexpected_outbox_is_rejected_before_legacy_migration(self):
+        self.store.open()
+        self.native.exec("PRAGMA user_version=2")
+        self.native.exec("INSERT INTO ps_crud(data) VALUES('{}')")
+        self.store.close()
+        path = Path(self.root) / "state.sqlite"
+        original = hashlib.sha256(path.read_bytes()).digest()
+        with self.assertRaisesRegex(ValueError, "Unexpected SQL outbox"):
+            self.store.open()
+        self.assertEqual(hashlib.sha256(path.read_bytes()).digest(), original)
+
+    def test_extra_legacy_records_are_rejected_before_schema_migration(self):
+        self.store.open()
+        self.native.exec("INSERT INTO badge_state(id,snapshot) VALUES('unexpected','{}')")
+        self.native.exec("PRAGMA user_version=2")
+        self.store.close()
+        path = Path(self.root) / "state.sqlite"
+        original = hashlib.sha256(path.read_bytes()).digest()
+        with self.assertRaisesRegex(ValueError, "Unexpected legacy records"):
+            self.store.open()
+        self.assertEqual(hashlib.sha256(path.read_bytes()).digest(), original)
 
     def test_corrupt_snapshot_is_retained(self):
         self.store.open()

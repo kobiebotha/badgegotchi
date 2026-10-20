@@ -40,3 +40,10 @@ content_path = "./supabase/templates/sign-in-code.html"
 enabled = true
 verify_jwt = true
 entrypoint = "./functions/pet-ai/index.ts"
+
+[functions.badge-gateway]
+enabled = true
+# This gateway has public bootstrap/JWKS routes and validates every owner JWT
+# through Auth itself. Badge credentials are opaque, not Supabase JWTs.
+verify_jwt = false
+entrypoint = "./functions/badge-gateway/index.ts"

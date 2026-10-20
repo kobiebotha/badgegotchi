@@ -5,8 +5,8 @@ const production = process.env.BROWSER_BUILD === 'production';
 export default defineConfig({
   testDir: './tests/browser',
   testMatch: production
-    ? ['**/production.spec.ts', '**/installer.spec.ts']
-    : ['**/app.spec.ts', '**/installer.spec.ts'],
+    ? ['**/production.spec.ts', '**/installer.spec.ts', '**/pairing.spec.ts']
+    : ['**/app.spec.ts', '**/installer.spec.ts', '**/pairing.spec.ts'],
   fullyParallel: false,
   workers: 1,
   timeout: 45_000,

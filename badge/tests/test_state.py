@@ -178,7 +178,7 @@ class StateTests(unittest.TestCase):
 
 
 class EntryLifecycleTests(unittest.TestCase):
-    def exercise(self, fault=None, home_during_save=False):
+    def exercise(self, fault=None, home_during_save=False, paired=True):
         saved, events, messages = [], [], []
         held, clock, busy = [set()], [0], [False]
 
@@ -237,7 +237,24 @@ class EntryLifecycleTests(unittest.TestCase):
             def message(self, *args, **kwargs):
                 messages.append(args)
 
-            def draw(self, state):
+            def draw(self, state, client=None):
+                pass
+
+            def pairing(self, client):
+                messages.append(("Pair your badge",))
+
+        class Client:
+            def __init__(self, *args, **kwargs):
+                self.ready = paired
+                self.controls_enabled = paired
+
+            def step(self, held, elapsed):
+                pass
+
+            def record_events(self, *args):
+                pass
+
+            def close(self):
                 pass
 
         class WDT:
@@ -264,12 +281,13 @@ class EntryLifecycleTests(unittest.TestCase):
                                           sleep_ms=lambda n: events.append("wait release")),
             "badgegotchi_storage": types.SimpleNamespace(Store=Store),
             "badgegotchi_view": types.SimpleNamespace(AppView=View),
+            "badgegotchi_client": types.SimpleNamespace(Client=Client),
         }
         env = dict(badge=types.SimpleNamespace(mode=lambda n: None,
                                               held=lambda n: n in held[0]),
                    HIRES=1, VSYNC=2, screen=None, color=None, font=None,
                    image=None, rect=None, BUTTON_A=1, BUTTON_B=2,
-                   BUTTON_C=3, BUTTON_UP=4, run=run)
+                   BUTTON_C=3, BUTTON_UP=4, BUTTON_DOWN=5, run=run)
         path = Path(__file__).resolve().parents[1] / "app" / "badgegotchi" / "__init__.py"
         with patch.dict(sys.modules, modules):
             exec(compile(path.read_text(), str(path), "exec"), env)
@@ -283,6 +301,14 @@ class EntryLifecycleTests(unittest.TestCase):
         self.assertEqual(events[-1], "close")
         self.assertNotIn("reset", events)
         self.assertEqual(pin.handler.__name__, "closed_home")
+
+    def test_unpaired_launch_blocks_timer_buttons_and_preserves_snapshot(self):
+        saved, events, messages, _ = self.exercise(paired=False)
+        self.assertEqual(len(saved), 1)
+        self.assertFalse(saved[0]["running"])
+        self.assertEqual(saved[0]["remaining_ms"], FOCUS_MS)
+        self.assertIn(("Pair your badge",), messages)
+        self.assertEqual(events[-1], "close")
 
     def test_home_during_save_defers_sql_cleanup_and_reset_until_release(self):
         saved, events, _, _ = self.exercise(home_during_save=True)

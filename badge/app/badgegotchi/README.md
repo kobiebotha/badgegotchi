@@ -1,64 +1,100 @@
-# Badgegotchi — local alpha
+# Badgegotchi — pairing candidate
 
-A 40-minute focus timer, 10-minute break timer, and Mochi the capybara.
-Runs as an ordinary app on the qualified Tufty 2350 Badgeware runtime.
+Version `0.1.0-alpha.3` adds one-time account pairing to the Tufty 2350
+Badgeware app. The candidate includes the client implementation; cloud
+activation and live device pairing/sync qualification are still pending. It has
+not replaced the qualified local alpha.2 installer release.
 
-- **A:** pet Mochi.
-- **B:** start or pause the timer.
-- **C:** log water.
-- **Up:** log a stretch.
-- **Home:** save, close the database, and return to the existing launcher.
+## Pair once
 
-Each completed focus session adds one to the focus total and prepares a paused
-break. A completed break prepares a paused focus session. The totals are lifetime
-local totals. A running timer keeps counting while you are in the launcher or
-another app: reopening accounts for elapsed time using the badge clock. If it
-finished while away, the app records one completion and prepares the next paused
-phase. It cannot display an alert while another app is running. **B** pauses the
-timer; **Home** saves it without pausing. An unset or backward-moving badge clock
-pauses restoration safely and shows a notice. Running timers checkpoint once per
-minute as well as on actions and normal exit.
+Once the badge gateway and web pairing flow are activated:
 
-This alpha uses SQLite and the real PowerSync 0.5.4 core for a local-only table.
-There is no account pairing, network sync, or AI connection in this build.
-Mochi's acknowledgements are local text. The package contains no credentials.
+1. Sign in to the web app and choose **Pair a badge** to display a short-lived,
+   12-symbol code containing only A, B, and C.
+2. Open Badgegotchi on the badge. Press and release A, B, or C for each symbol;
+   **Up** erases a symbol. The completed code submits automatically.
+3. Compare the verification ID on the badge with the claim in the web app.
+   Approve that exact ID only when they match.
+
+The badge saves the approved device credential in its private state directory.
+Later launches reconnect automatically without another code. Network failures
+retain pending pairing and saved credentials for retry. The web app can list
+and revoke paired devices; its last-contact time is historical, not proof that
+a badge is online. Signing out of the web app does not revoke a paired badge.
+Use the badge's existing configured Wi-Fi; the app does not replace its Wi-Fi
+settings or launcher.
+
+## Controls and shared data
+
+Once paired:
+
+- **A:** pet the capybara; this interaction stays on the badge.
+- **B:** start or pause the local 40-minute focus / 10-minute break timer.
+- **C:** log water for your account.
+- **Up:** log movement for your account.
+- **Down:** show or hide account totals, queued events, and retained local history.
+- **Home:** save, close the connection and database, and return to the launcher.
+
+Water and movement events enter a durable, bounded upload queue and retry after
+connectivity returns. The daily account summary uses UTC dates. PowerSync reads
+at most three current account records: pet details and speech, the account's
+current timer projection, and the daily wellness summary. The artwork remains
+the bundled capybara. The badge does not request AI responses or write pet state.
+
+The badge timer is explicitly **local**: its controls and completed sessions do
+not update the account timer. The downloaded account timer record does not
+control it. A completed local focus phase prepares a paused break; a completed
+break prepares a paused focus phase. A running timer counts time away using the
+badge clock and records at most one completion when reopened. **Home** saves
+without pausing; **B** pauses. An unset or backward-moving clock pauses timer
+restoration safely. No timer alert can appear while another app is running.
+
+A connection alone does not mean all changes have synced. `SYNCED` requires an
+empty upload queue and a completed PowerSync checkpoint covering accepted
+uploads. When the 16-event queue is full, additional wellness events are refused
+with a message instead of silently discarded.
 
 ## Install
 
 The supported device is the tested Pimoroni Tufty 2350, MicroPython 1.29.0,
 Badgeware `bw-1.29.0-gc` dated 2026-09-22, native ABI `_mpy=7942` and softfp.
-The app checks this runtime before importing native code. Other firmware builds
-need qualification; installing the app does not upgrade firmware.
+The app checks this runtime and its native module identity before loading native
+code. Other firmware builds need qualification. This app does not upgrade firmware.
 
-1. Double-tap the rear Reset button to expose Badgeware's USB disk.
-2. Extract the ZIP. Copy only its `apps/badgegotchi` folder into the disk's
-   existing `apps` folder. Keep the other folders and files in place.
-3. If `badgegotchi` already exists, stop. This first installer does not perform
-   upgrades or overwrite existing app folders.
-4. Safely eject the USB disk, then press Reset to return to Badgeware.
-5. Select `badgegotchi` in the launcher.
+Use a qualified release after its backend has been activated:
 
-The RP2350 BOOTSEL drive is a different mode. This package has no UF2 image.
+1. Double-tap rear Reset to expose Badgeware's USB disk.
+2. Extract the ZIP. Copy only `apps/badgegotchi` into the disk's existing `apps`
+   folder, keeping the other folders and files in place.
+3. If `badgegotchi` already exists, stop. The first-install flow does not overwrite
+   app folders; use the repository's reviewed update procedure with backups.
+4. Safely eject the disk and press Reset to return to Badgeware.
+5. Select `badgegotchi` in the launcher and complete pairing.
+
+The RP2350 BOOTSEL drive is a different mode. This package contains no UF2 image.
+The alpha.3 update and its first pairing still require live qualification.
 
 ## Data and limits
 
-Saved progress lives separately in `/state/badgegotchi`, guarded by an owner
-marker. Removing the app folder leaves its data intact. This app never adopts
-or resets an unrelated state directory.
+SQLite progress lives in owner-marked `/state/badgegotchi`. Pairing credentials
+and pending wellness events live separately in `/state/badgegotchi-pairing`.
+Neither directory is part of the app package. Removing the app folder leaves
+saved data intact. The app never adopts or resets an unrelated state directory.
 
-Version 0.1.0-alpha.2 adds a saved clock anchor to recognized alpha.1 data in one
-transaction, retaining existing counts and timer progress. An older paused timer
-stays paused until B starts it; no elapsed time is invented for old data.
+Recognized alpha.1/alpha.2 data migrates additively to schema 3, keeping the local
+timer and counters plus a separate snapshot of progress before pairing. Historical
+local counts are not uploaded as account events. Downgrading only the app after
+migration is unsupported. Do not delete saved state to dismiss an error.
 
 The runtime lacks file truncation. The app uses DELETE journaling, one
-connection, a bounded database, and no WAL or VACUUM. If it finds a leftover
-nonempty journal, unknown schema, damaged data, or insufficient space, it stops
-and preserves the files. Copy diagnostics for investigation; do not delete the
-database or journal to dismiss the error. Power-loss recovery is not qualified.
+connection, a 128 KiB database limit, a 16-event upload queue, and bounded sync
+frames. A leftover nonempty journal, unknown schema, damaged data, or insufficient
+space stops the app while preserving files. Power-loss recovery, fixed-arena
+exhaustion, and indefinite operation remain unqualified. The normal watchdog
+stays active.
 
-The native core uses a fixed 256 KiB allocator; broader workloads and low-memory
-recovery remain experimental. The normal badge watchdog stays active. See the
-repository's `badge/README.md` and `experiments/badgeware-native/README.md` for
-build instructions, measured tests, and remaining limitations.
-
-Artwork and bundled dependency attribution are in `THIRD_PARTY_NOTICES.txt`.
+The package includes a public CA certificate, not a private key or device
+credential. Credentials are generated on the badge under the reviewed stock
+runtime RNG assumptions. See the repository's `badge/README.md` and
+`experiments/badge-pairing-preflight/entropy-review.md` for the evidence and limits.
+Artwork, dependency, and CA provenance are in `THIRD_PARTY_NOTICES.txt`.
