@@ -1,0 +1,63 @@
+POMOGOTCHI_SOURCE
+"""Badge-only Pomogotchi art/UX stub; no network or AI calls."""
+
+import badgeware
+from time import ticks_ms, ticks_diff
+
+from pomo_state import PreviewState
+from pomo_view import PetView
+
+
+badge.mode(HIRES | VSYNC)
+state = PreviewState()
+view = PetView(screen, color, font, image, rect, "assets/capybara.png")
+last_tick = ticks_ms()
+
+
+def update():
+    global last_tick
+    now = ticks_ms()
+    state.step(badge.held(BUTTON_A), ticks_diff(now, last_tick))
+    last_tick = now
+    view.draw(state)
+
+
+run(update)
+
+DOTSBOXES_FILES ['__init__.py', '.___init__.py', 'game.py', '._game.py', 'controls.py', '._controls.py', 'view.py', '._view.py', 'icon.png', '._icon.png']
+DOTSBOXES_SOURCE
+"""Dots & Boxes: two humans, one Tufty 2350."""
+
+import badgeware  # Installs the badge, screen, font, and input builtins.
+from time import ticks_ms, ticks_diff
+
+from controls import Controller
+from view import View
+
+
+badge.mode(HIRES | VSYNC)
+controller = Controller()
+view = View(screen, color, font)
+last_tick = ticks_ms()
+buttons = (
+    (BUTTON_A, "left"),
+    (BUTTON_C, "right"),
+    (BUTTON_UP, "up"),
+    (BUTTON_DOWN, "down"),
+    (BUTTON_B, "b"),
+)
+
+
+def update():
+    global last_tick
+    now = ticks_ms()
+    elapsed = ticks_diff(now, last_tick)
+    last_tick = now
+    held = [name for button, name in buttons if badge.held(button)]
+    controller.step(held, elapsed)
+    view.draw(controller)
+
+
+# Badgeware imports apps. Its loop also handles HOME and display updates.
+run(update)
+

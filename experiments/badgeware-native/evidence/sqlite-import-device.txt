@@ -1,0 +1,41 @@
+Local directory . is mounted at /remote
+BEFORE_SQLITE_IMPORT 8202560 4942
+Traceback (most recent call last):
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/serial/serialposix.py", line 575, in read
+    buf = os.read(self.fd, size - len(read))
+OSError: [Errno 6] Device not configured
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/bin/mpremote", line 12, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/main.py", line 622, in main
+    handler_func(state, args)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/commands.py", line 500, in do_exec
+    _do_execbuffer(state, args.expr[0], args.follow)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/commands.py", line 489, in _do_execbuffer
+    ret, ret_err = state.transport.follow(timeout=None, data_consumer=stdout_write_bytes)
+                   ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 220, in follow
+    data = self.read_until(1, b"\x04", timeout=timeout, data_consumer=data_consumer)
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 158, in read_until
+    if self.is_pty or self.serial.inWaiting() > 0:
+                      ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 1068, in inWaiting
+    self._check_input(False)
+    ~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 1049, in _check_input
+    PyboardCommand.cmd_table[c](self.cmd)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 936, in do_read
+    fd = self.rd_s8()
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 823, in rd_s8
+    return struct.unpack("<b", self.fin.read(1))[0]
+                               ~~~~~~~~~~~~~^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/serial/serialposix.py", line 581, in read
+    raise SerialException('read failed: {}'.format(e))
+serial.serialutil.SerialException: read failed: [Errno 6] Device not configured

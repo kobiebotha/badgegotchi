@@ -1,0 +1,46 @@
+CC badgeprobe.c
+arm-none-eabi-gcc -I. -I../vendor/micropython-41d1e007537f9b15cf13a9436228dd59d6485eca -std=c99 -Os -Wall -Werror -DNDEBUG -DNO_QSTR -DMICROPY_ENABLE_DYNRUNTIME -DMP_CONFIGFILE='<build/badgeprobe.config.h>' -fpic -fno-common -U_FORTIFY_SOURCE  -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT -DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_C -mfloat-abi=softfp -o build/badgeprobe.o -c badgeprobe.c
+LINK build/badgeprobe.o
+python3 ../vendor/micropython-41d1e007537f9b15cf13a9436228dd59d6485eca/tools/mpy_ld.py '-vvv' --arch armv7emsp --qstrs build/badgeprobe.config.h  -o build/badgeprobe.mpy build/badgeprobe.o
+qstr vals: answer, float_probe, locations
+Generating trampoline jumping to mpy_init at address 000000e5 to fit in 4 byte(s)
+sections:
+  00000004 .text size=320
+  00000000 .bss size=4
+  00000144 .rodata size=20
+  00000158 .data.rel.ro size=24
+  00000170 GOT size=12
+GOT: 00000170
+  00000000 mp_fun_table -> .external+00000000
+  00000004 mp_native_qstr_table -> .external.qstr_table+00000000
+  00000008 calls -> .bss+00000000
+build/badgeprobe.o: .text relocations via .rel.text:
+  00000030 _GLOBAL_OFFSET_TABLE_ -> 00000170
+  00000034 calls -> 00000008
+  00000038 mp_fun_table -> 00000000
+  00000068 _GLOBAL_OFFSET_TABLE_ -> 00000170
+  0000006c mp_fun_table -> 00000000
+  000000d0 _GLOBAL_OFFSET_TABLE_ -> 00000170
+  000000d4 mp_fun_table -> 00000000
+  000000d8 answer -> 00000005
+  000000dc .rodata -> 00000144
+  000000e0 calls -> 00000008
+  00000130 _GLOBAL_OFFSET_TABLE_ -> 00000170
+  00000134 mp_fun_table -> 00000000
+  00000138 .data.rel.ro -> 00000158
+  0000013c calls -> 00000008
+  00000140 mp_native_qstr_table -> 00000004
+build/badgeprobe.o: .data.rel.ro relocations via .rel.data.rel.ro:
+  00000158 -> mp_type_fun_builtin_1 00000000
+  0000015c -> answer 00000005
+  00000160 -> mp_type_fun_builtin_1 00000000
+  00000164 -> float_probe 0000003d
+  00000168 -> mp_type_fun_builtin_1 00000000
+  0000016c -> locations 00000071
+arch:         EM_ARM
+text size:    380
+bss size:     4
+GOT entries:  3
+GEN badgeprobe.mpy
+python3 ../vendor/micropython-41d1e007537f9b15cf13a9436228dd59d6485eca/tools/mpy-tool.py --merge -o badgeprobe.mpy build/badgeprobe.mpy
+4151d04a6f5f38acf33eb5347975d8b67a68d6ccb9c863359ca4f3710cd11a4c  badgeprobe.mpy

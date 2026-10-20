@@ -1,0 +1,1345 @@
+{
+  "module.o": {
+    "allocated": [
+      {
+        "name": ".text",
+        "bytes": 1424,
+        "type": "SHT_PROGBITS",
+        "flags": 6
+      },
+      {
+        "name": ".rodata.str1.1",
+        "bytes": 206,
+        "type": "SHT_PROGBITS",
+        "flags": 50
+      },
+      {
+        "name": ".data.rel.ro.sql_stats_obj",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.sql_exec_obj",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.sql_close_obj",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.sql_configure_obj",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.sql_open_obj",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_vfs",
+        "bytes": 88,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_sqlite_ready",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_db",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_wsd_used",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_wsd_count",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_wsd_items",
+        "bytes": 512,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_wsd_bytes",
+        "bytes": 16384,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_sqlite_arena",
+        "bytes": 262144,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      }
+    ],
+    "relocation_types": {
+      "10": 24,
+      "25": 9,
+      "26": 27,
+      "3": 20,
+      "30": 1,
+      "2": 10
+    },
+    "undefined_symbols": [
+      "_GLOBAL_OFFSET_TABLE_",
+      "badge_io",
+      "badge_vfs_install",
+      "memcpy",
+      "memset",
+      "mp_fun_table",
+      "mp_native_qstr_table",
+      "mp_type_fun_builtin_0",
+      "mp_type_fun_builtin_1",
+      "sqlite3_close",
+      "sqlite3_column_bytes",
+      "sqlite3_column_count",
+      "sqlite3_column_text",
+      "sqlite3_config",
+      "sqlite3_errmsg",
+      "sqlite3_finalize",
+      "sqlite3_free",
+      "sqlite3_initialize",
+      "sqlite3_libversion",
+      "sqlite3_memory_highwater",
+      "sqlite3_memory_used",
+      "sqlite3_open",
+      "sqlite3_powersync_init",
+      "sqlite3_prepare_v2",
+      "sqlite3_step",
+      "sqlite3_vfs_register",
+      "strcmp",
+      "strlen"
+    ]
+  },
+  "sqlite_port.o": {
+    "allocated": [
+      {
+        "name": ".text",
+        "bytes": 347572,
+        "type": "SHT_PROGBITS",
+        "flags": 6
+      },
+      {
+        "name": ".rodata.str1.1",
+        "bytes": 23054,
+        "type": "SHT_PROGBITS",
+        "flags": 50
+      },
+      {
+        "name": ".rodata.CSWTCH.5855",
+        "bytes": 15,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.totals.0",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.delays.1",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aFlagOp.2",
+        "bytes": 336,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.memsys5Methods.3",
+        "bytes": 32,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.defaultMethods.4",
+        "bytes": 52,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.azOne.5",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.lenOne.6",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azType.7",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aEditType.8",
+        "bytes": 3,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azInsType.9",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aNull.10",
+        "bytes": 1,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.emptyArray.11",
+        "bytes": 1,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.emptyObject.12",
+        "bytes": 1,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.aJsonFunc.13",
+        "bytes": 1440,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aMx.14",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.aDateTimeFuncs.15",
+        "bytes": 400,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aWindowFuncs.16",
+        "bytes": 600,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aAlterTableFuncs.17",
+        "bytes": 360,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aBuiltinFunc.18",
+        "bytes": 2880,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.defaultMethods.19",
+        "bytes": 32,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.statemap.20",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.trans.21",
+        "bytes": 64,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aMap.22",
+        "bytes": 5,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aKeyword.23",
+        "bytes": 3,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.openBlob.24",
+        "bytes": 24,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.nullMem.25",
+        "bytes": 40,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aCopy.26",
+        "bytes": 10,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aShift.27",
+        "bytes": 7,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aLen.28",
+        "bytes": 10,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.fakeCursor.29",
+        "bytes": 1,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azTypes.30",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aFlag.31",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aShift.32",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aFlag.33",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aMask.34",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.or_logic.35",
+        "bytes": 9,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.and_logic.36",
+        "bytes": 9,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azType.37",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.azMsg.38",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aTable.39",
+        "bytes": 24,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.detach_func.40",
+        "bytes": 40,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aOpenMode.41",
+        "bytes": 40,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aCacheMode.42",
+        "bytes": 24,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.attach_func.43",
+        "bytes": 40,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.azEnc.44",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.iValue.45",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.zText.46",
+        "bytes": 25,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.iOffset.47",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.iLength.48",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azModeName.49",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.readCookie.50",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.setCookie.51",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.endCode.52",
+        "bytes": 28,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aStdTypeMask.53",
+        "bytes": 6,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azOrigin.54",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.setMeta6.55",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.autoIncEnd.56",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.tNew.57",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.tOld.58",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.zKeyText.59",
+        "bytes": 34,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aKeyword.60",
+        "bytes": 21,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aStart.61",
+        "bytes": 2,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aStep.62",
+        "bytes": 2,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aEndOp.63",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aStartOp.64",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.aOp.65",
+        "bytes": 32,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.ops.66",
+        "bytes": 2,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azErr.67",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aOp.68",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.x.69",
+        "bytes": 32,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aVal.70",
+        "bytes": 10,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azAlterType.71",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.azType.72",
+        "bytes": 24,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.a.73",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.aUp.74",
+        "bytes": 128,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.tkCoalesce.76",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aType.77",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.emptyObject.78",
+        "bytes": 2,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aSpecial.79",
+        "bytes": 32,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.azModule.80",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.nullRow.81",
+        "bytes": 6,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aCode.82",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.az.83",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.azAff.84",
+        "bytes": 24,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.zAff.85",
+        "bytes": 10,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aEnc.86",
+        "bytes": 3,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.autoInc.87",
+        "bytes": 48,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.dummy.88",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.aMsg.89",
+        "bytes": 116,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aType.90",
+        "bytes": 64,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.zFake.91",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aMJNeeded.92",
+        "bytes": 6,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.zeroHdr.93",
+        "bytes": 28,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.zerobyte.94",
+        "bytes": 1,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.chacha20_init.95",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aBase.96",
+        "bytes": 216,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aScale.97",
+        "bytes": 208,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aScaleLo.98",
+        "bytes": 104,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.zOrd.99",
+        "bytes": 9,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.nullElement.100",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.jsonEachModule",
+        "bytes": 100,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aNanInfName",
+        "bytes": 80,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.jsonIsOk",
+        "bytes": 256,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.jsonSpaces",
+        "bytes": 5,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.jsonIsSpace",
+        "bytes": 256,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.jsonbType",
+        "bytes": 68,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.aHardLimit",
+        "bytes": 60,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aKWCode",
+        "bytes": 148,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aKWOffset",
+        "bytes": 296,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aKWLen",
+        "bytes": 148,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aKWNext",
+        "bytes": 148,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aKWHash",
+        "bytes": 127,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.zKWText",
+        "bytes": 666,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aiClass",
+        "bytes": 256,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yyRuleInfoNRhs",
+        "bytes": 412,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yyRuleInfoLhs",
+        "bytes": 824,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yyFallback",
+        "bytes": 374,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yy_default",
+        "bytes": 1200,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yy_reduce_ofst",
+        "bytes": 848,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yy_shift_ofst",
+        "bytes": 1200,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yy_lookahead",
+        "bytes": 5132,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.yy_action",
+        "bytes": 4758,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.lagName",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.leadName",
+        "bytes": 5,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.first_valueName",
+        "bytes": 12,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.nth_valueName",
+        "bytes": 10,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.last_valueName",
+        "bytes": 11,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.ntileName",
+        "bytes": 6,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.cume_distName",
+        "bytes": 10,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.percent_rankName",
+        "bytes": 13,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.rankName",
+        "bytes": 5,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.dense_rankName",
+        "bytes": 11,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.row_numberName",
+        "bytes": 11,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.pragmaVtabModule",
+        "bytes": 100,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.aPragmaName",
+        "bytes": 992,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.pragCName",
+        "bytes": 228,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.sqlite3Autoext",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.hexdigits",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.likeInfoAlt",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.likeInfoNorm",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.globInfo",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.statGetFuncdef",
+        "bytes": 40,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.statPushFuncdef",
+        "bytes": 40,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.statInitFuncdef",
+        "bytes": 40,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.MemJournalMethods",
+        "bytes": 76,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".data.rel.ro.local.azExplainColNames8",
+        "bytes": 48,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.sqlite3SmallTypeSizes",
+        "bytes": 128,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.zMagicHeader",
+        "bytes": 16,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aJournalMagic",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.pcache1_g",
+        "bytes": 100,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3DigitPairs",
+        "bytes": 202,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3Utf8Trans1",
+        "bytes": 64,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3SavedPrng",
+        "bytes": 132,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3Prng",
+        "bytes": 132,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.fmtinfo",
+        "bytes": 175,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aPrefix",
+        "bytes": 7,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aHex",
+        "bytes": 17,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aDigits",
+        "bytes": 33,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.mem0",
+        "bytes": 32,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.mem5",
+        "bytes": 144,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3Hooks",
+        "bytes": 8,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.vfsList",
+        "bytes": 4,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.aXformType",
+        "bytes": 96,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.statMutex",
+        "bytes": 10,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3Stat",
+        "bytes": 80,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.sqlite3StdType",
+        "bytes": 24,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.sqlite3StdTypeAffinity",
+        "bytes": 6,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3StdTypeLen",
+        "bytes": 6,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3StrBINARY",
+        "bytes": 7,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3OpcodeProperty",
+        "bytes": 191,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".bss.sqlite3TreeTrace",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.sqlite3OomStr",
+        "bytes": 24,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".bss.sqlite3BuiltinFunctions",
+        "bytes": 92,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.sqlite3Config",
+        "bytes": 272,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3CtypeMap",
+        "bytes": 256,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".rodata.sqlite3UpperToLower",
+        "bytes": 274,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      },
+      {
+        "name": ".data.rel.ro.local.sqlite3azCompileOpt",
+        "bytes": 204,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.sqlite3WhereTrace",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.sqlite3_data_directory",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.sqlite3_temp_directory",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      },
+      {
+        "name": ".rodata.sqlite3_version",
+        "bytes": 7,
+        "type": "SHT_PROGBITS",
+        "flags": 2
+      }
+    ],
+    "relocation_types": {
+      "3": 1695,
+      "10": 2006,
+      "25": 19,
+      "26": 23,
+      "30": 127,
+      "2": 765
+    },
+    "undefined_symbols": [
+      "_GLOBAL_OFFSET_TABLE_",
+      "__aeabi_d2iz",
+      "__aeabi_d2lz",
+      "__aeabi_d2ulz",
+      "__aeabi_dadd",
+      "__aeabi_dcmpeq",
+      "__aeabi_dcmpge",
+      "__aeabi_dcmpgt",
+      "__aeabi_dcmple",
+      "__aeabi_dcmplt",
+      "__aeabi_ddiv",
+      "__aeabi_dmul",
+      "__aeabi_dsub",
+      "__aeabi_f2d",
+      "__aeabi_i2d",
+      "__aeabi_l2d",
+      "__aeabi_ldivmod",
+      "__aeabi_ul2d",
+      "__aeabi_uldivmod",
+      "fabs",
+      "memchr",
+      "memcmp",
+      "memcpy",
+      "memmove",
+      "memset",
+      "sqlite3_os_end",
+      "sqlite3_os_init",
+      "sqlite3_wsd_find",
+      "sqlite3_wsd_init",
+      "strchr",
+      "strcmp",
+      "strcspn",
+      "strlen",
+      "strncmp",
+      "strrchr",
+      "strspn"
+    ]
+  },
+  "libc_shim.o": {
+    "allocated": [
+      {
+        "name": ".text",
+        "bytes": 192,
+        "type": "SHT_PROGBITS",
+        "flags": 6
+      }
+    ],
+    "relocation_types": {
+      "10": 2
+    },
+    "undefined_symbols": []
+  },
+  "vfs.o": {
+    "allocated": [
+      {
+        "name": ".text",
+        "bytes": 1280,
+        "type": "SHT_PROGBITS",
+        "flags": 6
+      },
+      {
+        "name": ".rodata.str1.1",
+        "bytes": 20,
+        "type": "SHT_PROGBITS",
+        "flags": 50
+      },
+      {
+        "name": ".data.rel.ro.local.badge_io_methods",
+        "bytes": 76,
+        "type": "SHT_PROGBITS",
+        "flags": 3
+      },
+      {
+        "name": ".bss.badge_io",
+        "bytes": 4,
+        "type": "SHT_NOBITS",
+        "flags": 3
+      }
+    ],
+    "relocation_types": {
+      "25": 12,
+      "26": 14,
+      "3": 5,
+      "10": 7,
+      "2": 12
+    },
+    "undefined_symbols": [
+      "_GLOBAL_OFFSET_TABLE_",
+      "badge_vfs",
+      "memcpy",
+      "memset",
+      "mp_fun_table",
+      "strlen"
+    ]
+  }
+}

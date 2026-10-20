@@ -1,0 +1,8 @@
+vendor/
+**/build/
+**/build-*/
+**/.mpy_ld_cache-*/
+**/*.mpy
+sqlite-audit/sqlite3-adapted.inc
+**/__pycache__/
+evidence/*-private.json

@@ -1,0 +1,21 @@
+/bin/mkdir -p build
+GEN build/badgeprobe.config.h
+python3 ../vendor/micropython-41d1e007537f9b15cf13a9436228dd59d6485eca/tools/mpy_ld.py '-vvv' --arch armv7emsp --preprocess -o build/badgeprobe.config.h badgeprobe.c
+CC badgeprobe.c
+arm-none-eabi-gcc -I. -I../vendor/micropython-41d1e007537f9b15cf13a9436228dd59d6485eca -std=c99 -Os -Wall -Werror -DNDEBUG -DNO_QSTR -DMICROPY_ENABLE_DYNRUNTIME -DMP_CONFIGFILE='<build/badgeprobe.config.h>' -fpic -fno-common -U_FORTIFY_SOURCE  -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT -DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_C -o build/badgeprobe.o -c badgeprobe.c
+LINK build/badgeprobe.o
+python3 ../vendor/micropython-41d1e007537f9b15cf13a9436228dd59d6485eca/tools/mpy_ld.py '-vvv' --arch armv7emsp --qstrs build/badgeprobe.config.h  -o build/badgeprobe.mpy build/badgeprobe.o
+qstr vals: answer, float_probe, locations
+Generating trampoline jumping to mpy_init at address 000000dd to fit in 4 byte(s)
+sections:
+  00000004 .text size=324
+  00000000 .bss size=4
+  00000148 .rodata size=20
+  0000015c .data.rel.ro size=24
+  00000174 GOT size=8
+GOT: 00000174
+  00000000 mp_fun_table -> .external+00000000
+  00000004 mp_native_qstr_table -> .external.qstr_table+00000000
+build/badgeprobe.o: .text relocations via .rel.text:
+LinkError: build/badgeprobe.o: fixed relocation to bss (bss variables can't be static)
+make: *** [build/badgeprobe.mpy] Error 1

@@ -1,0 +1,1994 @@
+{
+  "core_version": "0.5.4",
+  "core_commit": "0ed9f4edba418a4f8ae7cb0594da683cd79a81b5",
+  "target": "thumbv8m.main-none-eabi",
+  "archive_sha256": "d5b146ff16d488beb8038a43d32754c4c7e2a1fcfb1543033bf13c6a52b20e60",
+  "archive_bytes": 6824824,
+  "archive_members": 492,
+  "main_member": "powersync-00934514d4ad0916.powersync.dbe5e5fd77fbe0c4-cgu.0.rcgu.o",
+  "main_object_sha256": "79a8ebd442e120a994174f0f6fd82e0cd0f52035d424c4b0de635ab4fc774602",
+  "allocated_section_bytes": 312269,
+  "writable_sections": [
+    {
+      "name": ".data.rel.ro..Lanon.3d25dbed13851908d56eac9eadc9df8f.25",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.3d25dbed13851908d56eac9eadc9df8f.33",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.3d25dbed13851908d56eac9eadc9df8f.34",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.3d25dbed13851908d56eac9eadc9df8f.37",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.31",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.85",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.94",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.98",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.110",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.111",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.112",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.113",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.114",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.167",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.168",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.194",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.196",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.223",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.226",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.230",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.232",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.234",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.235",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.243",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.245",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.249",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.254",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.255",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.256",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.257",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.258",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.265",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.266",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.267",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.271",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.272",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.273",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.407",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.803c396fce8f3eea7b2c23d9b0700c9b.408",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.0409733707a68ee0e7512a31c2ce6f78.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.0409733707a68ee0e7512a31c2ce6f78.8",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.2",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.14",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.16",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.24",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.26",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.28",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.30",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.31",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.33",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.35",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.36",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.38",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.cf98924c48bf8220b5cc60ab08076444.40",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.14",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.45",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.51",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.67",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.72",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.75",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.79",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.82",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.88",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.89",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.90",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.92",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.94",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.95",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.97",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.98",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.101",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.103",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.105",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.106",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.110",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.112",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.113",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.114",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.115",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.116",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.117",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.122",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.124",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.126",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a3e8487dbdd5f3e90a551b350e4588f4.129",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.2",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.9",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.16",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.24",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.29",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.33",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.38",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.42",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.44",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.61267174521a76eee75ef4129d89719f.52",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.30",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.31",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.32",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.33",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.36",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.870a9099d23c096c52859a8f7f18bdfa.41",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eee7e51b0a3fbdb5c90a32f64d75d8bf.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eee7e51b0a3fbdb5c90a32f64d75d8bf.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eee7e51b0a3fbdb5c90a32f64d75d8bf.23",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eee7e51b0a3fbdb5c90a32f64d75d8bf.27",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eee7e51b0a3fbdb5c90a32f64d75d8bf.28",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.29",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.30",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.61",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.62",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.76",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.77",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.81",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.82",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.83",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.85",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.88",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.89",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.57ad7225cbd5744ae2050f53d67f5c75.90",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9a2abff8a1de1afc9a10b40fc28c0be8.2",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9a2abff8a1de1afc9a10b40fc28c0be8.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9a2abff8a1de1afc9a10b40fc28c0be8.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9a2abff8a1de1afc9a10b40fc28c0be8.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9a2abff8a1de1afc9a10b40fc28c0be8.16",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.10",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.12",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.13",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.14",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.15",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.16",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.18",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.19",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.20",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.21",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.22",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.23",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.24",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.25",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.26",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.27",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.62",
+      "type": "PROGBITS",
+      "bytes": 32,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.84",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.87",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.aa28f6da8efa3c1e9805029a5d8b63a7.102",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ecd11e4066849f824b6f2bd635c4538d.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ecd11e4066849f824b6f2bd635c4538d.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ecd11e4066849f824b6f2bd635c4538d.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ecd11e4066849f824b6f2bd635c4538d.32",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ecd11e4066849f824b6f2bd635c4538d.36",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ecd11e4066849f824b6f2bd635c4538d.37",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ecd11e4066849f824b6f2bd635c4538d.44",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.0",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.1",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.2",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.8",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.10",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.11",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.12",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.35",
+      "type": "PROGBITS",
+      "bytes": 48,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.49",
+      "type": "PROGBITS",
+      "bytes": 88,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.74",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.81",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.87",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.16d4e2993596376e17a4f02be547eb92.97",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a22cd49c4e7d415856e61a260ece8501.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a22cd49c4e7d415856e61a260ece8501.55",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a22cd49c4e7d415856e61a260ece8501.56",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a22cd49c4e7d415856e61a260ece8501.61",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ebfc766e2c623d2c9c5207ca9bb9ba53.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ebfc766e2c623d2c9c5207ca9bb9ba53.10",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ebfc766e2c623d2c9c5207ca9bb9ba53.25",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ebfc766e2c623d2c9c5207ca9bb9ba53.58",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ebfc766e2c623d2c9c5207ca9bb9ba53.59",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.0",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.8",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.11",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.13",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.14",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.15",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.16",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.38",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.a98dcae7b950d844356fb6d8de8c9913.39",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.1",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.11",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.17",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.19",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.26",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.27",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro._ZN14powersync_core14pre_close_vtab6MODULE17h5e3375683fb2756eE",
+      "type": "PROGBITS",
+      "bytes": 100,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.56",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.84",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.110",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.117",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.118",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.119",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.130",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.131",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.133",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.8d37452f0e3f82b25a124e777cca8bc2.134",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.12",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.16",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.18",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.65",
+      "type": "PROGBITS",
+      "bytes": 32,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.114",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.115",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.121",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.122",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.128",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.129",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.130",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.139",
+      "type": "PROGBITS",
+      "bytes": 8,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88929e27b178969230ded8170fa00341.154",
+      "type": "PROGBITS",
+      "bytes": 40,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.2",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.10",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.19",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.20",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.21",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.22",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.23",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.24",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.25",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.26",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.28",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.31",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.32",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.33",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro._ZN14powersync_core9crud_vtab6MODULE17h8a73e97647e41c70E",
+      "type": "PROGBITS",
+      "bytes": 100,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.eae710cd1c6c3cfef0cee9d6f600e809.50",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.db132951eff4cd7ab962d343b172559b.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.db132951eff4cd7ab962d343b172559b.16",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.db132951eff4cd7ab962d343b172559b.19",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.7ac37410a53863206bafc864948b4833.44",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.7ac37410a53863206bafc864948b4833.74",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.1",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.8",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.10",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.11",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.12",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.14",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.9074381509c3e71cb9e3ba623a1a0976.16",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88734ac1f7f8e70524504122a3531a90.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88734ac1f7f8e70524504122a3531a90.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88734ac1f7f8e70524504122a3531a90.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.88734ac1f7f8e70524504122a3531a90.8",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.10",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.11",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.12",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.13",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.14",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.17",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.18",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.19",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.20",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.faf70a95d79cf28c799c033e52585682.21",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.7838e129a64f5a8bd6b6cd415e3fddae.0",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.7838e129a64f5a8bd6b6cd415e3fddae.18",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.7838e129a64f5a8bd6b6cd415e3fddae.26",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.1",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.2",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.7",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.9",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.10",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.68d043c77e44c4358884364177cb9adc.11",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.b693e84acb701d24f93fc8adfcd2152c.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.b693e84acb701d24f93fc8adfcd2152c.5",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.b693e84acb701d24f93fc8adfcd2152c.6",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.b693e84acb701d24f93fc8adfcd2152c.7",
+      "type": "PROGBITS",
+      "bytes": 24,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.ac95b45b1cdc51b2b2971e28d08c0dd8.4",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.d1d3b9977ea02df9cb67c175d2517ae4.2",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.d1d3b9977ea02df9cb67c175d2517ae4.3",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.d1d3b9977ea02df9cb67c175d2517ae4.19",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.d1d3b9977ea02df9cb67c175d2517ae4.20",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.d1d3b9977ea02df9cb67c175d2517ae4.21",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lanon.d1d3b9977ea02df9cb67c175d2517ae4.22",
+      "type": "PROGBITS",
+      "bytes": 16,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lswitch.table._RNvXs3_NtNtCs6hfeTR78s07_4core3num5errorNtB5_13ParseIntErrorNtNtB9_3fmt7Display3fmt.4050",
+      "type": "PROGBITS",
+      "bytes": 20,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lswitch.table._ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3fmt17hc07f2d01dbc0b622E.4052",
+      "type": "PROGBITS",
+      "bytes": 72,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lswitch.table._ZN83_$LT$powersync_core..utils..sql_buffer..WriteType$u20$as$u20$core..fmt..Display$GT$3fmt17he3a0f9f78672538bE",
+      "type": "PROGBITS",
+      "bytes": 12,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lswitch.table._ZN89_$LT$powersync_core..utils..sql_buffer..CrudTriggerName$u20$as$u20$core..fmt..Display$GT$3fmt17h6d7a81c719c890c5E",
+      "type": "PROGBITS",
+      "bytes": 12,
+      "flags": "WA"
+    },
+    {
+      "name": ".data.rel.ro..Lswitch.table._ZN14powersync_core5utils10sql_buffer9SqlBuffer26insert_into_powersync_crud17hca02ed94a47f578fE.4053",
+      "type": "PROGBITS",
+      "bytes": 12,
+      "flags": "WA"
+    }
+  ],
+  "relocations": {
+    "R_ARM_ABS32": 10145,
+    "R_ARM_GOT_PREL": 4,
+    "R_ARM_PREL31": 1923,
+    "R_ARM_REL32": 2462,
+    "R_ARM_THM_CALL": 8674,
+    "R_ARM_THM_JUMP24": 1157
+  },
+  "unresolved_main": [
+    "__aeabi_d2lz",
+    "__aeabi_dcmpeq",
+    "__aeabi_dcmpge",
+    "__aeabi_dcmpgt",
+    "__aeabi_dcmpun",
+    "__aeabi_ddiv",
+    "__aeabi_dmul",
+    "__aeabi_dsub",
+    "__aeabi_f2d",
+    "__aeabi_llsl",
+    "__aeabi_llsr",
+    "__aeabi_memclr4",
+    "__aeabi_memclr8",
+    "__aeabi_memcpy",
+    "__aeabi_memcpy4",
+    "__aeabi_memcpy8",
+    "__aeabi_memmove",
+    "__aeabi_memmove4",
+    "__aeabi_memmove8",
+    "__aeabi_memset",
+    "__aeabi_ul2d",
+    "__aeabi_uldivmod",
+    "fmod",
+    "memcmp",
+    "sqlite3_auto_extension",
+    "sqlite3_bind_double",
+    "sqlite3_bind_int",
+    "sqlite3_bind_int64",
+    "sqlite3_bind_null",
+    "sqlite3_bind_parameter_count",
+    "sqlite3_bind_text",
+    "sqlite3_column_bytes",
+    "sqlite3_column_int",
+    "sqlite3_column_int64",
+    "sqlite3_column_text",
+    "sqlite3_column_type",
+    "sqlite3_commit_hook",
+    "sqlite3_context_db_handle",
+    "sqlite3_create_function_v2",
+    "sqlite3_create_module_v2",
+    "sqlite3_declare_vtab",
+    "sqlite3_errmsg",
+    "sqlite3_exec",
+    "sqlite3_finalize",
+    "sqlite3_free",
+    "sqlite3_get_autocommit",
+    "sqlite3_libversion",
+    "sqlite3_libversion_number",
+    "sqlite3_malloc",
+    "sqlite3_prepare_v3",
+    "sqlite3_randomness",
+    "sqlite3_realloc",
+    "sqlite3_reset",
+    "sqlite3_result_error",
+    "sqlite3_result_error_code",
+    "sqlite3_result_int",
+    "sqlite3_result_int64",
+    "sqlite3_result_null",
+    "sqlite3_result_subtype",
+    "sqlite3_result_text",
+    "sqlite3_result_value",
+    "sqlite3_rollback_hook",
+    "sqlite3_sql",
+    "sqlite3_step",
+    "sqlite3_update_hook",
+    "sqlite3_user_data",
+    "sqlite3_value_blob",
+    "sqlite3_value_bytes",
+    "sqlite3_value_int",
+    "sqlite3_value_int64",
+    "sqlite3_value_text",
+    "sqlite3_value_type",
+    "sqlite3_vtab_config",
+    "strlen"
+  ],
+  "caveat": "Object/archive inspection only: neither .mpy link success nor device execution."
+}

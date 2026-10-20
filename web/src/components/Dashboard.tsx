@@ -297,6 +297,7 @@ export function Dashboard({
       <header className="site-header">
         <Brand />
         <div className="header-actions">
+          <a className="installer-nav" href="/install">Set up a badge</a>
           <span
             className={`sync-status ${syncError ? "has-error" : ""}`}
             title={

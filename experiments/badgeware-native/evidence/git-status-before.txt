@@ -1,0 +1,21 @@
+ M web/README.md
+ M web/package.json
+ M web/playwright.config.ts
+ M web/src/App.tsx
+ M web/src/components/Dashboard.tsx
+ M web/src/components/SignIn.tsx
+ M web/src/styles.css
+ M web/tsconfig.json
+ M web/vercel.json
+?? docs/badge-installer.md
+?? docs/handoffs/
+?? experiments/
+?? web/public/firmware/
+?? web/scripts/
+?? web/src/components/BadgeInstaller.tsx
+?? web/src/components/installer.css
+?? web/src/installer/
+?? web/tests/browser/installer.spec.ts
+?? web/tests/browser/installerUsb.ts
+?? web/tests/firmwareFixture.ts
+?? web/tests/installer/

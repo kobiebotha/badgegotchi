@@ -123,6 +123,25 @@ the owner handles pushes.
 
 ## Behavior and contracts
 
+### Badge installer
+
+Open `/install`, or choose **Set up a badge** from the header. This public page
+does not depend on sign-in and uses WebUSB/PICOBOOT in desktop Chrome or Edge.
+It verifies the published UF2 before connecting, asks for the badge model and
+firmware replacement confirmation, then writes, reads back, and reboots.
+Other browsers can download the same verified UF2 for manual BOOTSEL installation.
+
+**No firmware release is published yet.** The shipped manifest explicitly contains
+`release: null`, so installation and download stay unavailable. The native
+RAM-only experiments are not a firmware release. A real Tufty build and physical
+USB qualification are still required. Wi-Fi setup and account pairing are
+separate follow-up work.
+
+See [badge installer development and release instructions](../docs/badge-installer.md).
+`npm run firmware:prepare -- --uf2 /path/to/badgegotchi.uf2 --version 0.1.0`
+stages a qualified image locally. Every build checks the manifest, file size,
+SHA-256, and UF2 structure. Nothing is deployed by these commands.
+
 - Focus lasts 40 minutes and breaks last 10 minutes, with pause, resume, stop,
   completion, and timestamp-based recovery after backgrounding.
 - Water and movement logs, hydration reminder state, and daily totals use UTC

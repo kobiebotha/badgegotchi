@@ -1,0 +1,5 @@
+NATIVE_IMPORTED
+Traceback (most recent call last):
+  File "<stdin>", line 13, in <module>
+AssertionError: 
+Local directory tiny is mounted at /remote

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { PowerSyncContext } from "@powersync/react";
 import type { PowerSyncDatabase } from "@powersync/web";
 import type { Session } from "@supabase/supabase-js";
@@ -9,7 +9,22 @@ import { SignIn } from "./components/SignIn";
 import { Dashboard } from "./components/Dashboard";
 import { Brand } from "./components/Brand";
 
+const BadgeInstaller = lazy(() =>
+  import("./components/BadgeInstaller").then((module) => ({
+    default: module.BadgeInstaller,
+  })),
+);
+
 export function App() {
+  // Firmware is public and independent of account pairing. Keep recovery usable
+  // even when sign-in or the application backend is unavailable.
+  if (window.location.pathname.replace(/\/+$/, "") === "/install") {
+    return (
+      <Suspense fallback={<main className="center-screen" role="status">Opening badge setup…</main>}>
+        <BadgeInstaller />
+      </Suspense>
+    );
+  }
   if (configurationError) {
     return (
       <main className="center-screen">

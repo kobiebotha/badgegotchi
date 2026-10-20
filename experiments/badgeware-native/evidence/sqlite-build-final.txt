@@ -1,0 +1,12 @@
+GEN build-armv7emsp/badge_sqlite.config.h
+CC module.c
+CC sqlite_port.c
+CC libc_shim.c
+CC vfs.c
+LINK build-armv7emsp/module.o
+A .text section with an alignment of 8 bytes for EM_ARM is not tested and may not work
+arch:         EM_ARM
+text size:    407340
+bss size:     279256
+GOT entries:  19
+GEN badge_sqlite.mpy

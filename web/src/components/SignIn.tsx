@@ -112,9 +112,7 @@ export function SignIn() {
     <div className="landing">
       <header className="site-header">
         <Brand />
-        <span className="header-note">
-          <Leaf size={15} /> Make room for a good day
-        </span>
+        <a className="installer-nav" href="/install">Set up a badge</a>
       </header>
       <main className="sign-in-layout">
         <section className="welcome">

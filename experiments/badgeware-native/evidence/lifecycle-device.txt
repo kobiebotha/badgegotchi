@@ -1,0 +1,5 @@
+LIFECYCLE 0 native-app-exit-ok 8217120 8216160
+LIFECYCLE 1 native-app-exit-ok 8216160 8215648
+LIFECYCLE 2 native-app-exit-ok 8215712 8215200
+LIFECYCLE_SMOKE_PASS
+Local directory tiny is mounted at /remote

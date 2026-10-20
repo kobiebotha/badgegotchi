@@ -1,0 +1,949 @@
+RECOVERY_LATER 7963040 296032
+BADGEWARE ['__class__', '__name__', 'builtins', 'StringIO', '__dict__', '__file__', '__path__', 'gc', 'k', 'machine', 'os', 'picovector', 'reset', 'set_brightness', 'st7789', 'sys', 'time', 'v', 'DEFAULT_FONT', 'State', '_run', 'display', 'fatal_error', 'get_exception', 'launch', 'message']
+MAIN_SOURCE
+# BadgeLink /system/lib install (OWNER-DECISIONS #1) -- do not remove
+import sys as _bl_sys
+_bl_sys.path.append("/system/lib")
+try:
+    import network_runtime as _bl_network_runtime
+    try:
+        _bl_display = display
+    except NameError:
+        _bl_display = None
+    def _bl_push_factory(_bl_loop, _bl_sink, _bl_enabled):
+        from realtime.client import (
+            BACKOFF_RESET_ON_FIRST_JOIN as _bl_backoff_reset,
+            RealtimeClient as _bl_realtime_client)
+        return _bl_network_runtime.device_push_factory(
+            _bl_loop, _bl_sink, _bl_enabled,
+            _bl_realtime_client, _bl_backoff_reset)
+    _bl_network_runtime.install(
+        run_function=run, badge_api=badge, rtc_device=rtc,
+        display_api=_bl_display,
+        push_factory=_bl_push_factory)
+except Exception as _bl_network_error:
+    print("BADGELINK_NETWORK boot=offline error={}".format(
+        _bl_network_error.__class__.__name__))
+
+# Eat the wakeup button press to prevent it leaking into the menu
+badge.poll()
+
+# We expect a launcher menu to be at /system/apps/menu
+# (temporarily auto-launching the world app for rasteriser testing)
+app_to_launch = launch("/system/apps/menu")
+
+# Stopping in Thonny can cause launch("/system/apps/menu") to return None
+if app_to_launch is not None:
+
+    # Nametag is selected by a held-level threshold. Its update consumes only
+    # press edges, so an already-held key cannot leak into it. Every ordinary
+    # app keeps the factory drain unchanged.
+    if app_to_launch != "/system/apps/nametag":
+        while badge.pressed() or badge.held() or badge.released():
+            badge.poll()
+
+    try:
+        app_result = launch(app_to_launch)
+    except SystemExit as app_exit:
+        # Schedule's unavailable modal cannot return through its module body;
+        # its exact sentinel still takes this same missing-target-guarded path.
+        if app_exit.args != ("/system/apps/nametag",):
+            raise
+        app_result = app_exit.args[0]
+
+    if app_result == "/system/apps/nametag" and is_dir(app_result):
+        launch(app_result)
+
+# Catch any exit and reset back to the launcher
+reset()
+
+MANIFEST
+{
+  "apps": [
+    "setup",
+    "nametag",
+    "schedule",
+    "snake",
+    "flappy",
+    "settings",
+    "menu",
+    "glyph"
+  ],
+  "compiler": {
+    "banner": "MicroPython v1.14-6910.gb29530abbd; mpy-cross emitting mpy v6.3",
+    "banner_date_stripped": true,
+    "mpy_format": "v6.3"
+  },
+  "counts": {
+    "compiled": 129,
+    "copied": 32
+  },
+  "files": [
+    {
+      "bytes": 3083,
+      "path": "apps/flappy/PROVENANCE.md",
+      "sha256": "e3d92a0572bd452282fbf6121880401a1e1b4f950e6276856a5af65c455ee4e2"
+    },
+    {
+      "bytes": 3983,
+      "path": "apps/flappy/__init__.mpy",
+      "sha256": "105057ba0acc429eef5bc972d735ea6afb8702d17bf52c8759f79548777a2e59"
+    },
+    {
+      "bytes": 290,
+      "path": "apps/flappy/assets/client-p8.png",
+      "sha256": "73b59abf7c2b41f28dff0761e323ba0f80a812dea5fa1b2a231e421036cb38af"
+    },
+    {
+      "bytes": 545,
+      "path": "apps/flappy/backlight.mpy",
+      "sha256": "5ea0127e1470f589c1dceb2408649a343d403f9b061e6270dbcaeee3ef9471cf"
+    },
+    {
+      "bytes": 2099,
+      "path": "apps/flappy/flappy_model.mpy",
+      "sha256": "2e8eae0a0914ebb07898169b81b330aea9aea00254c801e3be0c8677b7f28c3f"
+    },
+    {
+      "bytes": 1842,
+      "path": "apps/flappy/flappy_scene.mpy",
+      "sha256": "b60b31a2054bc609970981c165f913fce2f01d6c05fe0c6bf95e00bc0aa9bd9f"
+    },
+    {
+      "bytes": 387,
+      "path": "apps/flappy/flappy_store.mpy",
+      "sha256": "90dbbec7baa254656b7d2d88b5f9dff1c2163324f4fcc36905ab54db7975e7c8"
+    },
+    {
+      "bytes": 7211,
+      "path": "apps/flappy/flappy_view.mpy",
+      "sha256": "00dd7378ee347554be14fd0d465cd158bf25cfa4f28aba77447344cd9b8fa008"
+    },
+    {
+      "bytes": 598,
+      "path": "apps/flappy/game_palette.mpy",
+      "sha256": "ec4e93602b30579d07d1e8a4dfb0fbe819e97e42af03b44180d0fe67d2b8a513"
+    },
+    {
+      "bytes": 178,
+      "path": "apps/flappy/icon.png",
+      "sha256": "809b18c78c2e99ca2bd6ed79fcef8c409b356ca9fa8605db7c87317a7abad8af"
+    },
+    {
+      "bytes": 1292,
+      "path": "apps/flappy/idle.mpy",
+      "sha256": "aa3ec8bbeb3910a49941e3bf6fafc4849032cbfd35fc3ec5ec96e74092be237b"
+    },
+    {
+      "bytes": 3522,
+      "path": "apps/flappy/loading.mpy",
+      "sha256": "efeadad696643ffb9a2a47554e05f6dcd2aa561f91732045110daa1749cd4c83"
+    },
+    {
+      "bytes": 2997,
+      "path": "apps/flappy/loading_sql.mpy",
+      "sha256": "baf1b663908f8c621eaaf57970ce31d6bafd4d713fa87c90a136edd118f4deba"
+    },
+    {
+      "bytes": 1682,
+      "path": "apps/flappy/score_sink.mpy",
+      "sha256": "7da7d3363de8a205cb0e7d61e32a07332fda7c0c69c141c9b22c0d1493f8b0ae"
+    },
+    {
+      "bytes": 10240,
+      "path": "apps/glyph/assets/glyph-lut.bin",
+      "sha256": "25ce1b071520f95f3b14687e67f7ba34ce412fbbfb59b3c8f7d6a036c5e85650"
+    },
+    {
+      "bytes": 20400,
+      "path": "apps/glyph/assets/glyph-masks.pfb",
+      "sha256": "1b7beb1a625221b8c2771af7964d2c353ea5d528b07b2d12a64c2866b3a09edd"
+    },
+    {
+      "bytes": 5100,
+      "path": "apps/glyph/assets2x/glyph-masks-2x.pfb",
+      "sha256": "073573e02023e9f06feac4e209980de28281bf9457070d832f933b7a05293d46"
+    },
+    {
+      "bytes": 26944,
+      "path": "apps/glyph/assets2x/logo-sizzle.gpa",
+      "sha256": "930d24406671b5bc8d9238e00f0fc1fa2bd7d6abfb485d1862d41121406efa8c"
+    },
+    {
+      "bytes": 98368,
+      "path": "apps/glyph/assets2x/signal-ripple.gpa",
+      "sha256": "58185ebf8ef3be4da95834d9254827e03d133eea117940d553d863cffabfee04"
+    },
+    {
+      "bytes": 4768,
+      "path": "apps/glyph/glyph_render.mpy",
+      "sha256": "dd7e95d8e26718d8c07edece8e9bca886a46dc7eed110c15f4f6045d8f25d828"
+    },
+    {
+      "bytes": 6424,
+      "path": "apps/glyph/glyph_rich_lights.mpy",
+      "sha256": "8424cbcd0bd2e204857759366fb51d6b44a7f23930fa296ce7cec1f551414830"
+    },
+    {
+      "bytes": 1449,
+      "path": "apps/glyph/glyph_stream.mpy",
+      "sha256": "93bccbec944845fe1f7a54630238937de943e9af0e078e6de711a0595cd72245"
+    },
+    {
+      "bytes": 918,
+      "path": "apps/glyph/glyph_vocab.mpy",
+      "sha256": "c6cca442badc5288235a06cedcaf43bf122f187a4c10ba35c802f0e3f5522476"
+    },
+    {
+      "bytes": 983,
+      "path": "apps/glyph/light_calibration_2x.mpy",
+      "sha256": "be9665fc674011a264f3c785a7be7a103acf3ba7b99366f6977aa4d40c0d2ec5"
+    },
+    {
+      "bytes": 2024,
+      "path": "apps/glyph/wave_lights.mpy",
+      "sha256": "64451b32c866ff1e01fea33ae8a45f217d23d07c94a8ac62fac3eebbab6c0fb1"
+    },
+    {
+      "bytes": 924,
+      "path": "apps/menu/__init__.mpy",
+      "sha256": "2167cf70acaf1d6bd8b8dadb3f6c425e44cbfa2c93f3ba4835b8de77fd9949dc"
+    },
+    {
+      "bytes": 2254,
+      "path": "apps/menu/app.mpy",
+      "sha256": "aae4be31e402ff72e02830fadeb9688107071355760de256a288e7042aa7c8a4"
+    },
+    {
+      "bytes": 543,
+      "path": "apps/menu/backlight.mpy",
+      "sha256": "d6ad76465afc3c4ebdb5f0fc4851b338d79a91d695b7f6d62e42c3a8df4bd2e5"
+    },
+    {
+      "bytes": 236,
+      "path": "apps/menu/default_icon.png",
+      "sha256": "1ab762ee417528bc80075a0c9c71e35f7e1cee602521950c287bcc749cbf664e"
+    },
+    {
+      "bytes": 5865,
+      "path": "apps/menu/first_wake.mpy",
+      "sha256": "b367ca13fea9b92366ebc8edd23f92f5c78126520ff16a25fbdcd31ebbbc66ac"
+    },
+    {
+      "bytes": 1290,
+      "path": "apps/menu/idle.mpy",
+      "sha256": "cce397096f4913e65adb9dc8c9b3a32759d9cfd4eff92681d5580b84aa856213"
+    },
+    {
+      "bytes": 3520,
+      "path": "apps/menu/loading.mpy",
+      "sha256": "b66b5628c17096f332404c9fe2165a1cc40c079f6568f53b364070ea86350dbf"
+    },
+    {
+      "bytes": 2995,
+      "path": "apps/menu/loading_sql.mpy",
+      "sha256": "069817732a5255e5b966053bad4607837f1ad45948ba145f740fbd69cd42cda0"
+    },
+    {
+      "bytes": 45,
+      "path": "apps/menu/order.txt",
+      "sha256": "d155651c09ed9be9df2fc45cfc0cd0e265ec637c4c8225fad6108bbc872c4f48"
+    },
+    {
+      "bytes": 6428,
+      "path": "apps/menu/ui.mpy",
+      "sha256": "2cfdb47cf48c0a28aa312a4dcd30d8c2dc193629cc3db94c16d5499204190672"
+    },
+    {
+      "bytes": 3895,
+      "path": "apps/menu/wallpaper.mpy",
+      "sha256": "a903484d39419fbdbf0eace3b52b4001ab1ae6ff38d919aeb4c0e39465447785"
+    },
+    {
+      "bytes": 4003,
+      "path": "apps/nametag/__init__.mpy",
+      "sha256": "17d0817d89490f19de13c9f8b4a89b7063628f3810a4111a319d74d9ed5187c5"
+    },
+    {
+      "bytes": 188172,
+      "path": "apps/nametag/assets/glyphshows.gpk",
+      "sha256": "b3d356fca0dcff1366e1afe0935a2ae6be6e728f7e6ad4d7b94e741350fa3861"
+    },
+    {
+      "bytes": 290332,
+      "path": "apps/nametag/assets/glyphskins.gpk",
+      "sha256": "4c301f70602b215bf45417243dfc820224a82a0f69eade09b9925cfbdffcc931"
+    },
+    {
+      "bytes": 51746,
+      "path": "apps/nametag/assets/stickers-36-p8.png",
+      "sha256": "9dda3d5675ccfe7a9f8978b5febb727b451808ee86992f04238331653c3a5224"
+    },
+    {
+      "bytes": 3424,
+      "path": "apps/nametag/backdrop.mpy",
+      "sha256": "e27f5d3469f9d05f4905539f37458b6befd6efa3eb40880049f5e28aaa05e1fa"
+    },
+    {
+      "bytes": 546,
+      "path": "apps/nametag/backlight.mpy",
+      "sha256": "04b50b17e9485efc845d0173fb305846432bb863b46a916c57827c870458feb4"
+    },
+    {
+      "bytes": 1596,
+      "path": "apps/nametag/badge_state.mpy",
+      "sha256": "a430b694c19a345a2c2ecd532797b3c16123d01e58ee696cbac3f7eb6c659279"
+    },
+    {
+      "bytes": 987,
+      "path": "apps/nametag/card_name_positions.mpy",
+      "sha256": "143527945b9a56fa8b8c174d4a9915925c97dbc3ef17983d5d0db12205c1238f"
+    },
+    {
+      "bytes": 1567,
+      "path": "apps/nametag/effects.mpy",
+      "sha256": "be3db0971d05f13658a9cdeb900c5f921382646cfeb14ed003ff0b1f89a11dae"
+    },
+    {
+      "bytes": 2509,
+      "path": "apps/nametag/glyph_show.mpy",
+      "sha256": "767ed6b4d49ded5b2ebf32f5b615822f9dd1a1541ab31f419e399fe45faf46f6"
+    },
+    {
+      "bytes": 7155,
+      "path": "apps/nametag/glyphskin.mpy",
+      "sha256": "5080af5cb3a77409fd7110a19ff86a62dd4886b6fbecc649e4efe6024bb65a17"
+    },
+    {
+      "bytes": 134,
+      "path": "apps/nametag/icon.png",
+      "sha256": "2c9868b362daf54b41a897712e7c6649c386421828310cbc3f60c366a4df394b"
+    },
+    {
+      "bytes": 3340,
+      "path": "apps/nametag/identity_catalogue.mpy",
+      "sha256": "2ec879b7c6a87f30e5329567ef3b24f22307974290cad6ec6efb3989a2e72dce"
+    },
+    {
+      "bytes": 1367,
+      "path": "apps/nametag/identity_faces.mpy",
+      "sha256": "f20a8537182224cb0ff70503027fd39ea29059134927951e8af95022dd4a4a1e"
+    },
+    {
+      "bytes": 2017,
+      "path": "apps/nametag/identity_marks.mpy",
+      "sha256": "29b3ce17aa9219228b5273c2107b01b1b9552ebe53c955f2c581e31d3cb56e67"
+    },
+    {
+      "bytes": 7677,
+      "path": "apps/nametag/nametag.mpy",
+      "sha256": "6584dc0e7464a9f7238332e18e2c0b8e5dd8e4403f624e2322040c163d583402"
+    },
+    {
+      "bytes": 2127,
+      "path": "apps/nametag/notice_view.mpy",
+      "sha256": "675e14230c375100060dd6b0f58e970d52931ca7b22d51b6fb74646cf6c51624"
+    },
+    {
+      "bytes": 102017,
+      "path": "apps/nametag/skins.mpy",
+      "sha256": "ec897241d813f77432f8e2b148191bb3a75c371fe924eedbdc82cf7d989f62e8"
+    },
+    {
+      "bytes": 4472,
+      "path": "apps/nametag/ui.mpy",
+      "sha256": "eca5a0e487197a1b10dbd3b4aa6b9d4c6e9b18df70a3cebdab013d8393402e4e"
+    },
+    {
+      "bytes": 5389,
+      "path": "apps/schedule/__init__.mpy",
+      "sha256": "7aa5d0f598f6b1492790daed9b7f6b1d40a75c3ba15cf63142ba15fb3f698107"
+    },
+    {
+      "bytes": 547,
+      "path": "apps/schedule/backlight.mpy",
+      "sha256": "a30feaf94bc2221a05e77cab37402d4381665077319ba7b01effa21f70ab84b7"
+    },
+    {
+      "bytes": 90,
+      "path": "apps/schedule/config.mpy",
+      "sha256": "76c57f038008313688b510835d70c3eb57e5b86d8ad8c0afc43ac5d340bce127"
+    },
+    {
+      "bytes": 925,
+      "path": "apps/schedule/icon.png",
+      "sha256": "18c3011d49fd0d9ee9b86ebd39aa1a807b9e420c7c3118371b607cdba283d204"
+    },
+    {
+      "bytes": 1294,
+      "path": "apps/schedule/idle.mpy",
+      "sha256": "43b82771aa1640f9b9f41162717a07288ab021b6b48c91e33dd4863fc2653589"
+    },
+    {
+      "bytes": 3524,
+      "path": "apps/schedule/loading.mpy",
+      "sha256": "025e66a32409c319c4fe961e120c8be91c9f7c3a4b48af9633749b02c18763b8"
+    },
+    {
+      "bytes": 2999,
+      "path": "apps/schedule/loading_sql.mpy",
+      "sha256": "1a2069858cfea7d6e30828b64840ac005fcea04fb5c51e903a5486464c0dda6c"
+    },
+    {
+      "bytes": 6612,
+      "path": "apps/schedule/schedule.json",
+      "sha256": "8c412019426a84403d670cfc2c44ec02142c2aff2d7999fe4ad302bceb57e497"
+    },
+    {
+      "bytes": 10949,
+      "path": "apps/schedule/schedule_model.mpy",
+      "sha256": "f70d1ae322e9dec57466d031472877f562cf2225001d71ac445fe55685a760ed"
+    },
+    {
+      "bytes": 2735,
+      "path": "apps/schedule/schedule_refresh.mpy",
+      "sha256": "c31424a41416df953647519ff7ed4f3b39e5291cecc09bf902c81c0c58a8dc1e"
+    },
+    {
+      "bytes": 10242,
+      "path": "apps/schedule/schedule_view.mpy",
+      "sha256": "5e1063f965e6575fb61e0b924f7ea41faad7e7bf95d0abec31e28b9123789cb9"
+    },
+    {
+      "bytes": 3991,
+      "path": "apps/settings/__init__.mpy",
+      "sha256": "86795ae567e1027dedaf872e5fd7ec8849d28536a5bf26e170577743cb027066"
+    },
+    {
+      "bytes": 547,
+      "path": "apps/settings/backlight.mpy",
+      "sha256": "e0d9fae451dc74298b5f34e595aa62c550c874b3e062da624a3777ee871911d9"
+    },
+    {
+      "bytes": 753,
+      "path": "apps/settings/brightness_store.mpy",
+      "sha256": "4cc96e0db5482ea1c20e0f7270181752f0f23ac98728767c65345171b733462d"
+    },
+    {
+      "bytes": 757,
+      "path": "apps/settings/clock_set.mpy",
+      "sha256": "8d71b85cdf22240f97513ee56094504a573d61869697cf98b555e04ca680b1f0"
+    },
+    {
+      "bytes": 182,
+      "path": "apps/settings/icon.png",
+      "sha256": "7a4af70ec8182b5a96e026e985150e12955a88c18749dc98ef4ded17e75ee848"
+    },
+    {
+      "bytes": 1294,
+      "path": "apps/settings/idle.mpy",
+      "sha256": "06026cbdcb3cb6168a27494296c8fcf53cda7838ec089d88a02a7f467ee27f0c"
+    },
+    {
+      "bytes": 574,
+      "path": "apps/settings/score_wipe.mpy",
+      "sha256": "00c8f92f60db17d27e4a71bd75031107433ab1a667c3f6aa996be04bb2b5e2ac"
+    },
+    {
+      "bytes": 11864,
+      "path": "apps/settings/settings_copy.mpy",
+      "sha256": "8cbd05c2d7ff5b4ff6e65fdb7b0d4fd78a6effdddd95550076e3b9c50c9c55e7"
+    },
+    {
+      "bytes": 19842,
+      "path": "apps/settings/settings_model.mpy",
+      "sha256": "c9a3910dd1f726281fb9feb31bf206c031c2ba76097a97e1e6b82bdbbe048345"
+    },
+    {
+      "bytes": 4043,
+      "path": "apps/settings/settings_view.mpy",
+      "sha256": "050563b7fe6a82ad57f55badc96834e6b351bc7cb70ddfd3e3958f0f9752385a"
+    },
+    {
+      "bytes": 4473,
+      "path": "apps/settings/ui.mpy",
+      "sha256": "13cb974589ce5328bf6b67292bcb5d8509cafa6d71bfa532c6b45ec50a35dc43"
+    },
+    {
+      "bytes": 4184,
+      "path": "apps/setup/__init__.mpy",
+      "sha256": "35e71a99117757ce9d85ab357bf9111a4787997688029b7d1a8d4e480b07c092"
+    },
+    {
+      "bytes": 290332,
+      "path": "apps/setup/assets/glyphskins.gpk",
+      "sha256": "4c301f70602b215bf45417243dfc820224a82a0f69eade09b9925cfbdffcc931"
+    },
+    {
+      "bytes": 51746,
+      "path": "apps/setup/assets/stickers-36-p8.png",
+      "sha256": "9dda3d5675ccfe7a9f8978b5febb727b451808ee86992f04238331653c3a5224"
+    },
+    {
+      "bytes": 3422,
+      "path": "apps/setup/backdrop.mpy",
+      "sha256": "d6504b6240df51f6eb05bec984d471e4def897a9b4b34f8021da5f12ed595f8c"
+    },
+    {
+      "bytes": 544,
+      "path": "apps/setup/backlight.mpy",
+      "sha256": "ac795100acb08c8c7520a5fb9a7b0640773749f49c05bb0025ac0eb0788426ca"
+    },
+    {
+      "bytes": 8405,
+      "path": "apps/setup/card_app.mpy",
+      "sha256": "87dcd9a6711d2a3c55ceec164167073dc54c8fdf015c3d977d37506024215aaf"
+    },
+    {
+      "bytes": 7599,
+      "path": "apps/setup/card_bake.mpy",
+      "sha256": "998a3b64a2add1075141a5c1007a1858c1953960a95f20c629799995ca9d0eb0"
+    },
+    {
+      "bytes": 1009,
+      "path": "apps/setup/card_board.mpy",
+      "sha256": "b84319e14bf8b7277077869a931a8b134a3ae5d49b299fc8a6860388d1ed2092"
+    },
+    {
+      "bytes": 1034,
+      "path": "apps/setup/card_cache.mpy",
+      "sha256": "1ddc03ee5642ca7c9ecd17a4750a7874fc74f7cd38fc628bb5c893684452d860"
+    },
+    {
+      "bytes": 2182,
+      "path": "apps/setup/card_faces.mpy",
+      "sha256": "63e4a6de9bc0477c3695af510f9eb832c869112ba0d4c0dc4c22e4b75f891e92"
+    },
+    {
+      "bytes": 4738,
+      "path": "apps/setup/card_model.mpy",
+      "sha256": "d0b7baf9b0783d995b34bb0a05236385178abf094a5e13cbdd8b8e114a6e7316"
+    },
+    {
+      "bytes": 985,
+      "path": "apps/setup/card_name_positions.mpy",
+      "sha256": "7ac48b7db002e6cb0c22f2ada0342b8bab85916713cd191d8be328316fbb1be7"
+    },
+    {
+      "bytes": 1216,
+      "path": "apps/setup/card_store.mpy",
+      "sha256": "e2e41c128754835e7d0231b8ed0458a44dbde17da767c888bcfcf4140dd5b7c0"
+    },
+    {
+      "bytes": 7303,
+      "path": "apps/setup/card_view.mpy",
+      "sha256": "666aaaeae56c77699c7e14eb918b03acd1432589dfd8125786207806a7695e56"
+    },
+    {
+      "bytes": 1565,
+      "path": "apps/setup/effects.mpy",
+      "sha256": "f723e760e7f73a937462404f2b33091d699cd60a75eda991203d5554bca2cb22"
+    },
+    {
+      "bytes": 7153,
+      "path": "apps/setup/glyphskin.mpy",
+      "sha256": "1f1b9252f220c03f665a366518109fde56aae3a082b3f5510c597b790c9a228e"
+    },
+    {
+      "bytes": 146,
+      "path": "apps/setup/icon.png",
+      "sha256": "1e8d181166ff7173cee411537e95cd69cf13e700e669f19aeb4550fdfac40923"
+    },
+    {
+      "bytes": 3338,
+      "path": "apps/setup/identity_catalogue.mpy",
+      "sha256": "8f6554c15f48cf208bd77325c29a8ab4dea1f40ef58df12933b0ab59eea68dfe"
+    },
+    {
+      "bytes": 1365,
+      "path": "apps/setup/identity_faces.mpy",
+      "sha256": "d24ca0b70c9c5b811a35f094cb8b1f0032bf160c8fb972c4950d5e36e25ec47f"
+    },
+    {
+      "bytes": 1443,
+      "path": "apps/setup/identity_keyboard.mpy",
+      "sha256": "ec4df90312634c7d39fe52a3d456856c3f2aeb716e74a9804322122d935fb230"
+    },
+    {
+      "bytes": 2015,
+      "path": "apps/setup/identity_marks.mpy",
+      "sha256": "c542d8751c180c18371489279000d36fc10370e0fe867277f3d6d6a21e28291a"
+    },
+    {
+      "bytes": 1291,
+      "path": "apps/setup/idle.mpy",
+      "sha256": "760328a068cc430bf1cd146f5da7e51e3f28d9576582c8ba13608666c99f46a4"
+    },
+    {
+      "bytes": 2545,
+      "path": "apps/setup/kb_shell.mpy",
+      "sha256": "c765e0b6965fe127240428e2809266a512904bac6803f7f044372f1329137b9e"
+    },
+    {
+      "bytes": 5420,
+      "path": "apps/setup/kbqwerty_board.mpy",
+      "sha256": "bf9c070f1e1a43e4bb71a5de43f3bd494bae475346270920c8a054d19ae1989a"
+    },
+    {
+      "bytes": 3521,
+      "path": "apps/setup/loading.mpy",
+      "sha256": "9576425813820a1127a972a6a41e8a20b1d434ee2431b3e6d07c0768b9c9cbac"
+    },
+    {
+      "bytes": 2996,
+      "path": "apps/setup/loading_sql.mpy",
+      "sha256": "f2cf058cc1b4b183eba4495b1d5b4df3a804f30590fe2f35e5411bd2601d4b3f"
+    },
+    {
+      "bytes": 7675,
+      "path": "apps/setup/nametag.mpy",
+      "sha256": "011fb589bdad8249636200cf63caa317b2ea08a2cb9bbd50bd43021dcfdb50b3"
+    },
+    {
+      "bytes": 102015,
+      "path": "apps/setup/skins.mpy",
+      "sha256": "d8efb6c0bf4476b64093a4d802efe94f3824dc0f4c1da23954d2b2b817b9c962"
+    },
+    {
+      "bytes": 4470,
+      "path": "apps/setup/ui.mpy",
+      "sha256": "44fd8cddbf77ac2150f8bd131e0adeb068a9f29bafd63dfcafa1d11e053bb5f9"
+    },
+    {
+      "bytes": 3896,
+      "path": "apps/setup/wallpaper.mpy",
+      "sha256": "4cf81ea341fcdd493bab48298467ca08d200bfedcc1961b1ad162ff806ae5377"
+    },
+    {
+      "bytes": 2555,
+      "path": "apps/snake/PROVENANCE.md",
+      "sha256": "f564be1a5a53a951c8c1b8b24a5e36c34e2b8fd4714ba6a0b23ad35a071d77e3"
+    },
+    {
+      "bytes": 5270,
+      "path": "apps/snake/__init__.mpy",
+      "sha256": "9929e376739f311581ae657f4af4f79a503c805c266f4434e2eb3d77ef442bcd"
+    },
+    {
+      "bytes": 336,
+      "path": "apps/snake/assets/food-p8.png",
+      "sha256": "5177c0338e9c65f90f146d4f33c8e41d8462ca7a137262e0c5013e7923f3ec5c"
+    },
+    {
+      "bytes": 544,
+      "path": "apps/snake/backlight.mpy",
+      "sha256": "db0d7a5db15eadbcde01cd012892bc7d51d0c5d1215cd48560adb6b3722ddd4d"
+    },
+    {
+      "bytes": 597,
+      "path": "apps/snake/game_palette.mpy",
+      "sha256": "40bbfc9c7cd419a8c29bd02962b9c51af3394b052ad126112c3c634cddce6cf4"
+    },
+    {
+      "bytes": 126,
+      "path": "apps/snake/icon.png",
+      "sha256": "4e6f46e7a9fd50ac1669b0abd70ea0b8edbf435dc0bc9282e119490c91e0cd72"
+    },
+    {
+      "bytes": 1291,
+      "path": "apps/snake/idle.mpy",
+      "sha256": "8450dd0babc0cfb2cd861742ff5e63b7ed3ddfc22d033d132c0bfc09fb7d4696"
+    },
+    {
+      "bytes": 3521,
+      "path": "apps/snake/loading.mpy",
+      "sha256": "c468ae1b27a368f17a1f592a9467ad4f8193a8bfb316f8e40874947aa950a729"
+    },
+    {
+      "bytes": 2996,
+      "path": "apps/snake/loading_sql.mpy",
+      "sha256": "36fffacdf01ed8eafb732376a88830ce5c584e9bf7ea26bb145898ce6316c994"
+    },
+    {
+      "bytes": 1681,
+      "path": "apps/snake/score_sink.mpy",
+      "sha256": "449ea95b92227bd2d62e88ccc20c2df07d5a123956b0a014cb5c24e11cf7677e"
+    },
+    {
+      "bytes": 3058,
+      "path": "apps/snake/snake_model.mpy",
+      "sha256": "fef2a6251dc15daaa35d39c76fceffa55cc6a8974064447b0902f7125407f8bd"
+    },
+    {
+      "bytes": 705,
+      "path": "apps/snake/snake_profile.mpy",
+      "sha256": "d793353ab3b6e8e515ce1bcaa7d83d83304bb1bfd7b34d5fb3d2d44b5971d9ab"
+    },
+    {
+      "bytes": 466,
+      "path": "apps/snake/snake_store.mpy",
+      "sha256": "fb6651f8568afa137c3dc9dbf4d1a27ba3f78e907686463fb639facd68f0a087"
+    },
+    {
+      "bytes": 5550,
+      "path": "apps/snake/snake_view.mpy",
+      "sha256": "e78a071e8b984c8ffd195d7144ad19479d31e2357a4581618e6e831b183f0aac"
+    },
+    {
+      "bytes": 9688,
+      "path": "assets/fonts/DynaPuff-Medium.af",
+      "sha256": "e15bd8b9709b6196da4b4fa74a94ca3f23a24d9b9fd8d8776d733136cd74649b"
+    },
+    {
+      "bytes": 9756,
+      "path": "assets/fonts/IndieFlower-Regular.af",
+      "sha256": "a917728b392046f7bcd90575652613884af7bd3e9c435b7ca8b93cb07fae935c"
+    },
+    {
+      "bytes": 4399,
+      "path": "assets/fonts/LICENSE-MonaSans",
+      "sha256": "30585aed1e9a2c66fab34d804c8139004bed1f44204f63da09e4b3fb62acad0f"
+    },
+    {
+      "bytes": 65852,
+      "path": "assets/fonts/MonaSans-Medium.af",
+      "sha256": "255120cfaa5cd07322b686b4258590382c61793fe33512b54a0c887e5c324707"
+    },
+    {
+      "bytes": 256,
+      "path": "lib/aiohttp/__init__.mpy",
+      "sha256": "0d1051ba30db251f67f43d1cd24ee721d23446beb0b3995f6b55700371cdc482"
+    },
+    {
+      "bytes": 10754,
+      "path": "lib/aiohttp/aiohttp_ws.mpy",
+      "sha256": "bbdc391f7be7f20fda4e0641436a2b3287d90d55d095d2cefaa11c731d46b2f0"
+    },
+    {
+      "bytes": 4834,
+      "path": "lib/bounded_dns.mpy",
+      "sha256": "d79ef9c818b9fc62f607e5ce5580d345fe6202e12c65b2b706726e0eda3529c7"
+    },
+    {
+      "bytes": 1371,
+      "path": "lib/ca/gts-root-r1.der",
+      "sha256": "d947432abde7b7fa90fc2e6b59101b1280e0e1c7e4e40fa3c6887fff57a7f4cf"
+    },
+    {
+      "bytes": 525,
+      "path": "lib/ca/gts-root-r4.der",
+      "sha256": "349dfa4058c5e263123b398ae795573c4e1313c83fe68f93556cd5e8031b3c7d"
+    },
+    {
+      "bytes": 675,
+      "path": "lib/ca/gts-we1.der",
+      "sha256": "1dfc1605fbad358d8bc844f76d15203fac9ca5c1a79fd4857ffaf2864fbebf96"
+    },
+    {
+      "bytes": 1910,
+      "path": "lib/caselight_program.mpy",
+      "sha256": "0ca2d59cc164860a65c87cd85e4b5c3d7202777ec458265ffa3d019300e4c8ae"
+    },
+    {
+      "bytes": 1721,
+      "path": "lib/clock_boot.mpy",
+      "sha256": "0172465a17b73515dd2506e0eae9caf434188286b8638bc542a5f5e22fffe2a7"
+    },
+    {
+      "bytes": 1525,
+      "path": "lib/command_ledger.mpy",
+      "sha256": "574564ad8f95b02c9d0b8f28142ffb72bd529c06173af62484a62bd03afed2ff"
+    },
+    {
+      "bytes": 2451,
+      "path": "lib/credentials.mpy",
+      "sha256": "185d67a69b9a7f8e2bddee981eb323e120d10b5d69dac56ef7699874dd216e4d"
+    },
+    {
+      "bytes": 8731,
+      "path": "lib/device_link.mpy",
+      "sha256": "024ec2db67cd5663a8a1a1f32086bfdbdb4f46d77f13184273d567b1943fa93f"
+    },
+    {
+      "bytes": 1306,
+      "path": "lib/devicetoken.mpy",
+      "sha256": "8249218e853c1d8a2bcd74ede23e74d9b40f46fbd3347620844596bbff684e0e"
+    },
+    {
+      "bytes": 4847,
+      "path": "lib/effect_library.mpy",
+      "sha256": "2fd4fd29488c1bc1c1d714392c0a78b0672906059b18e3c8fc15c378c5f96e2c"
+    },
+    {
+      "bytes": 1274,
+      "path": "lib/network_preference.mpy",
+      "sha256": "8eab8fab6e77d0408e9e091cac24fdd188d83f3242f64017656e12b026ff936f"
+    },
+    {
+      "bytes": 53463,
+      "path": "lib/network_runtime.mpy",
+      "sha256": "e371d2b24612cddb4d9fd14c2279f5f502db723bc52a0d24efdbfb27666de120"
+    },
+    {
+      "bytes": 1604,
+      "path": "lib/notice_note.mpy",
+      "sha256": "d9d2967ef517ca510b4eb6181eb91340539d99028a4657d69c6154a1f9d6ac7d"
+    },
+    {
+      "bytes": 1614,
+      "path": "lib/openapp_note.mpy",
+      "sha256": "f7eeda86370619523fa88bafdcf998e302322e2845911fb741d862366c6f7378"
+    },
+    {
+      "bytes": 4263,
+      "path": "lib/pairstate.mpy",
+      "sha256": "2aa2f02034fc4d30655316ee600ffa7901ca5c55b5135a27e9cc6faf66a59724"
+    },
+    {
+      "bytes": 3043,
+      "path": "lib/pairview.mpy",
+      "sha256": "3c72a30f182cc214bec60308596e4c06554c1d79f83d83ea25870cb0b9645c6c"
+    },
+    {
+      "bytes": 11505,
+      "path": "lib/polltransport.mpy",
+      "sha256": "c57348cf8338c70d6137d55ea28b112fb5c71f669b1f2e6eac97cebb1ddd5bcb"
+    },
+    {
+      "bytes": 5264,
+      "path": "lib/postgrest.mpy",
+      "sha256": "bf189d086c414df520bb2873f5bfbbb9289a55c69c24512128a2d54ce7f5a3b0"
+    },
+    {
+      "bytes": 19031,
+      "path": "lib/pushlink.mpy",
+      "sha256": "bc0861c9cbb33e2d869329d1de16e054cc777270954eebd8a49aaf711b669d7d"
+    },
+    {
+      "bytes": 452,
+      "path": "lib/radio_policy.mpy",
+      "sha256": "5cf0ad778feff60174cb3146536367eda751eb30c8499f517992eb3041bac562"
+    },
+    {
+      "bytes": 930,
+      "path": "lib/realtime/__init__.mpy",
+      "sha256": "334a0ea4651070ea44c293ed1864afd9c4b572cdc8ee621c83ca49cbb347c8a8"
+    },
+    {
+      "bytes": 9077,
+      "path": "lib/realtime/client.mpy",
+      "sha256": "a7cfc457265dda1663ccb52c767f7fc6421f79d47985dbe472c56121cff2f531"
+    },
+    {
+      "bytes": 4355,
+      "path": "lib/realtime/phoenix.mpy",
+      "sha256": "d044f05116962d115275cfc0fbf9a23eb1b4f53e1ab42c7d33a839be7cb97502"
+    },
+    {
+      "bytes": 2905,
+      "path": "lib/resilient_wifi.mpy",
+      "sha256": "f6e8cdd7eaa64bdffc4c5dc5139423099583c4f0061019c04ee7f372c511ff72"
+    },
+    {
+      "bytes": 3042,
+      "path": "lib/rpc_contract.mpy",
+      "sha256": "f14ad479a43d85e814cf033d7ce49125afdaca562ff017d0d6fd91a9574d03fb"
+    },
+    {
+      "bytes": 4626,
+      "path": "lib/schedule_store.mpy",
+      "sha256": "8dc0d8338e898e21a9cf4a6aff3eba6e78fdf3a4ba6a6ffa40b86accce0d315a"
+    },
+    {
+      "bytes": 4608,
+      "path": "lib/scorebox.mpy",
+      "sha256": "67c2c24c82917123d4ac89e76cc6f73af907eed0cc7cc91a542f94b0266d5dcc"
+    },
+    {
+      "bytes": 3009,
+      "path": "lib/setup_state.mpy",
+      "sha256": "5be754e35bcdb4dccfb0a02c1b41f29f3aa2b6b76e7225f9e3330b863f9bb8c1"
+    },
+    {
+      "bytes": 1084,
+      "path": "lib/store.mpy",
+      "sha256": "b9040c1530696f5f18bf2f58be363179ac28181fb1c07997257ad6ce8673e508"
+    },
+    {
+      "bytes": 1650,
+      "path": "lib/verified_tls.mpy",
+      "sha256": "23fc3a34f1e9a151f34bb6c0dbec7a9d001a3c49ad0431e1fe84742c2c2c558a"
+    },
+    {
+      "bytes": 854,
+      "path": "lib/ws_backoff.mpy",
+      "sha256": "5c71cb6be9cb7899b264e5dbc01a5eb7ec0c578126e6a3e259b28f0da6d39c3f"
+    },
+    {
+      "bytes": 2148,
+      "path": "main.py",
+      "sha256": "d076b8ba48971678abe12507ce20a85979cff8a2fa702ce4c18ba15c9373852d"
+    },
+    {
+      "bytes": 808,
+      "path": "secrets.py",
+      "sha256": "8dd5c746333d671b4c2e30e1c066ff36a5d7d9813b0c339b13d2ac1a988df553"
+    }
+  ],
+  "menu": [
+    {
+      "bytes": 1579,
+      "file": "__init__.py",
+      "patches": [
+        "COMMIT",
+        "BOOT",
+        "END"
+      ]
+    },
+    {
+      "bytes": 5551,
+      "file": "app.py",
+      "patches": [
+        "ICON",
+        "ORDER"
+      ]
+    },
+    {
+      "bytes": 236,
+      "file": "default_icon.png",
+      "patches": []
+    }
+  ],
+  "roster": {
+    "apps": [
+      "setup",
+      "nametag",
+      "schedule",
+      "snake",
+      "flappy",
+      "settings"
+    ],
+    "launcher": "menu"
+  },
+  "schema": "badge-source-export-build/1",
+  "secrets": "production (secrets.prod.py)",
+  "source_inputs": {
+    "files": 158,
+    "sha256": "803cf5cba93099d0815e878f53b6df89eb15884f891a5808d2f9a3134a1237c5"
+  },
+  "stock_fonts": [
+    {
+      "bytes": 9688,
+      "file": "DynaPuff-Medium.af",
+      "sha256": "e15bd8b9709b6196da4b4fa74a94ca3f23a24d9b9fd8d8776d733136cd74649b"
+    },
+    {
+      "bytes": 9756,
+      "file": "IndieFlower-Regular.af",
+      "sha256": "a917728b392046f7bcd90575652613884af7bd3e9c435b7ca8b93cb07fae935c"
+    }
+  ],
+  "target_firmware": "v3.0.2",
+  "totals": {
+    "bytes": 1839595,
+    "files": 161,
+    "source_bytes": 4344155
+  },
+  "tree_hash": "4b03428edc2d6c753931779090426117d88e5177151def99e75f234aa322a3c9"
+}
+

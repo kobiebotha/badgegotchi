@@ -1,0 +1,33 @@
+Local directory . is mounted at /remote
+RAM_MODULE_BYTES_SHA256 736614 4c08b86526c8a2b198d05b145c8a4dcb8d734d46de962c6aa324a07b6ed02e22
+RAM_MODULE_IMPORT_MS 2888
+Traceback (most recent call last):
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/bin/mpremote", line 12, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/main.py", line 622, in main
+    handler_func(state, args)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/commands.py", line 515, in do_run
+    _do_execbuffer(state, buf, args.follow)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/commands.py", line 489, in _do_execbuffer
+    ret, ret_err = state.transport.follow(timeout=None, data_consumer=stdout_write_bytes)
+                   ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 220, in follow
+    data = self.read_until(1, b"\x04", timeout=timeout, data_consumer=data_consumer)
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 158, in read_until
+    if self.is_pty or self.serial.inWaiting() > 0:
+                      ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 1068, in inWaiting
+    self._check_input(False)
+    ~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/mpremote/transport_serial.py", line 1043, in _check_input
+    if blocking or self.orig_serial.inWaiting() > 0:
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/serial/serialutil.py", line 594, in inWaiting
+    return self.in_waiting
+           ^^^^^^^^^^^^^^^
+  File "/Users/kobie/projects/powersync/skunkworks/powerbadge/native/.tools/uv/archive-v0/d72dw6_U1MNvOQwC/lib/python3.14/site-packages/serial/serialposix.py", line 549, in in_waiting
+    s = fcntl.ioctl(self.fd, TIOCINQ, TIOCM_zero_str)
+OSError: [Errno 6] Device not configured

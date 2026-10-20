@@ -1,0 +1,6 @@
+Local directory . is mounted at /remote
+RAM_MODULE_BYTES_SHA256 736614 4c08b86526c8a2b198d05b145c8a4dcb8d734d46de962c6aa324a07b6ed02e22
+RAM_MODULE_IMPORT_MS 2891
+Traceback (most recent call last):
+  File "<stdin>", line 17, in <module>
+AttributeError: 'module' object has no attribute 'run'
