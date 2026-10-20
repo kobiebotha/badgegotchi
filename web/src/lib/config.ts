@@ -2,7 +2,6 @@ export interface PublicConfig {
   supabaseUrl: string;
   supabaseKey: string;
   powersyncUrl: string;
-  authRedirectUrl?: string;
 }
 
 export const config: PublicConfig = {
@@ -13,18 +12,13 @@ export const config: PublicConfig = {
       import.meta.env.VITE_SUPABASE_ANON_KEY
     )?.trim() ?? "",
   powersyncUrl: import.meta.env.VITE_POWERSYNC_URL?.trim() ?? "",
-  authRedirectUrl: import.meta.env.VITE_AUTH_REDIRECT_URL?.trim() || undefined,
 };
 
 export function validateConfig(value: PublicConfig): string | null {
   if (!value.supabaseUrl || !value.supabaseKey || !value.powersyncUrl) {
     return "Set VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY), and VITE_POWERSYNC_URL.";
   }
-  for (const raw of [
-    value.supabaseUrl,
-    value.powersyncUrl,
-    value.authRedirectUrl,
-  ].filter(Boolean)) {
+  for (const raw of [value.supabaseUrl, value.powersyncUrl]) {
     try {
       const url = new URL(raw!);
       const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
@@ -36,7 +30,7 @@ export function validateConfig(value: PublicConfig): string | null {
         return "Service URLs must use HTTPS, except for local development.";
       }
     } catch {
-      return "The Supabase, PowerSync, or sign-in redirect URL is invalid.";
+      return "The Supabase or PowerSync URL is invalid.";
     }
   }
   if (value.supabaseKey.startsWith("sb_secret_")) {

@@ -37,6 +37,7 @@ const owner = new UserDatabaseOwner(
     void database
       .connect(
         new SupabaseConnector(getSupabaseClient(), requireConfig(), userId),
+        { diagnostics: import.meta.env.DEV },
       )
       .catch(() => {
         console.warn(

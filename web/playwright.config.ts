@@ -32,7 +32,6 @@ export default defineConfig({
       VITE_SUPABASE_ANON_KEY: 'sb_publishable_browser_test_only',
       VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_browser_test_only',
       VITE_POWERSYNC_URL: 'https://sync.badgegotchi.test',
-      VITE_AUTH_REDIRECT_URL: 'http://127.0.0.1:5173/',
     },
   },
 });

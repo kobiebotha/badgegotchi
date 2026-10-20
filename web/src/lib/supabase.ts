@@ -19,15 +19,11 @@ export function getSupabaseClient(): SupabaseClient {
   return client;
 }
 
-export async function requestMagicLink(email: string): Promise<void> {
-  const config = requireConfig();
+export async function requestEmailCode(email: string): Promise<void> {
   const { error } = await getSupabaseClient().auth.signInWithOtp({
     email: email.trim(),
     options: {
       shouldCreateUser: true,
-      emailRedirectTo:
-        config.authRedirectUrl ??
-        new URL(import.meta.env.BASE_URL, window.location.origin).href,
     },
   });
   if (error) throw error;

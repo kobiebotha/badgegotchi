@@ -29,14 +29,48 @@ include a service-role, database, or OpenAI secret. `.env.local` is ignored by G
 npm run dev
 ```
 
-Open [localhost:5173](http://localhost:5173). Configure Supabase Auth's redirect
-allowlist to include `http://localhost:5173/`. If using the development server's
-`http://127.0.0.1:5173/` address, allowlist that URL too.
-
-Sign in with an email link or the email's six- or eight-digit code. The default
-link returns to the current app origin. Set optional `VITE_AUTH_REDIRECT_URL`
-when a specific callback URL is needed, and add that exact URL to the allowlist.
+Open [localhost:5173](http://localhost:5173). Sign in by entering the one-time
+code from the email. New and returning users use the same flow: verifying the
+code also confirms the email address. There is no separate confirmation link.
+Resending is available after 60 seconds; use the newest code in your inbox.
 Restart the dev server after changing environment settings.
+
+Both Supabase Auth email templates, **Confirm signup** and **Magic Link**, must
+use [`sign-in-code.html`](../supabase/templates/sign-in-code.html) with the subject
+**Your Badgegotchi sign-in code**. The template uses `{{ .Token }}`; the default
+link-only templates do not send a code. Both are configured in
+[`supabase/config.toml`](../supabase/config.toml) for local development, with email
+confirmation enabled and eight-digit codes. For a new hosted project, set both
+templates in its Auth email-template settings. Code verification establishes the
+session in the requesting browser and does not depend on redirect allowlists.
+
+Supabase's built-in email sender is for initial testing. Its current limit is
+**two messages per hour for the entire project**, shared across signup, sign-in,
+and recovery emails. Changing the recipient or using a `+test` alias does not
+create a new quota. It also restricts delivery to organization team addresses.
+Configure [custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp) with a
+verified sender before testing with other people or using email sign-in in
+production. SMTP credentials belong in hosted Supabase Auth settings, never in
+`VITE_*` variables. The app's 60-second resend cooldown is separate from the
+project-wide sending quota; a cooldown ending does not guarantee mail can send.
+
+### PowerSync diagnostics
+
+Development runs include [PowerSync DevTools](https://docs.powersync.com/tools/devtools/vite).
+Open the PowerSync entry in the dock at the bottom of the page. On first use,
+authorize your browser with the code printed in the Vite terminal. Keep the
+signed-in app tab open so DevTools can attach to its database.
+
+Check Sync Status and the upload queue before changing data. The MCP endpoint is
+`http://127.0.0.1:5173/__devtools/__mcp` (use the actual dev server port), with
+the header `Origin: http://127.0.0.1:5173`. Start with `powersync_sources`,
+`powersync_status`, and `powersync_upload-queue`; use the returned database ID
+when multiple tabs are attached. `powersync_info` includes the current JWT,
+so do not copy its raw response into logs or bug reports. `clearData` deletes
+pending writes as well as synced data.
+
+DevTools runs only on the development server and is excluded from production
+builds. The SDK's additional bucket diagnostics are enabled only in development.
 
 ## Backend prerequisite
 
@@ -53,10 +87,10 @@ cloud backend:
    to the intended Supabase database.
 2. Redeploy the updated [`pet-ai`](../supabase/functions/pet-ai/handler.ts) function,
    which accepts that source value.
-3. Add the final Vercel app URL to the Supabase Auth redirect allowlist, retaining
-   the local development redirects and any redirects still used by existing clients.
+3. Configure both hosted Auth email templates as described above. Keep any
+   redirect URLs still needed by other authentication flows.
 
-These changes are prepared locally. They are not applied by `npm run build`.
+These backend prerequisites are not applied by `npm run build`.
 Until both backend updates are deployed, browser pet-event uploads can be
 rejected and remain queued; the app displays the upload error. Use the existing
 server-side OpenAI configuration.
@@ -79,8 +113,7 @@ Create or connect the intended Vercel project with:
 | Node.js | A supported version satisfying Node.js 22.13 or newer |
 
 Set the public environment variables above for each intended deployment
-environment. Add `VITE_AUTH_REDIRECT_URL` only if the default current-origin
-redirect is unsuitable. Environment changes require a rebuild because Vite
+environment. Environment changes require a rebuild because Vite
 replaces these values at build time. [`vercel.json`](vercel.json) contains the SPA
 fallback and response headers.
 

@@ -50,6 +50,30 @@ describe('SupabaseConnector', () => {
     return { database, complete };
   }
 
+  it('uploads through native browser fetch without binding it to the connector', async () => {
+    // WebIDL permits a global/undefined receiver, but rejects a foreign object.
+    // Arrow-function request mocks hide this browser-only failure.
+    const browserFetch = vi.fn(function (this: unknown, ..._args: Parameters<typeof fetch>) {
+      if (this !== undefined && this !== globalThis) {
+        throw new TypeError("Failed to execute 'fetch' on 'Window': Illegal invocation");
+      }
+      return Promise.resolve(new Response(null, { status: 204 }));
+    });
+    vi.stubGlobal('fetch', browserFetch);
+    try {
+      const browserConnector = new SupabaseConnector(client, config, 'user-1');
+      const { database, complete } = transaction([
+        { table: 'wellness_events', op: UpdateType.PUT, id: 'wellness-1', opData: { type: 'hydration' } },
+        event,
+      ]);
+      await browserConnector.uploadData(database);
+      expect(browserFetch).toHaveBeenCalledTimes(2);
+      expect(complete).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('reads current tokens for every credentials request and rejects another account', async () => {
     expect(await connector.fetchCredentials()).toMatchObject({ token: 'token-1', endpoint: config.powersyncUrl });
     session = { ...session!, access_token: 'token-2' };

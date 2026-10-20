@@ -137,7 +137,9 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
       headers.Prefer = "return=minimal";
       if (op === UpdateType.PATCH) body = JSON.stringify(data);
     }
-    const response = await this.request(url, {
+    // Native browser fetch rejects the connector object as its receiver.
+    const request = this.request;
+    const response = await request(url, {
       method,
       headers,
       body,

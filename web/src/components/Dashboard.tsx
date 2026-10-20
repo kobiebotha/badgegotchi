@@ -39,6 +39,7 @@ import {
 import type { AnimalSpec } from "../domain";
 import { ensurePet, resetPet } from "../lib/petCloud";
 import { signOut } from "../lib/database";
+import { messageFor } from "../lib/errors";
 import { Brand } from "./Brand";
 
 function useClock() {
@@ -55,12 +56,6 @@ function useClock() {
     };
   }, []);
   return now;
-}
-
-function messageFor(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : "Something went wrong. Please try again.";
 }
 
 export function Dashboard({

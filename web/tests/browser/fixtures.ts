@@ -5,7 +5,7 @@ export const userId = '11111111-1111-4111-8111-111111111111';
 const email = 'browser-test@example.test';
 const storageKey = 'sb-badgegotchi-auth-token';
 
-function sessionForTest() {
+function sessionForTest(emailAddress = email) {
   const expiresAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
   const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
   return {
@@ -20,7 +20,7 @@ function sessionForTest() {
       id: userId,
       aud: 'authenticated',
       role: 'authenticated',
-      email,
+      email: emailAddress,
       app_metadata: { provider: 'email', providers: ['email'] },
       user_metadata: {},
       created_at: '2026-01-01T00:00:00.000Z',
@@ -30,11 +30,17 @@ function sessionForTest() {
 
 interface MockBackend {
   requests: { url: string; method: string; body: unknown }[];
+  acceptCode(code: string): void;
+  holdAuthResponses(): () => void;
+  failNextEmailRequest(error: { status: number; code?: string; message: string }): void;
 }
 
 export const test = base.extend<{ backend: MockBackend }>({
   backend: async ({ context }, use) => {
     const requests: MockBackend['requests'] = [];
+    let acceptedCode: string | null = null;
+    let authGate: Promise<void> | null = null;
+    const emailFailures: { status: number; code?: string; message: string }[] = [];
     await context.route('**/*', async (route) => {
       const request = route.request();
       const url = new URL(request.url());
@@ -48,16 +54,33 @@ export const test = base.extend<{ backend: MockBackend }>({
       const json = (status: number, payload: unknown) => route.fulfill({
         status,
         contentType: 'application/json',
-        headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' },
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Expose-Headers': 'X-Supabase-Api-Version',
+          // auth-js reads response.code only for versioned Auth responses.
+          'X-Supabase-Api-Version': '2024-01-01',
+        },
         body: JSON.stringify(payload),
       });
       if (url.hostname === 'badgegotchi.supabase.test' && url.pathname.startsWith('/auth/v1/')) {
-        if (url.pathname === '/auth/v1/otp') return json(200, {});
+        if (authGate) await authGate;
+        if (url.pathname === '/auth/v1/otp') {
+          const failure = emailFailures.shift();
+          return failure
+            ? json(failure.status, { code: failure.code, message: failure.message })
+            : json(200, {});
+        }
         if (url.pathname === '/auth/v1/user') return json(200, sessionForTest().user);
         if (url.pathname === '/auth/v1/token') return json(200, sessionForTest());
-        if (url.pathname === '/auth/v1/verify') return json(422, {
-          code: 'otp_expired', message: 'That code has expired. Request a new one.',
-        });
+        if (url.pathname === '/auth/v1/verify') {
+          const submitted = body as { token?: string; email?: string };
+          return acceptedCode && submitted.token === acceptedCode
+            ? json(200, sessionForTest(submitted.email))
+            : json(422, {
+              code: 'otp_expired', message: 'That code has expired. Request a new one.',
+            });
+        }
         if (url.pathname === '/auth/v1/logout') return route.fulfill({ status: 204 });
       }
       if (url.hostname === 'badgegotchi.supabase.test' || url.hostname === 'sync.badgegotchi.test') {
@@ -66,7 +89,16 @@ export const test = base.extend<{ backend: MockBackend }>({
       // No external request may reach a live service, including accidental URLs.
       await route.abort('blockedbyclient');
     });
-    await use({ requests });
+    await use({
+      requests,
+      acceptCode(code) { acceptedCode = code; },
+      failNextEmailRequest(error) { emailFailures.push(error); },
+      holdAuthResponses() {
+        let release!: () => void;
+        authGate = new Promise<void>((resolve) => { release = resolve; });
+        return () => { authGate = null; release(); };
+      },
+    });
   },
 });
 

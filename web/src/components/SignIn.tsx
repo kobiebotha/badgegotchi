@@ -1,47 +1,110 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { isAuthApiError } from "@supabase/supabase-js";
 import { ArrowRight, Check, Heart, Leaf, Mail } from "lucide-react";
 import { Brand } from "./Brand";
-import { requestMagicLink, verifyEmailOtp } from "../lib/supabase";
+import { requestEmailCode, verifyEmailOtp } from "../lib/supabase";
+
+function authErrorMessage(error: unknown, fallback: string): string {
+  if (isAuthApiError(error)) {
+    if (error.code === "over_email_send_rate_limit") {
+      return "Sign-in emails are temporarily unavailable because the email service has reached its sending limit. Please try again later.";
+    }
+    if (error.code === "over_request_rate_limit" || error.status === 429) {
+      return "Too many sign-in requests right now. Please wait a little before trying again.";
+    }
+  }
+  return error instanceof Error ? error.message : fallback;
+}
 
 export function SignIn() {
   const [email, setEmail] = useState("");
   const [sentTo, setSentTo] = useState("");
+  const [codeWasRequested, setCodeWasRequested] = useState(false);
   const [code, setCode] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<"send" | "resend" | "verify" | null>(null);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [resendAvailableAt, setResendAvailableAt] = useState(0);
+  const [secondsUntilResend, setSecondsUntilResend] = useState(0);
+  const requestInFlight = useRef(false);
+  const busy = pending !== null;
 
-  async function sendLink(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true);
+  useEffect(() => {
+    if (!sentTo || !resendAvailableAt) {
+      setSecondsUntilResend(0);
+      return;
+    }
+    const update = () =>
+      setSecondsUntilResend(
+        Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1000)),
+      );
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [sentTo, resendAvailableAt]);
+
+  async function sendCode(address: string, resend = false) {
+    if (requestInFlight.current || (resend && Date.now() < resendAvailableAt)) return;
+    requestInFlight.current = true;
+    setPending(resend ? "resend" : "send");
     setError("");
+    setNotice("");
     try {
-      await requestMagicLink(email.trim());
-      setSentTo(email.trim());
+      await requestEmailCode(address);
+      setEmail(address);
+      setSentTo(address);
+      setCodeWasRequested(true);
+      setCode("");
+      setResendAvailableAt(Date.now() + 60_000);
+      if (resend) {
+        setNotice("A new code is on its way. Use the newest email.");
+      }
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Couldn’t send your sign-in email. Please try again.",
+        authErrorMessage(error, "Couldn’t send your email code. Please try again."),
       );
     } finally {
-      setBusy(false);
+      requestInFlight.current = false;
+      setPending(null);
     }
+  }
+
+  function requestCode(event: FormEvent) {
+    event.preventDefault();
+    void sendCode(email.trim());
+  }
+
+  function enterExistingCode(form: HTMLFormElement | null) {
+    if (requestInFlight.current || !form?.reportValidity()) return;
+    const address = email.trim();
+    setEmail(address);
+    setSentTo(address);
+    setCodeWasRequested(false);
+    setCode("");
+    setError("");
+    setNotice("");
+    setResendAvailableAt(0);
   }
 
   async function verifyCode(event: FormEvent) {
     event.preventDefault();
-    setBusy(true);
+    if (requestInFlight.current) return;
+    requestInFlight.current = true;
+    setPending("verify");
     setError("");
+    setNotice("");
     try {
       await verifyEmailOtp(sentTo, code.trim());
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "That code didn’t work. Try the newest code in your inbox.",
+        authErrorMessage(
+          error,
+          "That code didn’t work. Try the newest code in your inbox.",
+        ),
       );
     } finally {
-      setBusy(false);
+      requestInFlight.current = false;
+      setPending(null);
     }
   }
 
@@ -91,15 +154,17 @@ export function SignIn() {
           </span>
           <p className="eyebrow">Your daily little ritual</p>
           <h2 id="sign-in-title">
-            {sentTo ? "Check your inbox" : "Meet your companion"}
+            {sentTo ? "Enter your email code" : "Meet your companion"}
           </h2>
           <p>
             {sentTo
-              ? `We sent a sign-in link to ${sentTo}. Open it here, or enter the email code below.`
-              : "Sign in with your email to bring your pet and your progress along."}
+              ? codeWasRequested
+                ? `Enter the sign-in code sent to ${sentTo}.`
+                : `Enter the sign-in code for ${sentTo}.`
+              : "We’ll email you a code to sign in or create your account."}
           </p>
           {sentTo ? (
-            <form onSubmit={verifyCode}>
+            <form onSubmit={verifyCode} aria-busy={busy}>
               <label htmlFor="code">Email code</label>
               <input
                 id="code"
@@ -110,6 +175,7 @@ export function SignIn() {
                 minLength={6}
                 maxLength={8}
                 required
+                disabled={busy}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="6–8 digit code"
@@ -120,8 +186,20 @@ export function SignIn() {
                 disabled={busy}
                 type="submit"
               >
-                {busy ? "Verifying…" : "Let’s settle in"}
+                {pending === "verify" ? "Verifying…" : "Verify code"}
                 <ArrowRight size={18} />
+              </button>
+              <button
+                className="text-button full"
+                type="button"
+                disabled={busy || secondsUntilResend > 0}
+                onClick={() => void sendCode(sentTo, true)}
+              >
+                {pending === "resend"
+                  ? "Sending a new code…"
+                  : secondsUntilResend > 0
+                    ? `Resend code (${secondsUntilResend}s)`
+                    : "Resend code"}
               </button>
               <button
                 className="text-button full"
@@ -129,15 +207,18 @@ export function SignIn() {
                 disabled={busy}
                 onClick={() => {
                   setSentTo("");
+                  setCodeWasRequested(false);
                   setError("");
                   setCode("");
+                  setNotice("");
+                  setResendAvailableAt(0);
                 }}
               >
-                Use a different email or resend
+                Use a different email
               </button>
             </form>
           ) : (
-            <form onSubmit={sendLink}>
+            <form onSubmit={requestCode} aria-busy={busy}>
               <label htmlFor="email">Email address</label>
               <input
                 id="email"
@@ -145,6 +226,7 @@ export function SignIn() {
                 name="email"
                 autoComplete="email"
                 required
+                disabled={busy}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -154,8 +236,16 @@ export function SignIn() {
                 disabled={busy}
                 type="submit"
               >
-                {busy ? "Sending…" : "Send sign-in link"}
+                {pending === "send" ? "Sending…" : "Send email code"}
                 <ArrowRight size={18} />
+              </button>
+              <button
+                className="text-button full"
+                disabled={busy}
+                type="button"
+                onClick={(event) => enterExistingCode(event.currentTarget.form)}
+              >
+                I already have a code
               </button>
             </form>
           )}
@@ -164,9 +254,10 @@ export function SignIn() {
               {error}
             </p>
           )}
+          {notice && <p role="status">{notice}</p>}
           <p className="fine-print">
-            No password to remember. Use the same email as your Mac app to pick
-            up where you left off.
+            No password to remember. Your email keeps your companion and
+            progress together.
           </p>
         </section>
       </main>

@@ -23,6 +23,19 @@ additional_redirect_urls = [
   "http://127.0.0.1:5173/",
 ]
 
+[auth.email]
+enable_confirmations = true
+max_frequency = "1m"
+otp_length = 8
+
+[auth.email.template.confirmation]
+subject = "Your Badgegotchi sign-in code"
+content_path = "./supabase/templates/sign-in-code.html"
+
+[auth.email.template.magic_link]
+subject = "Your Badgegotchi sign-in code"
+content_path = "./supabase/templates/sign-in-code.html"
+
 [functions.pet-ai]
 enabled = true
 verify_jwt = true

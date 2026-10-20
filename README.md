@@ -18,8 +18,8 @@ npm run dev
 
 The development checkout already has an ignored `web/.env.local` populated with
 public client configuration. See [web setup and deployment](web/README.md) for
-Vercel settings, browser auth redirects, and the required backend rollout that
-adds `web` to pet event sources. The web app has not been deployed.
+Vercel settings, sign-in email templates, and PowerSync DevTools. The development
+Supabase backend accepts `web` pet event sources as of October 20, 2026.
 
 ## Architecture
 
