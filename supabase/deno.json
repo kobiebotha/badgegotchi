@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "test": "deno test functions/pet-ai/handler_test.ts",
+    "check": "deno check functions/pet-ai/index.ts",
+    "lint": "deno lint functions/pet-ai"
+  }
+}

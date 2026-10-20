@@ -1,0 +1,30 @@
+import { authenticate, expect, metric, openDashboard, test } from './fixtures';
+
+test('production WASM and worker chunks support offline activity across reloads', async ({ context, page, backend }) => {
+  await authenticate(context);
+  await openDashboard(page);
+  await page.getByRole('button', { name: 'Start focus', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Focus paused', exact: true })).toBeVisible();
+  const paused = await page.getByRole('timer').innerText();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Focus paused', exact: true })).toBeVisible();
+  await expect(page.getByRole('timer')).toHaveText(paused);
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Stop', exact: true }).click();
+  await expect(metric(page, 'Focus ended')).toHaveText('1');
+  await page.getByRole('button', { name: /Drink water/ }).click();
+  await expect(metric(page, 'Glasses of water')).toHaveText('1');
+  await page.getByRole('button', { name: /Move & stretch/ }).click();
+  await expect(metric(page, 'Movement breaks')).toHaveText('1');
+  await page.reload();
+  await expect(metric(page, 'Focus ended')).toHaveText('1');
+  await expect(metric(page, 'Glasses of water')).toHaveText('1');
+  await expect(metric(page, 'Movement breaks')).toHaveText('1');
+  await expect(page.getByRole('button', { name: 'Start focus', exact: true })).toBeEnabled();
+  await expect(page.getByText('Your changes are saved on this device. Sync will retry automatically.')).toBeVisible();
+  expect(backend.requests.every((request) => new URL(request.url).hostname.endsWith('.test'))).toBe(true);
+  await page.screenshot({ path: test.info().outputPath('production-dashboard.png'), fullPage: true });
+});

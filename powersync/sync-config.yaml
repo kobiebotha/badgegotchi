@@ -1,0 +1,80 @@
+# Adds YAML Schema support for VSCode users with the YAML extension installed. This enables features like validation and autocompletion based on the provided schema.
+# yaml-language-server: $schema=https://unpkg.com/@powersync/service-sync-rules@latest/schema/sync_config.json
+config:
+  edition: 3
+
+streams:
+  sessions:
+    auto_subscribe: true
+    query: |
+      SELECT
+        id,
+        day_key,
+        type,
+        planned_duration_seconds,
+        state,
+        outcome,
+        started_at,
+        last_resumed_at,
+        paused_at,
+        ended_at,
+        remaining_seconds_at_pause
+      FROM sessions
+      WHERE owner_id = auth.user_id()
+  wellness_events:
+    auto_subscribe: true
+    query: |
+      SELECT
+        id,
+        day_key,
+        type,
+        occurred_at
+      FROM wellness_events
+      WHERE owner_id = auth.user_id()
+  daily_activity_summary:
+    auto_subscribe: true
+    query: |
+      SELECT
+        id,
+        day_key,
+        ended_focus_count,
+        ended_break_count,
+        hydration_count,
+        movement_count,
+        last_hydration_at,
+        hydration_timer_anchor_at,
+        hydration_reminder_active,
+        updated_at
+      FROM daily_activity_summary
+      WHERE owner_id = auth.user_id()
+  pet_sessions:
+    auto_subscribe: true
+    query: |
+      SELECT
+        id,
+        animal_id,
+        bio_name,
+        bio_summary,
+        latest_speech,
+        latest_event_id,
+        last_error,
+        created_at,
+        updated_at
+      FROM pet_sessions
+      WHERE owner_id = auth.user_id()
+  pet_events:
+    auto_subscribe: true
+    query: |
+      SELECT
+        id,
+        pet_session_id,
+        event_type,
+        source_device,
+        status,
+        reaction_speech,
+        error_message,
+        created_at,
+        claimed_at,
+        completed_at
+      FROM pet_events
+      WHERE owner_id = auth.user_id()
