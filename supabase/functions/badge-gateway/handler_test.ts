@@ -65,7 +65,7 @@ function harness(
     if (dest.endsWith("/badge_rate_limit")) {
       return Promise.resolve(Response.json(options.rateAllowed ?? true));
     }
-    if (dest.endsWith("/badge_gateway")) {
+    if (dest.endsWith("/badge_gateway") || dest.endsWith("/account_gateway")) {
       return Promise.resolve(
         Response.json(
           options.result ??
@@ -375,4 +375,116 @@ Deno.test("old accepted receipt retries reach SQL before first-acceptance age ch
   );
   equal(res.status, 200);
   assert(calls.some((c) => c.url.endsWith("/badge_gateway")));
+});
+
+Deno.test("account command derives browser owner and canonical immutable payload", async () => {
+  const { handler, calls } = harness({
+    result: { state: "accepted", command_id: event, revision: "1" },
+  });
+  const command = {
+    id: event.toUpperCase(),
+    type: "timer_start",
+    occurred_at: "2026-10-20T18:00:00Z",
+    expected_revision: "0",
+    new_session_id: claim,
+    session_type: "focus",
+  };
+  equal((await handler(call({ action: "command", command }))).status, 200);
+  const rpc = calls.find((c) => c.url.endsWith("/account_gateway"))!;
+  equal(rpc.body.p_owner, owner);
+  equal(rpc.body.p_data, {
+    auth_session_id: session,
+    command: {
+      id: event,
+      type: "timer_start",
+      occurred_at: "2026-10-20T18:00:00.000Z",
+      expected_revision: "0",
+      new_session_id: claim,
+      session_type: "focus",
+    },
+  });
+});
+Deno.test("badge command hashes credential and terminal conflict stays successful HTTP", async () => {
+  const { handler, calls } = harness({
+    result: {
+      state: "rejected",
+      command_id: event,
+      reason: "stale_revision",
+      revision: "4",
+    },
+  });
+  const response = await handler(
+    call({
+      action: "command",
+      credential,
+      command: {
+        id: event,
+        type: "hydration",
+        occurred_at: "2026-10-20T18:00:00Z",
+      },
+    }, ""),
+  );
+  equal(response.status, 200);
+  equal((await response.json()).state, "rejected");
+  assert(!calls.some((c) => c.url.endsWith("/auth/v1/user")));
+  const rpc = calls.find((c) => c.url.endsWith("/account_gateway"))!;
+  equal(rpc.body.p_owner, null);
+  assert(!JSON.stringify(rpc.body).includes(credential));
+});
+Deno.test("commands reject extra ownership, invalid revisions, and mismatched reset day", async () => {
+  for (
+    const extra of [{ owner_id: owner }, { expected_revision: 0 }, {
+      expected_revision: "-1",
+    }, { expected_revision: "9223372036854775808" }]
+  ) {
+    const { handler, calls } = harness();
+    equal(
+      (await handler(
+        call({
+          action: "command",
+          command: {
+            id: event,
+            type: "timer_pause",
+            occurred_at: "2026-10-20T18:00:00Z",
+            session_id: claim,
+            expected_revision: "0",
+            ...extra,
+          },
+        }),
+      )).status,
+      400,
+    );
+    assert(!calls.some((c) => c.url.endsWith("/account_gateway")));
+  }
+  const { handler } = harness();
+  equal(
+    (await handler(
+      call({
+        action: "command",
+        command: {
+          id: event,
+          type: "reset_day",
+          occurred_at: "2026-10-20T18:00:00Z",
+          expected_revision: "0",
+          day_key: "2026-10-19",
+        },
+      }),
+    )).status,
+    400,
+  );
+});
+Deno.test("refresh validates owner session instead of trusting owner field", async () => {
+  const { handler, calls } = harness({
+    result: { timer: { revision: "0" }, summary: { day_key: "2026-10-20" } },
+  });
+  equal((await handler(call({ action: "refresh" }))).status, 200);
+  equal(calls.find((c) => c.url.endsWith("/account_gateway"))!.body, {
+    p_action: "refresh",
+    p_owner: owner,
+    p_data: { auth_session_id: session },
+  });
+  equal(
+    (await handler(call({ action: "refresh", owner_id: owner }))).status,
+    400,
+  );
 });

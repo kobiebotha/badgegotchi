@@ -13,15 +13,46 @@ import zipfile
 
 BADGE = Path(__file__).resolve().parents[1]
 REPO = BADGE.parent
-VERSION = "0.1.0-alpha.4"
+VERSION = "0.1.0-alpha.8"
 APP_ID = "badgegotchi"
 SOURCE_FILES = (
     "__init__.py", "badgegotchi_state.py", "badgegotchi_view.py",
     "badgegotchi_storage.py", "badgegotchi_runtime.py", "badgegotchi_identity.py", "icon.png",
     "badgegotchi_client.py", "badgegotchi_config.py", "badgegotchi_entropy.py",
     "badgegotchi_http.py", "badgegotchi_pairing.py", "badgegotchi_private.py",
-    "badgegotchi_sync.py", "badgegotchi_stream.py", "ca/sectigo-r46.der",
-    "assets/capybara.png", "README.md", "THIRD_PARTY_NOTICES.txt",
+    "badgegotchi_sync.py", "badgegotchi_stream.py", "badgegotchi_commands.py", "ca/sectigo-r46.der",
+    "README.md", "THIRD_PARTY_NOTICES.txt",
+    "assets/animals/bear.png",
+    "assets/animals/capybara.png",
+    "assets/animals/cat.png",
+    "assets/animals/chameleon.png",
+    "assets/animals/cheeta.png",
+    "assets/animals/cow.png",
+    "assets/animals/dog.png",
+    "assets/animals/duck.png",
+    "assets/animals/fox.png",
+    "assets/animals/hamster.png",
+    "assets/animals/hedgehog.png",
+    "assets/animals/hippo.png",
+    "assets/animals/monkey.png",
+    "assets/animals/octopus.png",
+    "assets/animals/otter.png",
+    "assets/animals/owl.png",
+    "assets/animals/panda.png",
+    "assets/animals/parrot.png",
+    "assets/animals/peacock.png",
+    "assets/animals/penguin.png",
+    "assets/animals/pig.png",
+    "assets/animals/rabbit.png",
+    "assets/animals/racoon.png",
+    "assets/animals/rhino.png",
+    "assets/animals/rooster.png",
+    "assets/animals/seal.png",
+    "assets/animals/sheep.png",
+    "assets/animals/sloth.png",
+    "assets/animals/snake.png",
+    "assets/animals/turtle.png",
+
     "licenses/PowerSync-Apache-2.0.txt", "licenses/PowerSync-NOTICE.txt",
     "licenses/MicroPython-MIT.txt", "licenses/Badgegotchi-CC0.txt",
     "licenses/Rust-dependencies.txt", "licenses/Compiler-runtime.txt", "licenses/Newlib.txt",
@@ -109,7 +140,7 @@ def build(app=BADGE / "app" / APP_ID, native=None, output=BADGE / "dist", web=No
     release = {
         "version": VERSION, "appId": APP_ID, "name": "Badgegotchi",
         "board": "tufty2350", "runtimeMpy": 7942,
-        "description": "Pair once with the web app using A/B/C, then reconnect to sync account wellness and current account data. Timer remains local. Requires the reviewed Badgeware 1.29.0 runtime and activated badge gateway. Candidate awaits live qualification.",
+        "description": "Pair once using A/B/C, then share account totals, the focus/break timer, and your pet with the web app. Offline actions queue for sync. Requires the reviewed Badgeware 1.29.0 runtime and activated shared-command gateway.",
         "zipUrl": base + "/" + filename, "zipSha256": digest, "zipBytes": len(archive),
         "files": [{"path": name, "url": base + "/files/" + name,
                    "bytes": len(data), "sha256": sha(data)}

@@ -79,7 +79,11 @@ class UpstreamError extends Error {
   }
 }
 
-export function createHandler(config: Config, request: Fetch = fetch) {
+export function createHandler(
+  config: Config,
+  request: Fetch = fetch,
+  workerSecret?: string,
+) {
   async function rpc(name: string, args: Json): Promise<Json> {
     const response = await request(
       `${config.supabaseUrl}/rest/v1/rpc/${name}`,
@@ -97,6 +101,89 @@ export function createHandler(config: Config, request: Fetch = fetch) {
     if (!response.ok) throw new Error("Database operation failed.");
     return object(await response.json());
   }
+  async function processClaim(claim: Json): Promise<Response> {
+    const event = object(claim.event);
+    const claimedEvent = object(claim.event);
+    const finishArgs = {
+      p_owner_id: event.owner_id,
+      p_id: event.id,
+      p_lease_token: claimedEvent.lease_token,
+    };
+    let speech: string | null = null;
+    let error: string | null = null;
+    try {
+      if (!config.openaiKey) throw new UpstreamError(true);
+      const pet = object(claim.pet);
+      const response = await request("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${config.openaiKey}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: config.model || "gpt-4.1-mini",
+          store: false,
+          max_output_tokens: 100,
+          instructions:
+            `You are a kind, playful ${pet.animal_id} companion in a focus app. ` +
+            "Reply to the event in exactly one short sentence, at most 16 words. " +
+            "Be supportive about pauses, early stops, breaks, hydration and movement. " +
+            "Plain English text only. No markdown, explanations, or narrated actions.",
+          input: events[String(event.event_type)],
+        }),
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!response.ok) {
+        // Configuration, rate limit and infrastructure failures retain the outbox.
+        if (
+          [401, 403, 404, 408, 409, 429].includes(response.status) ||
+          response.status >= 500
+        ) {
+          throw new UpstreamError(true);
+        }
+        throw new UpstreamError(false);
+      }
+      const result = object(await response.json());
+      const output = Array.isArray(result.output) ? result.output : [];
+      const parts = output.flatMap((item) => {
+        const content = object(item).content;
+        return Array.isArray(content) ? content : [];
+      }).filter((part) => object(part).type === "output_text")
+        .map((part) => object(part).text)
+        .filter((part): part is string => typeof part === "string");
+      speech = parts.join(" ").replace(/\s+/g, " ").trim();
+      if (result.status !== "completed" || !speech || speech.length > 240) {
+        throw new UpstreamError(false);
+      }
+    } catch (err) {
+      if (!(err instanceof UpstreamError) || err.retry) {
+        const retry = await rpc("pet_ai_finish", {
+          ...finishArgs,
+          p_retry: true,
+        });
+        if (retry.state === "failed") {
+          return reply({ status: "failed", event_id: event.id });
+        }
+        return reply({
+          error: "Cloud inference unavailable; event retained for retry.",
+        }, 503);
+      }
+      error = "Your pet could not think of a reply. Try another action.";
+      speech = null;
+    }
+    const finished = await rpc("pet_ai_finish", {
+      ...finishArgs,
+      p_speech: speech,
+      p_error: error,
+    });
+    if (finished.state !== "completed" && finished.state !== "failed") {
+      return reply(
+        { error: "Result could not be committed; retry later." },
+        503,
+      );
+    }
+    return reply({ status: finished.state, event_id: event.id });
+  }
   return async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
     if (req.method !== "POST") return reply({ error: "Use POST." }, 405);
@@ -107,6 +194,25 @@ export function createHandler(config: Config, request: Fetch = fetch) {
     try {
       if (!config.supabaseUrl || !config.serviceKey) {
         return reply({ error: "Backend configuration is incomplete." }, 503);
+      }
+      if (workerSecret !== undefined) {
+        // Only the dedicated pet-worker entrypoint supplies this secret.
+        const given = authorization.slice(7);
+        let difference = given.length ^ workerSecret.length;
+        for (let i = 0; i < workerSecret.length; i++) {
+          difference |= (given.charCodeAt(i) || 0) ^ workerSecret.charCodeAt(i);
+        }
+        if (workerSecret.length < 32 || difference !== 0) {
+          return reply({ error: "Unauthorized." }, 401);
+        }
+        // One bounded provider call per invocation; persisted lease + cron handle
+        // overlap, termination and retries without depending on another user action.
+        const claim = await rpc("pet_ai_claim_next", {});
+        if (claim.state === "empty") return reply({ status: "empty" });
+        if (claim.state !== "claimed") {
+          return reply({ error: "Retry later." }, 503);
+        }
+        return await processClaim(claim);
       }
       // Resolve the identity at Auth, never decode an unverified JWT or trust owner_id.
       const auth = await request(`${config.supabaseUrl}/auth/v1/user`, {
@@ -199,80 +305,7 @@ export function createHandler(config: Config, request: Fetch = fetch) {
       if (claim.state !== "claimed") {
         return reply({ error: "Retry later." }, 503);
       }
-      const claimedEvent = object(claim.event);
-      const finishArgs = {
-        p_owner_id: user.id,
-        p_id: event.id,
-        p_lease_token: claimedEvent.lease_token,
-      };
-      let speech: string | null = null;
-      let error: string | null = null;
-      try {
-        if (!config.openaiKey) throw new UpstreamError(true);
-        const pet = object(claim.pet);
-        const response = await request("https://api.openai.com/v1/responses", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${config.openaiKey}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            model: config.model || "gpt-4.1-mini",
-            store: false,
-            max_output_tokens: 100,
-            instructions:
-              `You are a kind, playful ${pet.animal_id} companion in a focus app. ` +
-              "Reply to the event in exactly one short sentence, at most 16 words. " +
-              "Be supportive about pauses, early stops, breaks, hydration and movement. " +
-              "Plain English text only. No markdown, explanations, or narrated actions.",
-            input: events[event.event_type],
-          }),
-          signal: AbortSignal.timeout(30_000),
-        });
-        if (!response.ok) {
-          // Configuration, rate limit and infrastructure failures retain the outbox.
-          if (
-            [401, 403, 404, 408, 409, 429].includes(response.status) ||
-            response.status >= 500
-          ) {
-            throw new UpstreamError(true);
-          }
-          throw new UpstreamError(false);
-        }
-        const result = object(await response.json());
-        const output = Array.isArray(result.output) ? result.output : [];
-        const parts = output.flatMap((item) => {
-          const content = object(item).content;
-          return Array.isArray(content) ? content : [];
-        }).filter((part) => object(part).type === "output_text")
-          .map((part) => object(part).text)
-          .filter((part): part is string => typeof part === "string");
-        speech = parts.join(" ").replace(/\s+/g, " ").trim();
-        if (result.status !== "completed" || !speech || speech.length > 240) {
-          throw new UpstreamError(false);
-        }
-      } catch (err) {
-        if (!(err instanceof UpstreamError) || err.retry) {
-          await rpc("pet_ai_finish", { ...finishArgs, p_retry: true });
-          return reply({
-            error: "Cloud inference unavailable; event retained for retry.",
-          }, 503);
-        }
-        error = "Your pet could not think of a reply. Try another action.";
-        speech = null;
-      }
-      const finished = await rpc("pet_ai_finish", {
-        ...finishArgs,
-        p_speech: speech,
-        p_error: error,
-      });
-      if (finished.state !== "completed" && finished.state !== "failed") {
-        return reply(
-          { error: "Result could not be committed; retry later." },
-          503,
-        );
-      }
-      return reply({ status: finished.state, event_id: event.id });
+      return await processClaim(claim);
     } catch {
       // Do not expose auth tokens, provider bodies, prompts or DB error details.
       return reply({ error: "Service unavailable; retry later." }, 503);

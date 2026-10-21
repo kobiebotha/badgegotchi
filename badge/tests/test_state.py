@@ -1,329 +1,178 @@
-"""Timer behavior without a badge, filesystem, or clock."""
-
+"""Account-only timer, totals and foreground Home lifecycle."""
+import copy
 import sys
 import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app" / "badgegotchi"))
-from badgegotchi_state import AppState, FOCUS_MS, BREAK_MS, rtc_seconds
+from badgegotchi_state import AppState, unix_seconds, remaining_seconds, optimistic_timer, transition_seconds
+
+SESSION = "11111111-1111-4111-8111-111111111111"
+NEXT = "22222222-2222-4222-8222-222222222222"
+STAMP = "2026-10-20T22:00:00Z"
+NOW = unix_seconds(STAMP)
+
+
+def timer(**changes):
+    result = dict(id=SESSION, type="focus", state="active", revision="9007199254740993",
+                  planned_duration_seconds=2400, remaining_seconds_at_pause=2400,
+                  started_at=STAMP, last_resumed_at=STAMP, paused_at=None)
+    result.update(changes)
+    return result
+
+
+def command(kind, **changes):
+    result = dict(id=NEXT, type=kind, session_id=SESSION,
+                  expected_revision="9007199254740993", occurred_at="2026-10-20T22:40:00Z")
+    result.update(changes)
+    return result
 
 
 class StateTests(unittest.TestCase):
-    def setUp(self):
-        self.now = 1792526000
+    def test_no_local_totals_or_invented_identity_before_sync(self):
+        state = AppState(clock=lambda: NOW)
+        self.assertIsNone(state.timer)
+        self.assertIsNone(state.water_count)
+        self.assertIsNone(state.focus_count)
+        self.assertIsNone(state.remaining_ms)
+        self.assertEqual(state.pet, {})
+        self.assertNotEqual(state.name, "Mochi")
 
-    def ready(self, snapshot=None):
-        state = AppState(snapshot, clock=lambda: self.now)
-        state.step((), 0)
-        return state
-
-    def press(self, state, button):
-        state.step((), 0)
-        return state.step((button,), 0)
-
-    def test_start_pause_resume_credits_only_running_time(self):
-        state = self.ready()
-        self.assertTrue(self.press(state, "toggle"))
-        state.step((), 1234)
-        self.assertEqual(state.remaining_ms, FOCUS_MS - 1234)
-        self.press(state, "toggle")
-        state.step((), 50000)
-        self.assertEqual(state.remaining_ms, FOCUS_MS - 1234)
-        self.press(state, "toggle")
-        state.step((), 766)
-        self.assertEqual(state.remaining_ms, FOCUS_MS - 2000)
-
-    def test_focus_completion_saves_once_and_waits_for_break_start(self):
-        state = self.ready()
-        state.remaining_ms = 1000
-        self.press(state, "toggle")
-        self.assertTrue(state.step((), 1001))
-        self.assertEqual((state.phase, state.remaining_ms, state.focus_count),
-                         ("break", BREAK_MS, 1))
-        self.assertFalse(state.running)
-        self.assertFalse(state.step((), 60000))
-        self.assertEqual(state.focus_count, 1)
-        self.assertEqual(state.remaining_ms, BREAK_MS)
-        self.press(state, "toggle")
-        state.remaining_ms = 1000
-        state.step((), 1000)
-        self.assertEqual((state.phase, state.remaining_ms, state.focus_count),
-                         ("focus", FOCUS_MS, 1))
-        self.assertFalse(state.running)
-
-    def test_launch_button_hold_is_drained_and_holds_do_not_repeat(self):
-        state = AppState()
-        state.step(("pet", "toggle", "water", "stretch"), 0)
-        state.step(("pet",), 1000)
-        self.assertEqual(state.pet_count, 0)
-        self.assertFalse(state.running)
-        state.step((), 0)
-        self.assertTrue(state.step(("pet", "water", "stretch"), 0))
-        self.assertFalse(state.step(("pet", "water", "stretch"), 1000))
-        self.assertEqual((state.pet_count, state.water_count, state.stretch_count), (1, 1, 1))
-        self.press(state, "pet")
-        self.assertEqual(state.pet_count, 2)
-
-    def test_checkpoint_is_due_each_minute_not_each_frame(self):
-        state = self.ready()
-        self.press(state, "toggle")
-        state.saved()
-        self.assertFalse(state.step((), 59000))
-        self.assertTrue(state.step((), 1000))
-        state.saved()
-        self.assertFalse(state.step((), 1000))
-        self.assertTrue(state.step((), 59000))
-
-    def test_reentry_counts_time_away_and_keeps_running(self):
-        state = self.ready()
-        for button in ("pet", "water", "stretch", "toggle"):
-            self.press(state, button)
-        state.step((), 1000)
-        snapshot = state.snapshot()
-        self.now += 45
-        restored = self.ready(snapshot)
-        self.assertTrue(restored.running)
-        self.assertEqual(restored.remaining_ms, FOCUS_MS - 46000)
-        self.assertEqual((restored.pet_count, restored.water_count, restored.stretch_count), (1, 1, 1))
-        self.assertTrue(snapshot["running"])
-
-    def test_away_completion_is_counted_once_and_does_not_chain(self):
-        state = self.ready()
-        state.remaining_ms = 1000
-        self.press(state, "toggle")
-        snapshot = state.snapshot()
-        self.now += 3600
-        restored = self.ready(snapshot)
-        self.assertEqual((restored.phase, restored.focus_count, restored.running),
-                         ("break", 1, False))
-        self.assertEqual(restored.remaining_ms, BREAK_MS)
-        again = self.ready(restored.snapshot())
-        self.assertEqual((again.phase, again.focus_count), ("break", 1))
-
-    def test_paused_timer_ignores_elapsed_time_away(self):
-        state = self.ready()
-        self.press(state, "toggle")
-        state.step((), 1234)
-        self.press(state, "toggle")
-        snapshot = state.snapshot()
-        self.now += 3600
-        restored = self.ready(snapshot)
-        self.assertFalse(restored.running)
-        self.assertEqual(restored.remaining_ms, FOCUS_MS - 1234)
-
-    def test_clock_reset_or_backwards_pauses_without_credit(self):
-        state = self.ready()
-        self.press(state, "toggle")
-        snapshot = state.snapshot()
-        for now in (None, self.now - 1):
-            restored = AppState(snapshot, clock=lambda: now)
-            self.assertFalse(restored.running)
-            self.assertEqual(restored.remaining_ms, FOCUS_MS)
-            self.assertEqual(restored.focus_count, 0)
-            self.assertIsNotNone(restored.clock_notice)
-            self.assertTrue(restored.step((), 0))
-
-    def test_legacy_timer_has_no_anchor_and_remains_paused(self):
-        snapshot = self.ready().snapshot()
-        snapshot.pop("clock_saved_s")
-        snapshot["running"] = True
-        restored = self.ready(snapshot)
-        self.assertFalse(restored.running)
-        self.assertEqual(restored.remaining_ms, FOCUS_MS)
-
-    def test_rtc_converts_micropython_2000_epoch_and_rejects_unset(self):
-        fake_time = types.SimpleNamespace(time=lambda: 100,
-                                         gmtime=lambda n: (2000 if n == 0 else 2026,))
-        with patch("badgegotchi_state.time", fake_time):
-            self.assertEqual(rtc_seconds(), 946684900)
-        fake_time.gmtime = lambda n: (2000,)
-        with patch("badgegotchi_state.time", fake_time):
-            self.assertIsNone(rtc_seconds())
-
-    def test_negative_and_untrusted_large_elapsed_are_bounded(self):
-        state = self.ready()
-        self.press(state, "toggle")
-        state.step((), -2000)
-        self.assertEqual(state.remaining_ms, FOCUS_MS)
-        state.step((), 999999999)
-        self.assertEqual(state.remaining_ms, FOCUS_MS - 60000)
-        self.assertEqual(state.focus_count, 0)
-
-    def test_invalid_saved_state_is_rejected_not_replaced(self):
-        state = AppState().snapshot()
-        for key, bad in (("phase", "invalid"), ("remaining_ms", -1),
-                         ("pet_count", True), ("water_count", 1000001)):
-            changed = dict(state)
-            changed[key] = bad
+    def test_utc_parser_and_paused_timer_are_timezone_independent(self):
+        import datetime
+        for stamp in ("2024-02-29T12:34:56Z", "2026-10-20T22:00:00.123456+00:00", "2099-12-31T23:59:59Z"):
+            expected = int(datetime.datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp())
+            self.assertEqual(unix_seconds(stamp), expected)
+        for bad in ("2025-02-29T12:00:00Z", "2026-01-01T25:00:00Z", "2026-01-01T00:00:00-07:00"):
             with self.assertRaises(ValueError):
-                AppState(changed)
-        changed = dict(state)
-        changed["phase"] = "break"
-        with self.assertRaises(ValueError):
-            AppState(changed)
+                unix_seconds(bad)
+        self.assertEqual(remaining_seconds(timer(state="paused", remaining_seconds_at_pause=122), NOW + 5000), 122)
 
-    def test_counter_cap_and_expiring_pet_animation(self):
-        state = self.ready()
-        state.pet_count = 1000000
-        self.press(state, "pet")
-        self.assertEqual(state.pet_count, 1000000)
-        self.assertEqual(state.reaction_ms, 1800)
-        state.step((), 1800)
-        self.assertEqual(state.reaction_ms, 0)
-        self.assertNotEqual(state.speech, "A little focus. A little company.")
-        state.step((), 3200)
-        self.assertEqual(state.speech, "A little focus. A little company.")
+    def test_fractional_server_anchor_cannot_complete_early(self):
+        fractional = timer(last_resumed_at="2026-10-20T22:00:00.900+00:00")
+        self.assertEqual(remaining_seconds(fractional, NOW + 2400), 1)
+        self.assertEqual(remaining_seconds(fractional, NOW + 2401), 0)
+
+    def test_command_time_clamps_after_fractional_shared_transition(self):
+        paused = timer(state="paused", paused_at="2026-10-20T22:00:00.900Z")
+        self.assertEqual(transition_seconds(paused, NOW), NOW + 1)
+        resumed = timer(last_resumed_at="2026-10-20T22:00:00.500+00:00")
+        self.assertEqual(transition_seconds(resumed, NOW), NOW + 1)
+        self.assertEqual(transition_seconds(resumed, NOW + 4), NOW + 4)
+        self.assertIsNone(transition_seconds(resumed, None))
+
+    def test_home_reopen_uses_same_synced_clock_anchor(self):
+        projection = {"timer": timer()}
+        first = AppState(clock=lambda: NOW + 20)
+        first.refresh(projection, [])
+        self.assertEqual(first.remaining_ms, 2380000)
+        reopened = AppState(clock=lambda: NOW + 110)
+        reopened.refresh(projection, [])
+        self.assertEqual(reopened.remaining_ms, 2290000)
+        self.assertTrue(reopened.running)
+        self.assertEqual(projection["timer"]["last_resumed_at"], STAMP)
+
+    def test_pending_completion_creates_opposite_paused_phase_with_exact_revision(self):
+        result = optimistic_timer(timer(), command("timer_complete"))
+        self.assertEqual((result["id"], result["type"], result["state"], result["revision"]),
+                         (NEXT, "break", "paused", "9007199254740994"))
+        self.assertEqual(remaining_seconds(result, NOW + 99999), 600)
+        stopped = optimistic_timer(timer(), command("timer_stop"))
+        self.assertEqual((stopped["type"], stopped["state"], stopped["remaining_seconds_at_pause"]), ("focus", "paused", 2400))
+
+    def test_queued_actions_overlay_timer_but_never_inflate_confirmed_totals(self):
+        state = AppState(clock=lambda: NOW + 2400)
+        projection = {"timer": timer(), "summary": {"day_key": "2026-10-20", "hydration_count": 3,
+                      "movement_count": 2, "ended_focus_count": 4, "pet_count": 7}}
+        state.refresh(projection, [command("timer_complete"), {"type": "hydration"}])
+        self.assertEqual((state.focus_count, state.water_count, state.stretch_count, state.pet_count), (4, 3, 2, 7))
+        self.assertEqual((state.phase, state.running), ("break", False))
+        newer = timer(revision="9007199254740995", state="paused", remaining_seconds_at_pause=500)
+        self.assertEqual(optimistic_timer(newer, command("timer_complete")), newer)
+
+    def test_held_buttons_chords_and_completion_do_not_repeat(self):
+        state = AppState(clock=lambda: NOW)
+        self.assertEqual(state.step(["pet"], 0), [])
+        self.assertEqual(state.step([], 0), [])
+        self.assertEqual(state.step(["pet", "water"], 0), [])
+        state.step([], 0)
+        self.assertEqual(state.step(["water"], 0), ["water"])
+        self.assertEqual(state.step(["water"], 100), [])
+        state.refresh({"timer": timer(last_resumed_at="2026-10-20T21:00:00Z")}, [])
+        self.assertEqual(state.step([], 0), ["complete"])
+        state.refresh({"timer": timer()}, [command("timer_complete")])
+        self.assertEqual(state.step([], 0), [])
+
+    def test_unset_clock_never_completes_account_timer(self):
+        state = AppState(clock=lambda: None)
+        state.refresh({"timer": timer()}, [])
+        state.step([], 0)
+        self.assertFalse(state.clock_valid)
+        self.assertEqual(state.step([], 9999999), [])
 
 
 class EntryLifecycleTests(unittest.TestCase):
-    def exercise(self, fault=None, home_during_save=False, paired=True):
-        saved, events, messages = [], [], []
-        held, clock, busy = [set()], [0], [False]
-
+    def exercise(self, home=False, paired=True, fail=False):
+        events, messages, busy = [], [], [False]
         class Pin:
             IRQ_FALLING = 1
-
-            def __init__(self):
-                self.handler = None
-                self.release_checks = 0
-
-            def irq(self, trigger, handler):
-                self.handler = handler
-
-            def value(self):
-                self.release_checks += 1
-                return self.release_checks > 1
-
-        pin = Pin()
-        Pin.board = types.SimpleNamespace(BUTTON_HOME=pin)
-
+            def irq(self, trigger, handler): self.handler = handler
+            def value(self): return True
+        pin = Pin(); Pin.board = types.SimpleNamespace(BUTTON_HOME=pin)
         class Store:
-            def __init__(self, heartbeat=None):
-                self.heartbeat = heartbeat
-
-            def open(self):
-                assert pin.handler.__name__ == "request_exit"
-                if fault == "open":
-                    raise ValueError("invalid owner")
-
-            def load(self):
-                return AppState().snapshot()
-
-            def save(self, snapshot):
-                assert not busy[0], "Home re-entered SQLite"
-                busy[0] = True
-                saved.append(dict(snapshot))
-                events.append("save")
-                try:
-                    if home_during_save and len(saved) == 1:
-                        pin.handler(pin)
-                        events.append("home flagged during save")
-                        assert busy[0]
-                    if fault == "save":
-                        raise OSError("save failed")
-                finally:
-                    busy[0] = False
-
+            def __init__(self, **kwargs): pass
+            def open(self): events.append("open")
+            def save(self, *args): raise AssertionError("No local-only state may be saved")
             def close(self):
-                assert not busy[0], "Home closed during SQLite execution"
+                assert not busy[0]
                 events.append("close")
-
-        class View:
-            def __init__(self, *args):
-                pass
-
-            def message(self, *args, **kwargs):
-                messages.append(args)
-
-            def draw(self, state, client=None):
-                pass
-
-            def pairing(self, client):
-                messages.append(("Pair your badge",))
-
         class Client:
-            def __init__(self, *args, **kwargs):
-                self.ready = paired
-                self.controls_enabled = paired
-
-            def step(self, held, elapsed):
-                pass
-
-            def record_events(self, *args):
-                pass
-
+            def __init__(self, *args, **kwargs): self.state = object(); self.ready = paired
+            def step(self, *args):
+                busy[0] = True
+                try:
+                    if home:
+                        pin.handler(pin); events.append("home requested")
+                    if fail: raise OSError("network")
+                finally: busy[0] = False
             def close(self):
-                pass
-
+                assert not busy[0]
+                events.append("client closed")
+        class View:
+            def __init__(self, *args): pass
+            def message(self, *args, **kwargs): messages.append(args)
+            def draw(self, *args): events.append("account view")
+            def pairing(self, *args): events.append("pairing view")
         class WDT:
-            def __init__(self, timeout):
-                assert timeout == 16000
+            def __init__(self, **kwargs): pass
+            def feed(self): pass
+        modules = {"badgeware": types.SimpleNamespace(display=types.SimpleNamespace(update=lambda: None), reset=lambda: events.append("reset")),
+                   "machine": types.SimpleNamespace(WDT=WDT, Pin=Pin),
+                   "time": types.SimpleNamespace(ticks_ms=lambda: 1, ticks_diff=lambda a,b: a-b, sleep_ms=lambda n: None),
+                   "badgegotchi_storage": types.SimpleNamespace(Store=Store), "badgegotchi_view": types.SimpleNamespace(AppView=View),
+                   "badgegotchi_client": types.SimpleNamespace(Client=Client)}
+        env = dict(badge=types.SimpleNamespace(mode=lambda n: None, held=lambda n: False), HIRES=1, VSYNC=2,
+                   screen=None,color=None,font=None,image=None,rect=None,BUTTON_A=1,BUTTON_B=2,BUTTON_C=3,BUTTON_UP=4,BUTTON_DOWN=5,
+                   run=lambda update: update())
+        path = Path(__file__).resolve().parents[1]/"app"/"badgegotchi"/"__init__.py"
+        with patch.dict(sys.modules, modules): exec(compile(path.read_text(),str(path),"exec"),env)
+        return events, messages, pin
 
-            def feed(self):
-                pass
+    def test_home_defers_cleanup_until_foreground_and_never_saves_local_progress(self):
+        events, _, _ = self.exercise(home=True)
+        self.assertEqual(events, ["open", "home requested", "client closed", "close", "reset"])
 
-        def run(update):
-            for keys in (set(), {2}, set()):
-                clock[0] += 1000
-                held[0] = keys
-                if update() is not None:
-                    break
+    def test_unpaired_launch_only_shows_pairing(self):
+        events, _, _ = self.exercise(paired=False)
+        self.assertIn("pairing view", events)
+        self.assertNotIn("account view", events)
 
-        modules = {
-            "badgeware": types.SimpleNamespace(
-                display=types.SimpleNamespace(update=lambda: None),
-                reset=lambda: events.append("reset")),
-            "machine": types.SimpleNamespace(WDT=WDT, Pin=Pin),
-            "time": types.SimpleNamespace(ticks_ms=lambda: clock[0],
-                                          ticks_diff=lambda a, b: a - b,
-                                          sleep_ms=lambda n: events.append("wait release")),
-            "badgegotchi_storage": types.SimpleNamespace(Store=Store),
-            "badgegotchi_view": types.SimpleNamespace(AppView=View),
-            "badgegotchi_client": types.SimpleNamespace(Client=Client),
-        }
-        env = dict(badge=types.SimpleNamespace(mode=lambda n: None,
-                                              held=lambda n: n in held[0]),
-                   HIRES=1, VSYNC=2, screen=None, color=None, font=None,
-                   image=None, rect=None, BUTTON_A=1, BUTTON_B=2,
-                   BUTTON_C=3, BUTTON_UP=4, BUTTON_DOWN=5, run=run)
-        path = Path(__file__).resolve().parents[1] / "app" / "badgegotchi" / "__init__.py"
-        with patch.dict(sys.modules, modules):
-            exec(compile(path.read_text(), str(path), "exec"), env)
-        return saved, events, messages, pin
-
-    def test_normal_exit_keeps_running_saves_closes_without_forcing_reset(self):
-        saved, events, _, pin = self.exercise()
-        self.assertTrue(saved[0]["running"])
-        self.assertTrue(saved[-1]["running"])
-        self.assertEqual(saved[-1]["remaining_ms"], FOCUS_MS - 1000)
-        self.assertEqual(events[-1], "close")
-        self.assertNotIn("reset", events)
-        self.assertEqual(pin.handler.__name__, "closed_home")
-
-    def test_unpaired_launch_blocks_timer_buttons_and_preserves_snapshot(self):
-        saved, events, messages, _ = self.exercise(paired=False)
-        self.assertEqual(len(saved), 1)
-        self.assertFalse(saved[0]["running"])
-        self.assertEqual(saved[0]["remaining_ms"], FOCUS_MS)
-        self.assertIn(("Pair your badge",), messages)
-        self.assertEqual(events[-1], "close")
-
-    def test_home_during_save_defers_sql_cleanup_and_reset_until_release(self):
-        saved, events, _, _ = self.exercise(home_during_save=True)
-        self.assertEqual(events, ["save", "home flagged during save", "save",
-                                  "close", "wait release", "reset"])
-        self.assertTrue(saved[-1]["running"])
-
-    def test_storage_errors_close_without_retrying_a_failed_save(self):
-        for fault in ("open", "save"):
-            saved, events, messages, _ = self.exercise(fault=fault)
-            self.assertEqual(len(saved), 0 if fault == "open" else 1)
-            self.assertEqual(events[-1], "close")
-            self.assertEqual(messages[-1][0], "Could not open" if fault == "open"
-                             else "Save unavailable")
+    def test_normal_exit_and_failure_close_account_resources(self):
+        for fail in (False, True):
+            events, _, pin = self.exercise(fail=fail)
+            self.assertEqual(events[-2:], ["client closed", "close"])
+            self.assertEqual(pin.handler.__name__, "closed_home")
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == "__main__": unittest.main()

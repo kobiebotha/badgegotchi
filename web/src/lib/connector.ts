@@ -5,6 +5,7 @@ import type {
   PowerSyncCredentials,
 } from "@powersync/web";
 import type { PublicConfig } from "./config";
+import type { AccountCommand, CommandReceipt } from "../domain/shared";
 import {
   assertResponse,
   authHeaders,
@@ -15,18 +16,6 @@ import {
 import type { AuthClient, Request } from "./backend";
 
 const writableColumns: Record<string, readonly string[]> = {
-  sessions: [
-    "day_key",
-    "type",
-    "planned_duration_seconds",
-    "state",
-    "outcome",
-    "started_at",
-    "last_resumed_at",
-    "paused_at",
-    "ended_at",
-    "remaining_seconds_at_pause",
-  ],
   wellness_events: ["day_key", "type", "occurred_at"],
   // Cached totals are recomputed from raw rows by each client. Uploading them
   // would let an incomplete local snapshot overwrite another device's counts.
@@ -86,16 +75,41 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
     await requireSession(this.client, this.userId);
     const transaction = await database.getNextCrudTransaction();
     if (!transaction) return;
-    for (const operation of transaction.crud)
-      await this.uploadOperation(operation);
+    for (const operation of transaction.crud) {
+      const receipt = await this.uploadOperation(operation);
+      if (receipt) await database.execute(
+        "UPDATE pending_commands SET status = ?, receipt = ? WHERE id = ?",
+        [receipt.state, JSON.stringify(receipt), receipt.command_id],
+      );
+    }
     // Never acknowledge writes that failed validation, authorization, or AI
     // processing. Throwing leaves the same durable transaction queued for retry.
     await transaction.complete();
   }
 
-  async uploadOperation(operation: UploadOperation): Promise<void> {
+  async uploadOperation(operation: UploadOperation): Promise<CommandReceipt | void> {
     const session = await requireSession(this.client, this.userId);
     const { table, op, id, opData } = operation;
+    if (table === "account_commands") {
+      if (op !== UpdateType.PUT || typeof opData?.payload !== "string")
+        throw new Error("Account actions must be immutable queued commands.");
+      const command = JSON.parse(opData.payload) as AccountCommand;
+      if (command.id !== id) throw new Error("Queued account action identity is invalid.");
+      const request = this.request;
+      const response = await request(`${this.config.supabaseUrl.replace(/\/$/, "")}/functions/v1/badge-gateway`, {
+        method: "POST", headers: authHeaders(this.config, session),
+        body: JSON.stringify({ action: "command", command }), signal: AbortSignal.timeout(60_000),
+      });
+      await assertResponse(response, "Account sync");
+      const receipt = await response.json() as CommandReceipt;
+      if (receipt.command_id !== id || !["accepted", "rejected"].includes(receipt.state) ||
+        typeof receipt.revision !== "string" || !/^\d+$/.test(receipt.revision))
+        throw new Error("The account service returned an invalid receipt. Your action remains queued.");
+      return receipt;
+    }
+    if (table === "sessions") {
+      throw new Error("An older app queued a timer edit. It has been preserved, but cannot overwrite the shared account timer. Resolve the old pending edit before syncing new actions.");
+    }
     if (table === "pet_events") {
       if (op !== UpdateType.PUT || !opData) {
         throw new Error("Pet events are append-only client intentions.");

@@ -1,8 +1,9 @@
 Badgegotchi application source: repository CC0 license (licenses/Badgegotchi-CC0.txt).
 
-Capybara artwork: copied unchanged from Manrich121/pomogotchi, revision 10c33f5,
-flutter_pomogotchi/assets/animals/capybara.png.
-https://github.com/Manrich121/pomogotchi/blob/10c33f5/flutter_pomogotchi/assets/animals/capybara.png
+Animal artwork: copied unchanged from the web app assets/animals collection,
+originally Manrich121/pomogotchi, revision 10c33f5,
+flutter_pomogotchi/assets/animals/.
+https://github.com/Manrich121/pomogotchi/tree/10c33f5/flutter_pomogotchi/assets/animals
 This package does not assert a new license over the source artwork.
 The launcher heart icon originated in this project's Pomogotchi badge preview.
 

@@ -1,339 +1,130 @@
 import type { PowerSyncDatabase } from "@powersync/web";
-import { isLifecycleEvent } from "./animals";
-import {
-  ACTIVE_PET_EVENT_QUERY,
-  ACTIVE_SESSION_QUERY,
-  CURRENT_PET_QUERY,
-  DAILY_SUMMARY_QUERY,
-  TODAY_SESSIONS_QUERY,
-  WELLNESS_QUERY,
-  dailySummaryParameters,
-} from "./queries";
-import {
-  petEventFromRow,
-  petSessionFromRow,
-  sessionFromRow,
-  summaryFromRow,
-  wellnessFromRow,
-} from "./rows";
 import type { DatabaseRow } from "./rows";
-import { dayKeyFor, plannedDurationFor, remainingSeconds } from "./timer";
-import type {
-  BadgeSnapshot,
-  DailySummary,
-  PetEventRecord,
-  PetEventType,
-  SessionOutcome,
-  SessionRecord,
-  SessionType,
-  WellnessEvent,
-  WellnessType,
-} from "./types";
+import { remainingSeconds } from "./timer";
+import type { SessionOutcome, SessionType, WellnessType } from "./types";
+import {
+  ACCOUNT_PROJECTION_QUERY, PENDING_COMMANDS_QUERY, accountProjection,
+  pendingCommandFromRow, replayTimer, timerSession,
+} from "./shared";
+import type { AccountCommand, AccountCommandType, PendingCommand } from "./shared";
 
-export type BadgeDatabase = Pick<
-  PowerSyncDatabase,
-  "get" | "getAll" | "getOptional" | "execute" | "writeTransaction"
->;
-type WriteTransaction = Parameters<
-  Parameters<PowerSyncDatabase["writeTransaction"]>[0]
->[0];
+export type BadgeDatabase = Pick<PowerSyncDatabase,
+  "get" | "getAll" | "getOptional" | "execute" | "writeTransaction">;
+type WriteTransaction = Parameters<Parameters<PowerSyncDatabase["writeTransaction"]>[0]>[0];
 
-/**
- * All commands write through PowerSync so they are available offline and upload
- * normally. Related pet intentions share the timer/wellness transaction.
- */
+/** Store intentions durably; PowerSync alone supplies confirmed account data. */
 export class BadgeRepository {
-  private readonly summaryOpenedAt = new Map<string, Date>();
-
-  constructor(
-    private readonly database: BadgeDatabase,
-    private readonly userId: string,
-    private readonly newId: () => string = () => crypto.randomUUID(),
-  ) {
-    if (!userId)
-      throw new Error("Sign in before opening your activity history.");
+  constructor(private readonly database: BadgeDatabase, private readonly userId: string,
+    private readonly newId: () => string = () => crypto.randomUUID()) {
+    if (!userId) throw new Error("Sign in before opening your activity history.");
   }
 
-  summaryParameters(dayKey: string, now = new Date()): string[] {
-    let openedAt = this.summaryOpenedAt.get(dayKey);
-    if (!openedAt) {
-      openedAt = now;
-      this.summaryOpenedAt.set(dayKey, openedAt);
-    }
-    return dailySummaryParameters(dayKey, this.userId, openedAt);
+  async startSession(type: SessionType, now = new Date()): Promise<void> {
+    await this.timerCommand("timer_start", null, now, type);
   }
-
-  async loadSummary(dayKey: string, now = new Date()): Promise<DailySummary> {
-    const row = await this.database.get<DatabaseRow>(
-      DAILY_SUMMARY_QUERY,
-      this.summaryParameters(dayKey, now),
-    );
-    return summaryFromRow(row);
+  async pauseSession(id: string, now = new Date()): Promise<void> {
+    await this.timerCommand("timer_pause", id, now);
   }
-
-  async loadSnapshot(dayKey: string, now = new Date()): Promise<BadgeSnapshot> {
-    const [active, sessions, wellness, summary, pet, activePetEvent] =
-      await Promise.all([
-        this.database.getOptional<DatabaseRow>(ACTIVE_SESSION_QUERY),
-        this.database.getAll<DatabaseRow>(TODAY_SESSIONS_QUERY, [dayKey]),
-        this.database.getAll<DatabaseRow>(WELLNESS_QUERY, [dayKey]),
-        this.loadSummary(dayKey, now),
-        this.database.getOptional<DatabaseRow>(CURRENT_PET_QUERY),
-        this.database.getOptional<DatabaseRow>(ACTIVE_PET_EVENT_QUERY),
-      ]);
-    return {
-      activeSession: active ? sessionFromRow(active) : null,
-      sessions: sessions.map(sessionFromRow),
-      wellnessEvents: wellness.map(wellnessFromRow),
-      summary,
-      pet: pet ? petSessionFromRow(pet) : null,
-      activePetEvent: activePetEvent ? petEventFromRow(activePetEvent) : null,
-    };
+  async resumeSession(id: string, now = new Date()): Promise<void> {
+    await this.timerCommand("timer_resume", id, now);
   }
-
-  async startSession(
-    type: SessionType,
-    now = new Date(),
-  ): Promise<SessionRecord> {
-    const id = this.newId();
-    const stamp = now.toISOString();
-    return this.database.writeTransaction(async (tx) => {
-      const active = await tx.getAll<DatabaseRow>(
-        "SELECT * FROM sessions WHERE state IN ('active', 'paused')",
-      );
-      for (const row of active) {
-        const session = sessionFromRow(row);
-        const outcome = this.hasExpired(session, now) ? "completed" : "stopped";
-        await this.finish(tx, session, outcome, now);
-      }
-      await tx.execute(
-        `INSERT INTO sessions
-        (id, day_key, type, planned_duration_seconds, state, outcome, started_at,
-         last_resumed_at, paused_at, ended_at, remaining_seconds_at_pause)
-        VALUES (?, ?, ?, ?, 'active', NULL, ?, ?, NULL, NULL, NULL)`,
-        [id, dayKeyFor(now), type, plannedDurationFor(type), stamp, stamp],
-      );
-      await this.queuePet(
-        tx,
-        type === "focus" ? "start_focus_session" : "start_break",
-        now,
-      );
-      return this.session(tx, id);
-    });
+  async endSession(id: string, outcome: SessionOutcome, now = new Date()): Promise<void> {
+    await this.timerCommand(outcome === "completed" ? "timer_complete" : "timer_stop", id, now);
   }
-
-  async pauseSession(id: string, now = new Date()): Promise<SessionRecord> {
-    return this.database.writeTransaction(async (tx) => {
-      const session = await this.session(tx, id);
-      if (session.state !== "active") return session;
-      if (this.hasExpired(session, now))
-        return this.finish(tx, session, "completed", now);
-      await tx.execute(
-        "UPDATE sessions SET state = 'paused', paused_at = ?, remaining_seconds_at_pause = ? WHERE id = ?",
-        [now.toISOString(), remainingSeconds(session, now), id],
-      );
-      if (session.type === "focus")
-        await this.queuePet(tx, "pause_focus_session", now);
-      return this.session(tx, id);
-    });
+  async completeExpiredSession(id: string, now = new Date()): Promise<void> {
+    await this.timerCommand("timer_complete", id, now);
   }
-
-  async resumeSession(id: string, now = new Date()): Promise<SessionRecord> {
-    return this.database.writeTransaction(async (tx) => {
-      const session = await this.session(tx, id);
-      if (session.state !== "paused") return session;
-      await tx.execute(
-        "UPDATE sessions SET state = 'active', last_resumed_at = ?, paused_at = NULL WHERE id = ?",
-        [now.toISOString(), id],
-      );
-      if (session.type === "focus")
-        await this.queuePet(tx, "resume_focus_session", now);
-      return this.session(tx, id);
-    });
+  async logWellness(type: WellnessType, now = new Date()): Promise<void> {
+    await this.enqueue({ id: this.newId(), type, occurred_at: now.toISOString() });
   }
-
-  async endSession(
-    id: string,
-    outcome: SessionOutcome,
-    now = new Date(),
-  ): Promise<SessionRecord> {
-    return this.database.writeTransaction(async (tx) => {
-      const session = await this.session(tx, id);
-      if (session.state === "ended") return session;
-      return this.finish(
-        tx,
-        session,
-        this.hasExpired(session, now) ? "completed" : outcome,
-        now,
-      );
-    });
-  }
-
-  /** Safe to call on interval, focus/visibility changes, and concurrently in tabs. */
-  async completeExpiredSession(
-    id: string,
-    now = new Date(),
-  ): Promise<SessionRecord | null> {
-    return this.database.writeTransaction(async (tx) => {
-      // A reset or another tab may have removed the row since it was rendered.
-      const row = await tx.getOptional<DatabaseRow>(
-        "SELECT * FROM sessions WHERE id = ?",
-        [id],
-      );
-      if (!row) return null;
-      const session = sessionFromRow(row);
-      if (!this.hasExpired(session, now)) return session;
-      return this.finish(tx, session, "completed", now);
-    });
-  }
-
-  async logWellness(
-    type: WellnessType,
-    now = new Date(),
-  ): Promise<WellnessEvent> {
-    const id = this.newId();
-    const event: WellnessEvent = {
-      id,
-      type,
-      dayKey: dayKeyFor(now),
-      occurredAt: now.toISOString(),
-    };
+  async enqueuePetEvent(type: "pet_pet", now = new Date()): Promise<void> {
+    if (type !== "pet_pet") throw new Error("Timer and wellness reactions are created by the account service.");
     await this.database.writeTransaction(async (tx) => {
-      await tx.execute(
-        "INSERT INTO wellness_events (id, day_key, type, occurred_at) VALUES (?, ?, ?, ?)",
-        [id, event.dayKey, type, event.occurredAt],
-      );
-      await this.queuePet(
-        tx,
-        type === "hydration" ? "drink_water" : "move_or_stretch",
-        now,
-      );
+      const pet = await tx.getOptional<{ id: string }>("SELECT id FROM pet_sessions ORDER BY updated_at DESC LIMIT 1");
+      if (!pet) throw new Error("Connect to load your companion before petting it.");
+      const pending = (await tx.getAll<DatabaseRow>(PENDING_COMMANDS_QUERY)).map(pendingCommandFromRow);
+      await this.writeCommand(tx, { id: this.newId(), type: "pet", pet_session_id: pet.id, occurred_at: now.toISOString() }, pending);
     });
-    return event;
-  }
-
-  async enqueuePetEvent(
-    type: PetEventType,
-    now = new Date(),
-  ): Promise<PetEventRecord | null> {
-    return this.database.writeTransaction((tx) => this.queuePet(tx, type, now));
-  }
-
-  async setHydrationReminderState(
-    dayKey: string,
-    anchorAt: Date,
-    isActive: boolean,
-  ): Promise<DailySummary> {
-    const id = `${this.userId}:${dayKey}`;
-    const stamp = anchorAt.toISOString();
-    await this.database.writeTransaction(async (tx) => {
-      const existing = await tx.getOptional(
-        "SELECT id FROM daily_activity_summary WHERE id = ?",
-        [id],
-      );
-      if (existing) {
-        await tx.execute(
-          `UPDATE daily_activity_summary SET hydration_timer_anchor_at = ?,
-           hydration_reminder_active = ?, updated_at = ? WHERE id = ?`,
-          [stamp, isActive ? 1 : 0, stamp, id],
-        );
-      } else {
-        await tx.execute(
-          `INSERT INTO daily_activity_summary
-           (id, day_key, hydration_timer_anchor_at, hydration_reminder_active, updated_at)
-           VALUES (?, ?, ?, ?, ?)`,
-          [id, dayKey, stamp, isActive ? 1 : 0, stamp],
-        );
-      }
-    });
-    return this.loadSummary(dayKey, anchorAt);
   }
 
   async resetDay(dayKey: string, now = new Date()): Promise<void> {
     await this.database.writeTransaction(async (tx) => {
-      await tx.execute("DELETE FROM sessions WHERE day_key = ?", [dayKey]);
-      await tx.execute("DELETE FROM wellness_events WHERE day_key = ?", [
-        dayKey,
-      ]);
-      await tx.execute("DELETE FROM daily_activity_summary WHERE day_key = ?", [
-        dayKey,
-      ]);
+      const { timer } = accountProjection(await tx.getAll<DatabaseRow>(ACCOUNT_PROJECTION_QUERY));
+      if (!timer) throw new Error("Connect to load your account before resetting today.");
+      const pending = (await tx.getAll<DatabaseRow>(PENDING_COMMANDS_QUERY)).map(pendingCommandFromRow);
+      if (pending.some((item) => item.status !== "rejected")) throw new Error("Wait for your pending actions to sync before resetting today.");
+      await this.writeCommand(tx, { id: this.newId(), type: "reset_day", day_key: dayKey,
+        expected_revision: timer.revision, occurred_at: now.toISOString() }, pending);
     });
-    this.summaryOpenedAt.set(dayKey, now);
   }
 
-  private hasExpired(session: SessionRecord, now: Date): boolean {
-    return session.state === "active" && remainingSeconds(session, now) === 0;
+  async reconcileConfirmed(): Promise<void> {
+    await this.database.writeTransaction(async (tx) => {
+      const { timer } = accountProjection(await tx.getAll<DatabaseRow>(ACCOUNT_PROJECTION_QUERY));
+      const pending = (await tx.getAll<DatabaseRow>(PENDING_COMMANDS_QUERY)).map(pendingCommandFromRow);
+      for (const item of pending) {
+        if (item.status !== "accepted") continue;
+        let confirmed = false;
+        if ((item.command.type.startsWith("timer_") || item.command.type === "reset_day")) {
+          const revision = item.receipt?.revision ?? item.receipt?.timer?.revision;
+          confirmed = revision != null && timer != null && BigInt(timer.revision) >= BigInt(revision);
+        } else {
+          const table = item.command.type === "pet" ? "pet_events" : "wellness_events";
+          confirmed = Boolean(await tx.getOptional(`SELECT id FROM ${table} WHERE id = ?`, [item.id]));
+          // A later shared timer revision also proves that a covering account
+          // checkpoint arrived. This handles reset_day deleting an accepted
+          // event before this browser ever downloads that event's row.
+          const revision = item.receipt?.revision;
+          if (!confirmed && revision != null && timer != null)
+            confirmed = BigInt(timer.revision) > BigInt(revision);
+        }
+        if (confirmed) await tx.execute("DELETE FROM pending_commands WHERE id = ?", [item.id]);
+      }
+    });
+  }
+  async dismissRejections(): Promise<void> {
+    await this.database.execute("DELETE FROM pending_commands WHERE status = 'rejected'");
   }
 
-  private async session(
-    tx: WriteTransaction,
-    id: string,
-  ): Promise<SessionRecord> {
-    return sessionFromRow(
-      await tx.get<DatabaseRow>("SELECT * FROM sessions WHERE id = ?", [id]),
-    );
+  private async timerCommand(type: AccountCommandType, sessionId: string | null,
+    now: Date, sessionType?: SessionType): Promise<void> {
+    await this.database.writeTransaction(async (tx) => {
+      const projection = accountProjection(await tx.getAll<DatabaseRow>(ACCOUNT_PROJECTION_QUERY));
+      if (!projection.timer) throw new Error("Connect once to load your account timer before changing it.");
+      const pending = (await tx.getAll<DatabaseRow>(PENDING_COMMANDS_QUERY)).map(pendingCommandFromRow);
+      const timer = replayTimer(projection.timer, pending);
+      const session = timerSession(timer);
+      if (type !== "timer_start" && (!session || timer.id !== sessionId)) return;
+      if (type === "timer_complete" && (timer.state !== "active" || remainingSeconds(session!, now) > 0)) return;
+      if (type === "timer_pause" && timer.state !== "active") return;
+      if (type === "timer_resume" && timer.state !== "paused") return;
+      // A stale expired timer waiting for a conflicting remote update must not
+      // generate another automatic completion every render tick.
+      if (type === "timer_complete" && pending.some((item) => item.status === "rejected" &&
+        item.command.type === type && item.command.expected_revision === timer.revision)) return;
+      if (type === "timer_start" && timer.state !== "idle")
+        throw new Error("Your account already has a timer. Resume or stop that timer first.");
+      if ((type === "timer_pause" || type === "timer_stop") && session && timer.state === "active" && remainingSeconds(session, now) === 0)
+        type = "timer_complete";
+      const id = this.newId();
+      const command: AccountCommand = { id, type, occurred_at: now.toISOString(), expected_revision: timer.revision,
+        ...(type === "timer_start" ? { new_session_id: id, session_type: sessionType } : { session_id: timer.id! }) };
+      await this.writeCommand(tx, command, pending);
+    });
   }
-
-  private async finish(
-    tx: WriteTransaction,
-    session: SessionRecord,
-    outcome: SessionOutcome,
-    now: Date,
-  ): Promise<SessionRecord> {
-    await tx.execute(
-      "UPDATE sessions SET state = 'ended', outcome = ?, ended_at = ?, paused_at = NULL WHERE id = ?",
-      [outcome, now.toISOString(), session.id],
-    );
-    const event: PetEventType =
-      session.type === "focus"
-        ? outcome === "completed"
-          ? "complete_focus_session"
-          : "stop_focus_session_early"
-        : outcome === "completed"
-          ? "complete_break"
-          : "stop_break_early";
-    await this.queuePet(tx, event, now);
-    return this.session(tx, session.id);
+  private async enqueue(command: AccountCommand): Promise<void> {
+    await this.database.writeTransaction(async (tx) => {
+      const pending = (await tx.getAll<DatabaseRow>(PENDING_COMMANDS_QUERY)).map(pendingCommandFromRow);
+      await this.writeCommand(tx, command, pending);
+    });
   }
-
-  private async queuePet(
-    tx: WriteTransaction,
-    eventType: PetEventType,
-    now: Date,
-  ): Promise<PetEventRecord | null> {
-    const pet = await tx.getOptional<{ id: string }>(CURRENT_PET_QUERY);
-    // Initial cloud pet setup must not block local timer/wellness actions.
-    if (!pet) return null;
-    // Match the native app: wellness is still logged while the pet is thinking,
-    // but only lifecycle intentions are allowed to extend its reaction queue.
-    if (!isLifecycleEvent(eventType)) {
-      const active = await tx.getOptional(
-        "SELECT id FROM pet_events WHERE pet_session_id = ? AND status IN ('pending', 'processing') LIMIT 1",
-        [pet.id],
-      );
-      if (active) return null;
-    }
-    const id = this.newId();
-    const stamp = now.toISOString();
-    await tx.execute(
-      `INSERT INTO pet_events
-       (id, pet_session_id, event_type, source_device, status, reaction_speech,
-        error_message, created_at, claimed_at, completed_at)
-       VALUES (?, ?, ?, 'web', 'pending', NULL, NULL, ?, NULL, NULL)`,
-      [id, pet.id, eventType, stamp],
-    );
-    return {
-      id,
-      petSessionId: pet.id,
-      eventType,
-      sourceDevice: "web",
-      status: "pending",
-      reactionSpeech: null,
-      errorMessage: null,
-      createdAt: stamp,
-      claimedAt: null,
-      completedAt: null,
-    };
+  private async writeCommand(tx: WriteTransaction, command: AccountCommand, pending: PendingCommand[]): Promise<void> {
+    if (pending.filter((item) => item.status !== "rejected").length >= 64)
+      throw new Error("64 actions are waiting to sync. Reconnect before adding more.");
+    const payload = JSON.stringify(command);
+    const { next } = await tx.get<{ next: number }>("SELECT coalesce(max(sequence), 0) + 1 AS next FROM pending_commands");
+    await tx.execute("INSERT INTO pending_commands (id, payload, status, receipt, created_at, sequence) VALUES (?, ?, 'queued', NULL, ?, ?)",
+      [command.id, payload, command.occurred_at, next]);
+    await tx.execute("INSERT INTO account_commands (id, payload) VALUES (?, ?)", [command.id, payload]);
   }
 }

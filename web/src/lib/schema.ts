@@ -2,7 +2,14 @@ import { column, Schema, Table } from "@powersync/web";
 
 // Match the existing sync streams. PowerSync supplies each table's id column.
 export const AppSchema = new Schema({
-  // UI acknowledgements persist across reloads without entering the upload queue.
+  // Intentions use PowerSync's durable upload queue, never competing timer rows.
+  account_commands: new Table({ payload: column.text }, { insertOnly: true }),
+  pending_commands: new Table({
+    payload: column.text, status: column.text, receipt: column.text,
+    created_at: column.text, sequence: column.integer,
+  }, { localOnly: true }),
+  badge_projection: new Table({ kind: column.text, payload: column.text }),
+  // Keep the old UI table so an upgrade never destroys unrelated stored data.
   ui_state: new Table({ value: column.text }, { localOnly: true }),
   sessions: new Table(
     {

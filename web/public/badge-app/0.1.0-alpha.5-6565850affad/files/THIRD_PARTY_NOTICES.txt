@@ -1,0 +1,35 @@
+Badgegotchi application source: repository CC0 license (licenses/Badgegotchi-CC0.txt).
+
+Animal artwork: copied unchanged from the web app assets/animals collection,
+originally Manrich121/pomogotchi, revision 10c33f5,
+flutter_pomogotchi/assets/animals/.
+https://github.com/Manrich121/pomogotchi/tree/10c33f5/flutter_pomogotchi/assets/animals
+This package does not assert a new license over the source artwork.
+The launcher heart icon originated in this project's Pomogotchi badge preview.
+
+PowerSync SQLite core 0.5.4, commit 0ed9f4edba418a4f8ae7cb0594da683cd79a81b5:
+Copyright 2023 Journey Mobile, Inc. Apache License 2.0; license and NOTICE
+included under licenses/. App-side changes add a Badgeware native-module and
+filesystem callback adapter; the pinned Rust core source is unmodified.
+https://github.com/powersync-ja/powersync-sqlite-core
+
+MicroPython dynamic runtime headers and native linker:
+pimoroni/micropython 41d1e007537f9b15cf13a9436228dd59d6485eca.
+MIT license included under licenses/.
+
+SQLite 3.54.1: public domain, https://www.sqlite.org/copyright.html.
+Amalgamation adapted for native PIC and writable-static-data restrictions;
+the adaptation script and source hash are recorded in the source repository.
+
+Rust and Arm runtime dependency license notices are included under licenses/.
+
+Public TLS trust anchor: ca/sectigo-r46.der
+Sectigo Public Server Authentication Root R46
+Subject and issuer: C=GB, O=Sectigo Limited,
+CN=Sectigo Public Server Authentication Root R46.
+SHA-256: 7bb647a62aeeac88bf257aa522d01ffea395e0ab45c73f93f65654ec38f25a06
+Source: /opt/homebrew/etc/openssl@3/cert.pem; extraction provenance is recorded in
+experiments/badge-pairing-preflight/evidence/sectigo-r46-provenance.txt.
+This public DER certificate is used as a TLS trust anchor. It contains no private
+key, device credential, or signing secret. Runtime-provided Google Trust Services
+roots are referenced by the application but are not copied into this package.

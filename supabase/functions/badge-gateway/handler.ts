@@ -117,6 +117,57 @@ async function boundedJson(req: Request): Promise<Json> {
   }
 }
 
+// Canonical spelling makes receipt identity independent of JSON member order.
+function accountCommand(value: unknown): Json {
+  const c = obj(value);
+  const id = field(c, "id", uuid).toLowerCase();
+  const type = field(
+    c,
+    "type",
+    /^(hydration|movement|pet|timer_start|timer_pause|timer_resume|timer_complete|timer_stop|reset_day)$/,
+  );
+  const raw = field(
+    c,
+    "occurred_at",
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/,
+  );
+  if (!Number.isFinite(Date.parse(raw))) {
+    throw new Fault("invalid_command", 400);
+  }
+  const command: Json = { id, type, occurred_at: new Date(raw).toISOString() };
+  const allowed = ["id", "type", "occurred_at"];
+  if (type.startsWith("timer_") || type === "reset_day") {
+    allowed.push("expected_revision");
+    command.expected_revision = field(
+      c,
+      "expected_revision",
+      /^(0|[1-9][0-9]{0,18})$/,
+    );
+    if (BigInt(command.expected_revision as string) > 9223372036854775807n) {
+      throw new Fault("invalid_command", 400);
+    }
+    if (type === "timer_start") {
+      allowed.push("new_session_id", "session_type");
+      command.new_session_id = field(c, "new_session_id", uuid).toLowerCase();
+      command.session_type = field(c, "session_type", /^(focus|break)$/);
+    } else if (type === "reset_day") {
+      allowed.push("day_key");
+      command.day_key = field(c, "day_key", /^\d{4}-\d{2}-\d{2}$/);
+      if (command.day_key !== (command.occurred_at as string).slice(0, 10)) {
+        throw new Fault("invalid_command", 400);
+      }
+    } else {
+      allowed.push("session_id");
+      command.session_id = field(c, "session_id", uuid).toLowerCase();
+    }
+  } else if (type === "pet") {
+    allowed.push("pet_session_id");
+    command.pet_session_id = field(c, "pet_session_id", uuid).toLowerCase();
+  }
+  fields(c, allowed, false);
+  return command;
+}
+
 export function createHandler(
   config: Config,
   request: typeof fetch = fetch,
@@ -224,11 +275,16 @@ export function createHandler(
   }
   async function run(action: string, owner: string | null, data: Json) {
     const result = obj(
-      await rpc("badge_gateway", {
-        p_action: action,
-        p_owner: owner,
-        p_data: data,
-      }),
+      await rpc(
+        ["command", "refresh"].includes(action)
+          ? "account_gateway"
+          : "badge_gateway",
+        {
+          p_action: action,
+          p_owner: owner,
+          p_data: data,
+        },
+      ),
     );
     if (typeof result.error === "string") {
       const status = result.error === "unauthorized"
@@ -280,7 +336,11 @@ export function createHandler(
       const action = typeof body.action === "string" ? body.action : "";
       let owner: string | null = null;
       let sessionId: string | undefined;
-      if (ownerActions.has(action)) {
+      if (
+        ownerActions.has(action) ||
+        (["command", "refresh"].includes(action) &&
+          body.credential === undefined)
+      ) {
         const authorization = req.headers.get("authorization");
         if (!authorization?.startsWith("Bearer ")) {
           throw new Fault("unauthorized", 401);
@@ -312,6 +372,20 @@ export function createHandler(
         await rate("owner", owner, 120);
       }
       const auth = sessionId ? { auth_session_id: sessionId } : {};
+      if (action === "command" || action === "refresh") {
+        fields(
+          body,
+          action === "command" ? ["credential", "command"] : ["credential"],
+        );
+        const data: Json = { ...auth };
+        if (body.credential !== undefined) {
+          const credential = field(body, "credential", secret);
+          await rate("credential", credential, 60);
+          data.credential_hash = await digest("credential", credential);
+        }
+        if (action === "command") data.command = accountCommand(body.command);
+        return reply(await run(action, owner, data));
+      }
       if (action === "create_pairing") {
         fields(body, []);
         await rate("create_pairing", owner!, 6, 3600);

@@ -1,9 +1,9 @@
-"""320 x 240 Badgeware view, adapted from the Pomogotchi art preview.
+"""320 x 240 account view using the same animal artwork as the web app."""
 
-The capybara PNG is copied unchanged from Manrich121/pomogotchi, commit
-10c33f5, flutter_pomogotchi/assets/animals/capybara.png. This module does
-not assert a new license over that source artwork.
-"""
+ANIMALS = ("bear", "capybara", "cat", "chameleon", "cheeta", "cow", "dog", "duck", "fox", "hamster",
+           "hedgehog", "hippo", "monkey", "octopus", "otter", "owl", "panda", "parrot", "peacock",
+           "penguin", "pig", "rabbit", "racoon", "rhino", "rooster", "seal", "sheep", "sloth", "snake", "turtle")
+
 
 
 class AppView:
@@ -11,8 +11,9 @@ class AppView:
         self.screen = screen
         self.screen.font = font.sins
         self.make_rect = rect
-        self.pet = image.load(asset_path)
-        self.pet_crop = rect(32, 110, 123, 90)
+        self.images, self.asset_path = image, asset_path
+        self.pet = self.animal_id = None
+        self.pet_crop = rect(0, 0, 200, 200)
         self.cream = color.rgb(248, 242, 227)
         self.paper = color.rgb(255, 252, 244)
         self.ink = color.rgb(54, 45, 37)
@@ -41,16 +42,34 @@ class AppView:
         self.box(x + 2 * scale, y + 4 * scale, 3 * scale, scale, self.pink)
         self.box(x + 3 * scale, y + 5 * scale, scale, scale, self.pink)
 
+    def clip(self, value, width):
+        if self.screen.measure_text(value, 1)[0] <= width:
+            return value
+        while value and self.screen.measure_text(value + "...", 1)[0] > width:
+            value = value[:-1]
+        return value + "..."
+
     def wrap(self, value, width=280):
-        lines = []
-        line = ""
+        lines, line = [], ""
         for word in value.split():
-            candidate = word if not line else line + " " + word
-            if self.screen.measure_text(candidate, 1)[0] > width and line:
-                lines.append(line)
-                line = word
-            else:
-                line = candidate
+            # A server message may contain one long URL/name without spaces.
+            # Break it by measured glyph width instead of letting it overflow.
+            pieces, piece = [], ""
+            for char in word:
+                if piece and self.screen.measure_text(piece + char, 1)[0] > width:
+                    pieces.append(piece)
+                    piece = char
+                else:
+                    piece += char
+            if piece:
+                pieces.append(piece)
+            for piece in pieces:
+                candidate = piece if not line else line + " " + piece
+                if self.screen.measure_text(candidate, 1)[0] > width and line:
+                    lines.append(line)
+                    line = piece
+                else:
+                    line = candidate
         if line:
             lines.append(line)
         return lines
@@ -100,6 +119,8 @@ class AppView:
 
     @staticmethod
     def count(value):
+        if value is None:
+            return "--"
         if value >= 1000000:
             return "1m"
         if value >= 1000:
@@ -108,83 +129,73 @@ class AppView:
 
     def details(self, client):
         self.header(client.status)
-        self.text("Saved progress", 160, 42, self.ink, 2, center=True)
-        self.text("Before pairing (kept on this badge)", 160, 80, self.green, center=True)
-        legacy = client.legacy
-        if legacy is None:
-            self.text("No earlier badge totals.", 160, 111, self.muted, center=True)
-        else:
-            self.text("Focus " + self.count(legacy["focus_count"]), 20, 105, self.ink)
-            self.text("Water " + self.count(legacy["water_count"]), 175, 105, self.ink)
-            self.text("Stretch " + self.count(legacy["stretch_count"]), 20, 124, self.ink)
-            self.text("Pets " + self.count(legacy["pet_count"]), 175, 124, self.ink)
-        summary = client.projection.get("summary", {})
-        self.text("Account " + summary.get("day_key", "waiting for sync"), 160, 153, self.green, center=True)
-        if summary:
-            self.text("Water %s  Move %s  Focus %s" % (self.count(summary.get("hydration_count", 0)),
-                       self.count(summary.get("movement_count", 0)), self.count(summary.get("completed_focus_count", 0))),
-                      160, 173, self.ink, center=True)
-        self.text("%s queued / timer here stays local" % client.queue.count, 160, 196, self.muted, center=True)
+        state = client.state
+        self.text("Totals", 160, 42, self.ink, 2, center=True)
+        for x, y, label, value in ((20, 105, "Focus", state.focus_count), (175, 105, "Break", state.break_count),
+                                   (20, 126, "Water", state.water_count), (175, 126, "Move", state.stretch_count),
+                                   (20, 147, "Pets", state.pet_count)):
+            self.text(label + " " + self.count(value), x, y, self.ink)
+        if client.pending_count:
+            self.text(str(client.pending_count) + " pending", 160, 174, self.muted, center=True)
         self.box(0, 221, 320, 19, self.green)
-        self.text("DOWN: back    HOME: exit", 160, 225, self.paper, center=True)
+        self.text("B Stop timer   DOWN Back   HOME Exit", 160, 225, self.paper, center=True)
 
-    def draw(self, state, client=None):
-        if client is not None and client.show_details:
+    def _animal(self, pet):
+        animal_id = pet.get("animal_id") if pet else None
+        if animal_id is not None and animal_id not in ANIMALS:
+            animal_id = "cat"
+        if animal_id != self.animal_id:
+            self.pet = self.images.load(self.asset_path + "/" + animal_id + ".png") if animal_id else None
+            self.animal_id = animal_id
+
+    def draw(self, state, client):
+        if client.show_details:
             self.details(client)
             return
-        self.header(client.status if client is not None else "LOCAL")
+        self.header(client.status)
         self.screen.pen = self.sage
-        self.screen.circle(80, 85, 45)
+        self.screen.circle(80, 82, 45)
+        self._animal(state.pet)
         hop = 0
         if state.reaction_ms:
             age = 1800 - state.reaction_ms
             if age < 480:
                 hop = (0, -2, -4, -4, -2, 0)[min(5, age // 80)]
-        self.screen.blit(self.pet, self.pet_crop,
-                         self.make_rect(18, 42 + hop, 123, 90))
-        pet = client.projection.get("pet", {}) if client is not None else {}
-        pet_name = pet.get("name") or state.name
-        self.text(pet_name[:18], 80, 134, self.ink, center=True)
+        if self.pet is not None:
+            self.screen.blit(self.pet, self.pet_crop, self.make_rect(30, 32 + hop, 100, 100))
+        self.text(self.clip(state.name, 132), 80, 134, self.ink, center=True)
         if state.reaction_ms:
             age = 1800 - state.reaction_ms
             for x, y, delay in ((48, 65, 0), (108, 73, 180), (130, 56, 360)):
                 heart_age = age - delay
                 if 0 <= heart_age < 1100:
                     self.heart(x, y - heart_age // 50, 2)
-
-        self.text("LOCAL FOCUS" if state.phase == "focus" else "LOCAL BREAK",
-                  235, 42, self.green, center=True)
-        seconds = (state.remaining_ms + 999) // 1000
-        self.text("%02d:%02d" % (seconds // 60, seconds % 60),
-                  235, 65, self.ink, 4, center=True)
+        self.text("FOCUS" if state.phase == "focus" else "BREAK", 235, 42, self.green, center=True)
+        seconds = (state.remaining_ms + 999) // 1000 if state.remaining_ms is not None else None
+        timer_text = "%02d:%02d" % (seconds // 60, seconds % 60) if seconds is not None and (not state.running or state.clock_valid) else "--:--"
+        self.text(timer_text, 235, 65, self.ink, 4, center=True)
         self.box(174, 107, 122, 3, self.line)
-        duration = 2400000 if state.phase == "focus" else 600000
-        progress = max(0, min(122, 122 * (duration - state.remaining_ms) // duration))
-        if progress:
-            self.box(174, 107, progress, 3, self.green)
-        self.text("B: PAUSE" if state.running else "B: START",
-                  235, 117, self.green, center=True)
+        if state.timer and state.remaining_ms is not None:
+            duration = state.timer["planned_duration_seconds"] * 1000
+            progress = max(0, min(122, 122 * (duration - state.remaining_ms) // duration))
+            if progress:
+                self.box(174, 107, progress, 3, self.green)
+        control = "B: PAUSE" if state.running else ("B: RESUME" if state.timer and state.timer.get("state") == "paused" else "B: START")
+        self.text(control if state.timer else "Waiting for sync", 235, 117, self.green, center=True)
         self.text("DOWN: INFO / HOME: EXIT", 235, 134, self.muted, center=True)
-
         self.box(10, 151, 300, 1, self.line)
-        labels = ((12, "Focus", state.focus_count), (88, "Water", state.water_count),
-                  (168, "Stretch", state.stretch_count), (250, "Pets", state.pet_count))
+        labels = ((12, "Focus", state.focus_count), (88, "Break", state.break_count),
+                  (168, "Water", state.water_count), (250, "Move", state.stretch_count))
         for x, label, value in labels:
             self.text(label, x, 157, self.muted)
             self.text(self.count(value), x, 171, self.green)
-        summary = client.projection.get("summary", {}) if client is not None else {}
-        if summary:
-            caption = "Account %s: water %s / move %s" % (summary.get("day_key", "")[5:],
-                       summary.get("hydration_count", 0), summary.get("movement_count", 0))
-        else:
-            caption = "Badge totals / account loading"
-        self.text(caption, 160, 187, self.muted, center=True)
-
+        if client.pending_count:
+            self.text(str(client.pending_count) + " pending", 160, 187, self.muted, center=True)
         self.box(8, 201, 304, 16, self.paper)
-        speech = pet.get("speech") if not state.speech_ms else None
-        lines = self.wrap(speech or state.speech, 296)
-        # Every current acknowledgement is a single line at the badge font size.
+        speech = state.speech
+        if state.running and not state.clock_valid:
+            speech = "Set badge clock to show your account timer."
+        lines = self.wrap(speech, 296)
         self.text(lines[0] if lines else "", 160, 203, self.ink, center=True)
         self.box(0, 221, 320, 19, self.green)
-        self.text("A Pet   B Timer   C Water   UP Stretch", 160, 225,
-                  self.paper, center=True)
+        self.text("A Pet   B Timer   C Water   UP Move", 160, 225, self.paper, center=True)

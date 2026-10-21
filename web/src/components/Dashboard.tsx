@@ -19,13 +19,16 @@ import {
 } from "lucide-react";
 import {
   ACTIVE_PET_EVENT_QUERY,
-  ACTIVE_SESSION_QUERY,
   CURRENT_PET_QUERY,
-  DAILY_SUMMARY_QUERY,
-  TODAY_SESSIONS_QUERY,
   BadgeRepository,
+  ACCOUNT_PROJECTION_QUERY,
+  PENDING_COMMANDS_QUERY,
+  accountProjection,
+  accountPetIsThinking,
+  pendingCommandFromRow,
+  replayTimer,
+  timerSession,
   animalForId,
-  dailySummaryParameters,
   dayKeyFor,
   formatDuration,
   pendingSpeechFor,
@@ -33,11 +36,12 @@ import {
   petSessionFromRow,
   randomAnimal,
   remainingSeconds,
-  sessionFromRow,
-  summaryFromRow,
 } from "../domain";
 import type { AnimalSpec } from "../domain";
 import { ensurePet, resetPet } from "../lib/petCloud";
+import { refreshAccountProjection } from "../lib/backend";
+import { requireConfig } from "../lib/config";
+import { getSupabaseClient } from "../lib/supabase";
 import { signOut } from "../lib/database";
 import { messageFor } from "../lib/errors";
 import { Brand } from "./Brand";
@@ -74,52 +78,31 @@ export function Dashboard({
   );
   const now = useClock();
   const day = dayKeyFor(now);
-  const openedAt = useMemo(() => new Date(), [day]);
   const status = useStatus();
-  const activeQuery = useQuery(ACTIVE_SESSION_QUERY);
+  const projectionQuery = useQuery(ACCOUNT_PROJECTION_QUERY);
+  const pendingQuery = useQuery(PENDING_COMMANDS_QUERY);
   const petQuery = useQuery(CURRENT_PET_QUERY);
   const eventQuery = useQuery(ACTIVE_PET_EVENT_QUERY);
-  const sessionsQuery = useQuery(TODAY_SESSIONS_QUERY, [day]);
-  const summaryQuery = useQuery(
-    DAILY_SUMMARY_QUERY,
-    dailySummaryParameters(day, userId, openedAt),
-  );
-  const completionQuery = useQuery<{ value: string }>(
-    "SELECT value FROM ui_state WHERE id = 'dismissed_completion'",
-  );
-  const active = activeQuery.data[0]
-    ? sessionFromRow(activeQuery.data[0])
-    : null;
+  const projection = accountProjection(projectionQuery.data);
+  const pending = pendingQuery.data.map(pendingCommandFromRow);
+  const queued = pending.filter((item) => item.status !== "rejected");
+  const rejected = pending.filter((item) => item.status === "rejected");
+  const timer = projection.timer ? replayTimer(projection.timer, pending) : null;
+  const active = timer ? timerSession(timer) : null;
   const pet = petQuery.data[0] ? petSessionFromRow(petQuery.data[0]) : null;
-  const petEvent = eventQuery.data[0]
-    ? petEventFromRow(eventQuery.data[0])
-    : null;
-  const summary = summaryQuery.data[0]
-    ? summaryFromRow(summaryQuery.data[0])
-    : null;
-  const latest = sessionsQuery.data[0]
-    ? sessionFromRow(sessionsQuery.data[0])
-    : null;
-  const dismissedCompletion = completionQuery.data[0]?.value;
-  const completion =
-    !completionQuery.isLoading &&
-    !active &&
-    latest?.state === "ended" &&
-    latest.outcome === "completed" &&
-    latest.id !== dismissedCompletion
-      ? latest
-      : null;
-  const remaining = active
-    ? remainingSeconds(active, now)
-    : completion
-      ? 0
-      : 40 * 60;
-  const isBreak = active?.type === "break" || completion?.type === "break";
-  const progress = active
-    ? 1 - remaining / active.plannedDurationSeconds
-    : completion
-      ? 1
-      : 0;
+  const petEvent = eventQuery.data[0] ? petEventFromRow(eventQuery.data[0]) : null;
+  const petThinking = accountPetIsThinking(projection.pet);
+  const summary = projection.totals;
+  const remaining = active ? remainingSeconds(active, now) : 40 * 60;
+  const isBreak = active?.type === "break";
+  const ready = active?.state === "paused" && remaining === active.plannedDurationSeconds;
+  const progress = active ? 1 - remaining / active.plannedDurationSeconds : 0;
+  const completionRejected = rejected.some((item) =>
+    item.command.type === "timer_complete" && item.command.expected_revision === timer?.revision);
+  const timerPending = queued.some((item) => item.command.type.startsWith("timer_"));
+  const petPending = queued.some((item) => item.command.type === "pet");
+  const projectionKey = JSON.stringify(projectionQuery.data);
+  const pendingKey = JSON.stringify(pendingQuery.data);
   const [busy, setBusy] = useState(false);
   const actionInFlight = useRef(false);
   const [error, setError] = useState("");
@@ -169,6 +152,16 @@ export function Dashboard({
   }, [userId]);
 
   useEffect(() => {
+    void refreshAccountProjection(getSupabaseClient(), requireConfig(), userId).catch(() => {
+      // Cached account state and durable queued actions remain available offline.
+    });
+  }, [userId, day, status.connected]);
+
+  useEffect(() => {
+    void repository.reconcileConfirmed().catch((cause) => setError(messageFor(cause)));
+  }, [repository, projectionKey, pendingKey, status.lastSyncedAt?.getTime()]);
+
+  useEffect(() => {
     if (petQuery.isLoading || pet || initialPetRequested.current) return;
     initialPetRequested.current = true;
     void initializePet();
@@ -179,12 +172,13 @@ export function Dashboard({
   }, [pet?.id]);
 
   useEffect(() => {
-    if (!active || active.state !== "active" || remaining > 0 || error || busy)
+    if (!active || active.state !== "active" || remaining > 0 || error || busy || completionRejected)
       return;
     void runAction(() => repository.completeExpiredSession(active.id));
   }, [
     active?.id,
     active?.state,
+    completionRejected,
     remaining,
     repository,
     runAction,
@@ -207,26 +201,14 @@ export function Dashboard({
     return () => window.clearTimeout(timer);
   }, [notice]);
 
-  const queryError =
-    activeQuery.error ||
-    petQuery.error ||
-    eventQuery.error ||
-    summaryQuery.error ||
-    sessionsQuery.error ||
-    completionQuery.error;
-  const syncError =
-    status.dataFlowStatus.uploadError || status.dataFlowStatus.downloadError;
-  const loading =
-    activeQuery.isLoading ||
-    summaryQuery.isLoading ||
-    completionQuery.isLoading;
+  const queryError = projectionQuery.error || pendingQuery.error || petQuery.error || eventQuery.error;
+  const syncError = status.dataFlowStatus.uploadError || status.dataFlowStatus.downloadError;
+  const loading = projectionQuery.isLoading || pendingQuery.isLoading || !timer;
   const timerLabel = active
-    ? `${isBreak ? "Break" : "Focus"} ${active.state === "paused" ? "paused" : "session"}`
-    : completion
-      ? `${isBreak ? "Break" : "Focus"} complete`
-      : "Time to focus";
-  const speech = petEvent
-    ? pendingSpeechFor(petEvent.eventType) === "…"
+    ? `${isBreak ? "Break" : "Focus"} ${ready ? "ready" : active.state === "paused" ? "paused" : "session"}`
+    : "Time to focus";
+  const speech = petThinking
+    ? !petEvent || pendingSpeechFor(petEvent.eventType) === "…"
       ? "One little moment…"
       : pendingSpeechFor(petEvent.eventType)
     : pet?.latestSpeech ||
@@ -256,17 +238,8 @@ export function Dashboard({
     });
   }
 
-  function dismissCompletion(id: string) {
-    void runAction(() =>
-      db.execute(
-        "INSERT OR REPLACE INTO ui_state (id, value) VALUES ('dismissed_completion', ?)",
-        [id],
-      ),
-    );
-  }
-
   async function resetToday() {
-    if (petRequestInFlight.current) return;
+    if (petRequestInFlight.current || queued.length) return;
     petRequestInFlight.current = true;
     setPetBusy(true);
     setPetError("");
@@ -353,7 +326,7 @@ export function Dashboard({
         )}
         {syncError && (
           <div className="sync-banner" role="status">
-            Your changes are saved on this device. Sync will retry
+            Your actions are queued for your account. Sync will retry
             automatically.{" "}
             <details>
               <summary>Connection details</summary>
@@ -361,6 +334,15 @@ export function Dashboard({
             </details>
           </div>
         )}
+        {queued.length > 0 && <div className="sync-banner" role="status">
+          {queued.length} account {queued.length === 1 ? "action" : "actions"} pending sync.
+          Daily totals show confirmed account activity.
+        </div>}
+        {rejected.length > 0 && <div className="error-message" role="alert">
+          {rejected.length} {rejected.length === 1 ? "action could" : "actions could"} not be applied because your account changed on another device.
+          Your latest account state is shown. Try the action again if you still want it.
+          <button className="text-button" onClick={() => void runAction(() => repository.dismissRejections())}>Dismiss</button>
+        </div>}
         <div className="workspace-grid">
           <section
             className="companion-panel panel"
@@ -379,7 +361,7 @@ export function Dashboard({
             </div>
             <div className="speech-bubble" role="status">
               <p>{speech}</p>
-              {petEvent && (
+              {petThinking && (
                 <span className="thinking-label">
                   {status.connected
                     ? "Thinking of a reply"
@@ -407,7 +389,7 @@ export function Dashboard({
               )}
               <button
                 className="pet-button"
-                disabled={!pet || Boolean(petEvent) || petBusy || busy}
+                disabled={!pet || petThinking || petPending || petBusy || busy}
                 onClick={() =>
                   void runAction(
                     () => repository.enqueuePetEvent("pet_pet"),
@@ -471,12 +453,11 @@ export function Dashboard({
               <p className="timer-hint">
                 {active?.state === "paused"
                   ? "Take your time. We’ll be right here."
-                  : completion
-                    ? "That’s a little win. Take a breath."
-                    : isBreak
+                  : isBreak
                       ? "Stretch, look away, and let your mind wander."
                       : "A quiet pocket of time for what matters."}
               </p>
+              {timerPending && <p className="timer-hint" role="status">Timer change pending sync</p>}
               <div className="timer-actions">
                 {active ? (
                   <>
@@ -496,7 +477,7 @@ export function Dashboard({
                       ) : (
                         <Pause size={17} />
                       )}
-                      {active.state === "paused" ? "Resume" : "Pause"}
+                      {active.state === "paused" ? ready ? `Start ${isBreak ? "break" : "focus"}` : "Resume" : "Pause"}
                     </button>
                     <button
                       className="button secondary"
@@ -510,38 +491,6 @@ export function Dashboard({
                       <Square size={15} />
                       Stop
                     </button>
-                  </>
-                ) : completion ? (
-                  <>
-                    <button
-                      className="button primary"
-                      disabled={busy || loading}
-                      onClick={() =>
-                        completion.type === "focus"
-                          ? void runAction(() =>
-                              repository.startSession("break"),
-                            )
-                          : dismissCompletion(completion.id)
-                      }
-                    >
-                      {completion.type === "focus" ? (
-                        <Coffee size={17} />
-                      ) : (
-                        <Check size={17} />
-                      )}
-                      {completion.type === "focus"
-                        ? "Start a 10 min break"
-                        : "Back to focus"}
-                    </button>
-                    {completion.type === "focus" && (
-                      <button
-                        className="button secondary"
-                        disabled={busy}
-                        onClick={() => dismissCompletion(completion.id)}
-                      >
-                        Skip break
-                      </button>
-                    )}
                   </>
                 ) : (
                   <button
@@ -613,39 +562,40 @@ export function Dashboard({
         </div>
         <section className="daily-panel panel" aria-labelledby="daily-title">
           <div className="daily-heading">
-            <h2 id="daily-title">Today’s little wins</h2>
-            <p>Every bit counts.</p>
+            <h2 id="daily-title">{summary?.day_key === day ? "Today’s little wins" : "Last synced account activity"}</h2>
+            <p>{summary ? `${summary.day_key} · UTC${summary.day_key === day ? "" : " · reconnect to refresh"}` : "Waiting for account totals…"}</p>
           </div>
           <div className="daily-stats">
             <Metric
               icon={<Timer size={19} />}
-              value={summary?.endedFocusCount ?? 0}
+              value={summary?.ended_focus_count ?? "—"}
               label="Focus ended"
             />
             <Metric
               icon={<Coffee size={19} />}
-              value={summary?.endedBreakCount ?? 0}
+              value={summary?.ended_break_count ?? "—"}
               label="Breaks ended"
             />
             <Metric
               icon={<Droplets size={19} />}
-              value={summary?.hydrationCount ?? 0}
+              value={summary?.hydration_count ?? "—"}
               label="Glasses of water"
             />
             <Metric
               icon={<Footprints size={19} />}
-              value={summary?.movementCount ?? 0}
+              value={summary?.movement_count ?? "—"}
               label="Movement breaks"
             />
+            <Metric icon={<Heart size={19} />} value={summary?.pet_count ?? "—"} label="Pet moments" />
           </div>
         </section>
         <div className="below-workspace">
           <span>
-            Progress follows you across your devices. Daily totals use UTC.
+            Your badge and web share one account. Daily totals are confirmed activity in UTC.
           </span>
           <button
             className="text-button"
-            disabled={busy || petBusy}
+            disabled={busy || petBusy || queued.length > 0 || !status.connected}
             onClick={() => setDialog("reset")}
           >
             <RotateCcw size={13} />
@@ -704,7 +654,7 @@ function Metric({
   label,
 }: {
   icon: React.ReactNode;
-  value: number;
+  value: number | string;
   label: string;
 }) {
   return (

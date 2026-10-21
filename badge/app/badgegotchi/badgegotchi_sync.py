@@ -11,8 +11,10 @@ from badgegotchi_pairing import PENDING
 from badgegotchi_private import PrivateFile
 from badgegotchi_http import Gateway, HTTPS, split_https
 from badgegotchi_stream import StreamLines
+from badgegotchi_storage import MAX_SYNC_BATCH_RECORDS, MAX_SYNC_LINE_BYTES
 
 MAX_EVENTS = 16
+MAX_BATCH_DELAY_MS = 100
 
 
 def uuid(entropy):
@@ -117,8 +119,9 @@ class UploadQueue:
 
 class Sync:
     def __init__(self, store, identity, queue, gateway, endpoint, ca_files,
-                 heartbeat=None, http_factory=HTTPS, json_factory=Gateway, streams=("badge_projection",)):
+                 heartbeat=None, http_factory=HTTPS, json_factory=Gateway, streams=("badge_projection_compact",), commands=None):
         self.store, self.identity, self.queue, self.gateway = store, identity, queue, gateway
+        self.commands = commands
         self.endpoint = endpoint.rstrip("/")
         split_https(self.endpoint)
         self.ca_files, self.heartbeat = ca_files, heartbeat
@@ -132,6 +135,8 @@ class Sync:
         self.checkpoint = None
         self.target = None
         self.lines = StreamLines()
+        self.batch = []
+        self.batch_bytes = self.batch_ms = 0
         self.connected = False
         self.synced = False
         self.status = "CONNECTING"
@@ -156,6 +161,10 @@ class Sync:
             self.core_started = False
         self.operation = None
         self.lines = StreamLines()
+        # RAM-only records have not advanced the core's durable download cursor.
+        # Reconnect replays them; never retain a SQL transaction across I/O.
+        self.batch = []
+        self.batch_bytes = self.batch_ms = 0
         self.connected = self.synced = False
 
     def close(self):
@@ -191,7 +200,10 @@ class Sync:
                 self.generation += 1
                 applied = instruction["DidCompleteSync"].get("applied_checkpoint_request_id")
                 if (self.target is not None and applied is not None
-                        and int(applied) >= int(self.target) and self.queue.count == 0):
+                        and int(applied) >= int(self.target) and self.queue.count == 0
+                        and (self.commands is None or self.commands.count == 0)):
+                    if self.commands is not None:
+                        self.commands.checkpoint()
                     self.synced = True
                     self.status = "SYNCED"
                     self.backoff_ms = 2000
@@ -233,6 +245,8 @@ class Sync:
         self.retry_ms = max(0, self.retry_ms - max(0, elapsed_ms))
         if self.retry_ms:
             return
+        if self.batch:
+            self.batch_ms += max(0, elapsed_ms)
         try:
             self._step()
         except OSError:
@@ -266,7 +280,7 @@ class Sync:
                     or result.get("endpoint", "").rstrip("/") != self.endpoint):
                 raise ValueError("Device token identity changed")
             self.token = result["token"]
-            self.phase = "upload" if self.queue.count else "start"
+            self.phase = "upload" if self.queue.count else ("command" if self.commands is not None and self.commands.count else "start")
             return
         if self.phase == "upload":
             self.status = "UPLOADING"
@@ -286,9 +300,33 @@ class Sync:
                     self.phase, self.status = "blocked", "UPLOAD ERROR"
                 return
             self.queue.accepted(result)
-            self.phase = "upload" if self.queue.count else "start"
+            self.phase = "upload" if self.queue.count else ("command" if self.commands is not None and self.commands.count else "start")
+            return
+        if self.phase == "command":
+            self.status = "UPLOADING"
+            result = self._json_request("command", {"credential": self.identity["credential"],
+                                                    "command": self.commands.capture()})
+            if result is PENDING:
+                return
+            if "error" in result:
+                if result["error"] in ("unauthorized", "revoked", "invalid_credential"):
+                    self._disconnect()
+                    self.phase, self.status = "revoked", "REVOKED"
+                elif result["error"] in ("rate_limited", "temporarily_unavailable", "internal_error", "backend_unavailable"):
+                    if result["error"] == "rate_limited":
+                        self.backoff_ms = 60000
+                    raise OSError("Account command unavailable")
+                else:
+                    self.phase, self.status = "blocked", "COMMAND ERROR"
+                return
+            self.commands.accepted(result)
+            self.phase = "command" if self.commands.count else "start"
             return
         if self.phase == "start":
+            if "badge_projection_compact" in self.streams and "badge_projection" not in self.streams:
+                # active_streams renews subscriptions but does not immediately
+                # remove the old persisted stream's TTL after an app upgrade.
+                self._control("subscriptions", {"unsubscribe": {"name": "badge_projection"}})
             for name in self.streams:
                 self._control("subscriptions", json.dumps({"subscribe": {"stream": {"name": name}, "ttl": 300}}))
             self.core_started = True
@@ -317,9 +355,12 @@ class Sync:
             self.phase, self.status = "stream", "SYNCING"
             return
         if self.phase == "stream":
-            if self.queue.count:
+            if self.queue.count or (self.commands is not None and self.commands.count):
                 self._disconnect()
                 self.phase = "token"
+                return
+            if self.batch and self.batch_ms >= MAX_BATCH_DELAY_MS:
+                self._flush()
                 return
             if self._line():
                 return
@@ -333,19 +374,41 @@ class Sync:
                 self.connected = True
                 self._instructions(self._control("connection", "established"))
             if data is PENDING:
+                self._flush()
                 return
             if data is None:
                 self.lines.finish()
+                self._flush()
                 self._retry()
                 return
             self.lines.feed(data)
-            # One bounded native record per foreground frame. The parser splits
-            # large history batches without retaining the whole service line.
+            # Parse one operation per foreground frame. Only a bounded batch is
+            # retained; each flush commits before the next network operation.
             self._line()
 
     def _line(self):
         line = self.lines.pop()
         if line is None:
             return False
-        self._instructions(self._control("line_text", line))
+        # StreamLines emits data records with this exact prefix and preserves
+        # every raw operation. Do not parse/re-encode or collapse same-row PUTs.
+        if line.startswith('{"data":'):
+            size = len(line.encode())
+            if self.batch and self.batch_bytes + size > MAX_SYNC_LINE_BYTES:
+                self._flush()
+            self.batch.append(line)
+            self.batch_bytes += size
+            if len(self.batch) >= MAX_SYNC_BATCH_RECORDS or self.batch_bytes >= MAX_SYNC_LINE_BYTES:
+                self._flush()
+        else:
+            self._flush()
+            self._instructions(self._control("line_text", line))
         return True
+
+    def _flush(self):
+        if not self.batch:
+            return
+        instructions = self.store.control_batch(self.batch)
+        self.batch = []
+        self.batch_bytes = self.batch_ms = 0
+        self._instructions(instructions)

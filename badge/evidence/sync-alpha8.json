@@ -1,0 +1,413 @@
+{
+  "cloud": {
+    "canonical_data": {
+      "after_fingerprint": "7047f10081914a47f2eebf76f2ad1c3b",
+      "before_fingerprint": "7047f10081914a47f2eebf76f2ad1c3b",
+      "fingerprint_algorithm": "md5 of ordered canonical sessions, wellness events, pets, pet events, timer heads and command receipt rows",
+      "unchanged": true
+    },
+    "migration": {
+      "applied": true,
+      "name": "compact_badge_projection",
+      "path": "supabase/migrations/20261021004457_compact_badge_projection.sql",
+      "version": "20261021004457"
+    },
+    "powersync": {
+      "active_stream": "badge_projection_compact",
+      "final_health": {
+        "connections": [
+          {
+            "connected": true,
+            "initial_replication_done": true,
+            "lag_bytes": 800,
+            "tables_with_errors": []
+          }
+        ],
+        "errors": [],
+        "version": "6"
+      },
+      "instance_id": "6ad76c8f2f27853eb0b0a128",
+      "legacy_badge_stream_retained": true,
+      "project_id": "6ad76c8e02e1e50007a3552a",
+      "replication_lag_bytes_at_sample": 0,
+      "status_source": "Rollout controller live service postflight",
+      "stream_version": 6
+    },
+    "projection_payload_bytes": {
+      "after": 1231,
+      "after_by_kind": [
+        {
+          "kind": "pet",
+          "payload_bytes": 471,
+          "rows": 2
+        },
+        {
+          "kind": "summary",
+          "payload_bytes": 264,
+          "rows": 2
+        },
+        {
+          "kind": "timer",
+          "payload_bytes": 496,
+          "rows": 2
+        }
+      ],
+      "before": 1743,
+      "before_by_kind": [
+        {
+          "kind": "pet",
+          "payload_bytes": 585,
+          "rows": 2
+        },
+        {
+          "kind": "summary",
+          "payload_bytes": 578,
+          "rows": 2
+        },
+        {
+          "kind": "timer",
+          "payload_bytes": 580,
+          "rows": 2
+        }
+      ],
+      "saved": 512,
+      "scope": "All six current projection rows across the target database; excludes row ids, envelopes, and SQLite pages"
+    },
+    "refresh_privileges": {
+      "authenticated_can_execute": false,
+      "preserved": true,
+      "service_role_can_execute": true
+    },
+    "supabase_project_ref": "bfccerfayrfolisawokp"
+  },
+  "device": {
+    "alpha7_attempt": {
+      "cached_projection_preserved_after_migration": true,
+      "cause": "The live compact stream includes a normal body.id; alpha.7 rejected this field before applying the downloaded batch.",
+      "database_closed_after_both_failed_attempts": true,
+      "download_covering_checkpoint_completed": false,
+      "failure": "Sync row exceeds projection contract",
+      "fix_in_alpha8": "Permit optional body.id only when it exactly matches object_id; retain every native operation and original checksum.",
+      "queues_before": {
+        "awaiting": 0,
+        "commands": 0,
+        "events": 0,
+        "inflight": false
+      },
+      "regression": "Service-shaped {id,payload} PUT fixtures and mismatched-id rejection covered by host tests",
+      "schema4_to_schema5_migration_completed": true
+    },
+    "alpha8_installation": {
+      "bytes": 1237894,
+      "disk_backup": "/Volumes/TUFTY/.badgegotchi-update-84ddqr9j/previous",
+      "files": 58,
+      "from": "0.1.0-alpha.7",
+      "host_backup": "/Users/kobie/projects/powersync/skunkworks/badgegotchi/badge/dist/backups/app-before-alpha8-20261020",
+      "retained_backup_archived_to": "/Users/kobie/projects/powersync/skunkworks/badgegotchi/badge/dist/backups/retained-device-before-alpha8-20261020/.badgegotchi-update-r53cpdhz",
+      "to": "0.1.0-alpha.8",
+      "unrelated_files_unchanged": 167,
+      "updated": true
+    },
+    "alpha8_live_qualification": {
+      "host_final_healthcheck": "pass",
+      "passes": [
+        {
+          "account_actions_created": 0,
+          "package": "0.1.0-alpha.8",
+          "pairing_unchanged": true,
+          "passes": 2,
+          "queues_unchanged": true,
+          "total_duration_ms": 38532
+        }
+      ],
+      "private_log_path": "/private/tmp/badge-sync-rollout-20261020/device-alpha8-qualification.log",
+      "returncode": 0,
+      "sync_results": [
+        {
+          "batch_flushes": 2,
+          "batch_operations": 3,
+          "batch_records": 3,
+          "batch_wire_bytes": 1841,
+          "bucket_count": 1,
+          "cached_before": {
+            "id_styles": [
+              "legacy",
+              "legacy",
+              "legacy"
+            ],
+            "kinds": [
+              "pet",
+              "summary",
+              "timer"
+            ],
+            "payload_bytes": {
+              "pet": 281,
+              "summary": 289,
+              "timer": 358
+            },
+            "summary": {
+              "ended_break_count": 0,
+              "ended_focus_count": 0,
+              "hydration_count": 2,
+              "movement_count": 0,
+              "pet_count": 1
+            },
+            "timer": {
+              "planned_duration_seconds": 2400,
+              "remaining_seconds_at_pause": 2400,
+              "revision": "4",
+              "state": "paused",
+              "type": "focus"
+            },
+            "total_payload_bytes": 928
+          },
+          "columns": [
+            "id",
+            "payload"
+          ],
+          "commits": 11,
+          "complete_duration_ms": 22552,
+          "crud": 0,
+          "cursor_sha256": "238cba89066df993d07c448b572fab5484a981f824e87fd031ac5b7dfa54ecf2",
+          "generation": 1,
+          "integrity": "ok",
+          "max_batch_records": 2,
+          "page_count": 43,
+          "pairing_unchanged": true,
+          "pass": 1,
+          "persisted_cursor_reused": false,
+          "projection_after": {
+            "id_styles": [
+              "compact",
+              "compact",
+              "compact"
+            ],
+            "kinds": [
+              "pet",
+              "summary",
+              "timer"
+            ],
+            "payload_bytes": {
+              "pet": 224,
+              "summary": 132,
+              "timer": 299
+            },
+            "summary": {
+              "ended_break_count": 0,
+              "ended_focus_count": 0,
+              "hydration_count": 2,
+              "movement_count": 0,
+              "pet_count": 1
+            },
+            "timer": {
+              "planned_duration_seconds": 2400,
+              "remaining_seconds_at_pause": 2400,
+              "revision": "4",
+              "state": "paused",
+              "type": "focus"
+            },
+            "total_payload_bytes": 655
+          },
+          "queued": 0,
+          "schema": 5,
+          "subscriptions": [
+            [
+              "badge_projection_compact",
+              "1",
+              "0",
+              "300"
+            ]
+          ],
+          "sync_duration_ms": 21302,
+          "synced": true
+        },
+        {
+          "batch_flushes": 0,
+          "batch_operations": 0,
+          "batch_records": 0,
+          "batch_wire_bytes": 0,
+          "bucket_count": 1,
+          "cached_before": {
+            "id_styles": [
+              "compact",
+              "compact",
+              "compact"
+            ],
+            "kinds": [
+              "pet",
+              "summary",
+              "timer"
+            ],
+            "payload_bytes": {
+              "pet": 224,
+              "summary": 132,
+              "timer": 299
+            },
+            "summary": {
+              "ended_break_count": 0,
+              "ended_focus_count": 0,
+              "hydration_count": 2,
+              "movement_count": 0,
+              "pet_count": 1
+            },
+            "timer": {
+              "planned_duration_seconds": 2400,
+              "remaining_seconds_at_pause": 2400,
+              "revision": "4",
+              "state": "paused",
+              "type": "focus"
+            },
+            "total_payload_bytes": 655
+          },
+          "columns": [
+            "id",
+            "payload"
+          ],
+          "commits": 9,
+          "complete_duration_ms": 13857,
+          "crud": 0,
+          "cursor_sha256": "238cba89066df993d07c448b572fab5484a981f824e87fd031ac5b7dfa54ecf2",
+          "generation": 1,
+          "integrity": "ok",
+          "max_batch_records": 0,
+          "page_count": 43,
+          "pairing_unchanged": true,
+          "pass": 2,
+          "persisted_cursor_reused": true,
+          "projection_after": {
+            "id_styles": [
+              "compact",
+              "compact",
+              "compact"
+            ],
+            "kinds": [
+              "pet",
+              "summary",
+              "timer"
+            ],
+            "payload_bytes": {
+              "pet": 224,
+              "summary": 132,
+              "timer": 299
+            },
+            "summary": {
+              "ended_break_count": 0,
+              "ended_focus_count": 0,
+              "hydration_count": 2,
+              "movement_count": 0,
+              "pet_count": 1
+            },
+            "timer": {
+              "planned_duration_seconds": 2400,
+              "remaining_seconds_at_pause": 2400,
+              "revision": "4",
+              "state": "paused",
+              "type": "focus"
+            },
+            "total_payload_bytes": 655
+          },
+          "queued": 0,
+          "schema": 5,
+          "subscriptions": [
+            [
+              "badge_projection_compact",
+              "1",
+              "0",
+              "300"
+            ]
+          ],
+          "sync_duration_ms": 12980,
+          "synced": true
+        }
+      ]
+    },
+    "last_verified_installed_version": "0.1.0-alpha.8",
+    "normal_restart": {
+      "database_closed_before_reset": true,
+      "restart_requested": true,
+      "serial_interface_returned": true,
+      "usb_disk_ejected": true
+    },
+    "original_database_backup": {
+      "bytes": 44032,
+      "host_integrity_check": "ok",
+      "path": "/Users/kobie/projects/powersync/skunkworks/badgegotchi/badge/dist/backups/state-before-alpha7-20261020.sqlite",
+      "private_log_path": "/private/tmp/badge-sync-rollout-20261020/device-alpha7-qualification.log",
+      "schema": 4,
+      "sha256": "ad8a72ca2eda982ecc949086f8817f085f06a7e71a782e9e7d1301a85390d530",
+      "source": "DB_SNAPSHOT_BEGIN/B64/END blocks captured before the first Store.open in the alpha.7 qualification log"
+    },
+    "projection_payload_bytes": {
+      "after": 655,
+      "before": 928,
+      "saved": 273,
+      "scope": "Actual installed badge projection payloads before and after compact download"
+    },
+    "serial_alpha8_overlay_attempt": {
+      "account_database_or_private_state_changed": false,
+      "application_files_changed": false,
+      "blocked_at": "First attempted removal of a redundant known updater backup from runtime-mounted /system FAT",
+      "completed": false,
+      "error_code": "EROFS",
+      "failure": "OSError: 30 (read-only filesystem)",
+      "fallback": "Use normal Badgeware USB disk mode and checked updater from exact alpha.7 ZIP to alpha.8 ZIP",
+      "successful_filesystem_writes": 0
+    },
+    "unrelated_preservation_baseline": {
+      "alpha7_checked_update_verified_unchanged": 167,
+      "file_count": 167,
+      "inventory_path": "/private/tmp/badge-sync-rollout-20261020/preservation-before.json"
+    },
+    "usb_readiness": "TUFTY safely ejected after the checked update"
+  },
+  "hardware_pending": false,
+  "host_verification": {
+    "badge_test_source": "Full suite completed by badge_sync_audit after service-shaped PUT regression was added",
+    "badge_tests_passed": 129,
+    "batching_fixture": {
+      "commits_with_batching": 7,
+      "commits_without_batching": 30,
+      "core": "0.5.4/cratesio",
+      "data_record_bytes_each_run": 6412,
+      "database_pages_each_run": 37,
+      "measurement_limit": "Host POSIX fixture; no badge wall-clock speedup established",
+      "operation_count": 28,
+      "row_shape": "Service-shaped PUT body contains id and payload",
+      "same_projection_and_bucket_checkpoints": true
+    }
+  },
+  "package": {
+    "added_entries_from_alpha7": [],
+    "changed_entries_from_alpha7": [
+      "README.md",
+      "badgegotchi-package.json",
+      "badgegotchi_storage.py"
+    ],
+    "deterministic_rebuild_verified": true,
+    "files": 58,
+    "installed_bytes": 1237894,
+    "native_module_unchanged": true,
+    "path": "/Users/kobie/projects/powersync/skunkworks/badgegotchi/badge/dist/badgegotchi-0.1.0-alpha.8-b6363dde0d08.zip",
+    "removed_entries_from_alpha7": [],
+    "sha256": "b6363dde0d0846f6ac8a0f076710907a1cb644f7f4455473297fde8f32ff7b2d",
+    "version": "0.1.0-alpha.8",
+    "zip_bytes": 718973
+  },
+  "publication": {
+    "git_push_performed": false,
+    "installer_hash_check": "pass",
+    "installer_scope": "Local public release files and manifest only; no Git push or Vercel deployment",
+    "installer_staged_for_alpha8": true,
+    "vercel_deployed": false
+  },
+  "remaining": [],
+  "rollout_complete": true,
+  "rollout_date": "2026-10-20",
+  "sanitization": "No credentials, owner/device identifiers, pet names/speech, SQL function definitions, or database snapshot contents included",
+  "status": "cloud_and_alpha8_device_rollout_verified",
+  "verification_limits": [
+    "Sync download and persisted reconnect verified; no account actions were generated",
+    "Measured device syncs took 21302ms and 12980ms; no comparable old-version timing baseline was collected",
+    "Power-loss recovery and general allocator exhaustion remain unqualified"
+  ]
+}

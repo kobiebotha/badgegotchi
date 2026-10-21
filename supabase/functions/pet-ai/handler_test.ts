@@ -59,7 +59,7 @@ function harness(options: {
       return Promise.resolve(Response.json({
         state: options.state ?? "claimed",
         reason: "stale_pet_session",
-        event: { lease_token: lease },
+        event: { ...event, owner_id: owner, lease_token: lease },
         pet: { animal_id: "cat" },
       }));
     }
@@ -227,4 +227,55 @@ Deno.test("database failure after inference retains outbox", async () => {
 Deno.test("lost lease cannot ACK a stale inference result", async () => {
   const { handler } = harness({ finishState: "lease_lost" });
   equal((await handler(call({ action: "react", event }))).status, 503);
+});
+
+Deno.test("dedicated worker requires its own secret and never accepts user auth", async () => {
+  const { mock, calls } = harness();
+  const worker = createHandler(config, mock, "w".repeat(64));
+  equal((await worker(call({}, "Bearer valid-user-token"))).status, 401);
+  equal(calls.length, 0);
+  equal(
+    (await createHandler(config, mock, "")(call({}, "Bearer "))).status,
+    401,
+  );
+});
+Deno.test("worker resumes persisted intent and transient failure releases lease", async () => {
+  const { mock, calls } = harness({ openaiStatus: 503 });
+  const workerMock: typeof fetch = (input, init) =>
+    String(input).endsWith("/pet_ai_claim_next")
+      ? Promise.resolve(
+        Response.json({
+          state: "claimed",
+          event: { ...event, owner_id: owner, lease_token: lease },
+          pet: { animal_id: "cat" },
+        }),
+      )
+      : mock(input, init);
+  const worker = createHandler(config, workerMock, "w".repeat(64));
+  equal((await worker(call({}, "Bearer " + "w".repeat(64)))).status, 503);
+  assert(!calls.some((c) => c.url.endsWith("/auth/v1/user")));
+  const finish = calls.find((c) => c.url.endsWith("/pet_ai_finish"))!;
+  equal(finish.body.p_retry, true);
+  equal(finish.body.p_owner_id, owner);
+  equal(finish.body.p_id, eventId);
+});
+Deno.test("empty scheduled worker makes no inference request", async () => {
+  let calls = 0;
+  const mock: typeof fetch = (input) => {
+    assert(String(input).endsWith("/pet_ai_claim_next"));
+    calls++;
+    return Promise.resolve(Response.json({ state: "empty" }));
+  };
+  const worker = createHandler(config, mock, "w".repeat(64));
+  equal(await (await worker(call({}, "Bearer " + "w".repeat(64)))).json(), {
+    status: "empty",
+  });
+  equal(calls, 1);
+});
+
+Deno.test("retry exhaustion acknowledges the persisted terminal failure", async () => {
+  const { handler } = harness({ openaiStatus: 503, finishState: "failed" });
+  const response = await handler(call({ action: "react", event }));
+  equal(response.status, 200);
+  equal(await response.json(), { status: "failed", event_id: eventId });
 });

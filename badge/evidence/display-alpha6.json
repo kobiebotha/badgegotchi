@@ -1,0 +1,59 @@
+{
+  "checked_at": "2026-10-21T00:39:25Z",
+  "status": "ui_only_update_installed_files_verified_publication_pending",
+  "requested_change": {
+    "main": "Remove Account YYYY-MM-DD caption; show pending count only when nonzero",
+    "details": "Use Totals heading; omit date and explanatory account copy; show pending count only when nonzero"
+  },
+  "package": {
+    "version": "0.1.0-alpha.6",
+    "path": "badge/dist/badgegotchi-0.1.0-alpha.6-cabcbfa4568a.zip",
+    "sha256": "cabcbfa4568aff3eb7f959b0476dc42ebb5c28803ee3cbd5449fbf03b85f4efa",
+    "zip_bytes": 717504,
+    "files": 58,
+    "installed_bytes": 1232547,
+    "shared_animal_assets": 30,
+    "same_file_set_as_alpha5": true,
+    "changed_entries_from_alpha5": [
+      "apps/badgegotchi/README.md",
+      "apps/badgegotchi/badgegotchi-package.json",
+      "apps/badgegotchi/badgegotchi_view.py"
+    ],
+    "sync_storage_client_state_native_and_assets_byte_identical_to_alpha5": true,
+    "local_public_installer_staged": true,
+    "local_app_check_and_manifest_hashes": "pass"
+  },
+  "installation": {
+    "checked_updater": true,
+    "previous_version": "0.1.0-alpha.5",
+    "updated": true,
+    "installed_files": 58,
+    "installed_bytes": 1232547,
+    "host_backup": "badge/dist/backups/app-before-alpha6-20261020",
+    "install_result_host_only": "/private/tmp/badge-alpha6-install-result.json",
+    "unrelated_files_unchanged": 167,
+    "preservation_tree_sha256": "4b02d5229fab4028ddca8d22afb8688be79f4b575ff0924e9679f405df195f74",
+    "usb_safely_ejected": true,
+    "original_badgeware_firmware_preserved": true
+  },
+  "verification": {
+    "zip_hash_size_and_all_entry_comparison": "independently verified from alpha5 and alpha6 ZIP bytes",
+    "installed_file_verification": "checked updater reported successful 58-file update",
+    "command_and_view_tests": 16,
+    "packaging_tests": 14,
+    "checked_update_tests": 5,
+    "hardware_post_update_visual_confirmation": "not run",
+    "new_database_or_cloud_checks": "not run; no database or cloud changes in this update",
+    "additional_hardware_database_test_cycle_required": false,
+    "prior_shared_and_render_qualification": "badge/evidence/shared-state-alpha5.json",
+    "prior_render_geometry": "unchanged except fewer text lines; alpha5 qualification retained without claiming a new alpha6 render run"
+  },
+  "remaining": [
+    "Owner presses Reset once and reopens the installed app normally",
+    "Owner commit and Git push to publish the prepared web app and alpha6 installer",
+    "Verify deployed bundle and installer, then apply reviewed activate-shared-commands.sql to retire legacy direct writes"
+  ],
+  "legacy_direct_dml_activation_applied": false,
+  "agent_git_push": false,
+  "agent_vercel_deployment": false
+}

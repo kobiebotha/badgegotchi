@@ -74,30 +74,23 @@ builds. The SDK's additional bucket diagnostics are enabled only in development.
 
 ## Backend prerequisite
 
-The existing backend already supplies Supabase Auth, the Data API with row-level
-security, the `pet-ai` function, and five owner-filtered PowerSync streams.
-The web client reuses those services and does not require a new PowerSync
-instance or stream configuration.
+The web and badge share the gateway's account command contract and the same
+`badge_projection` timer/summary rows. Before activating this client, apply
+[`20261020224246_shared_account_commands.sql`](../supabase/migrations/20261020224246_shared_account_commands.sql),
+deploy the updated `badge-gateway` and `pet-ai` functions, and deploy the
+owner-filtered `account_projection` browser stream. The existing badge stream
+continues to require its separate device-scoped issuer. See the activation
+handoff for the approved target and release sequence; `npm run build` does not
+apply backend changes or deploy anything.
 
-Browser pet events use `source_device: "web"`. Before enabling them against the
-cloud backend:
-
-1. Apply
-   [`20261020170338_pet_events_web_source.sql`](../supabase/migrations/20261020170338_pet_events_web_source.sql)
-   to the intended Supabase database.
-2. Redeploy the updated [`pet-ai`](../supabase/functions/pet-ai/handler.ts) function,
-   which accepts that source value.
-3. Configure both hosted Auth email templates as described above. Keep any
-   redirect URLs still needed by other authentication flows.
-
-These backend prerequisites are not applied by `npm run build`.
-Until both backend updates are deployed, browser pet-event uploads can be
-rejected and remain queued; the app displays the upload error. Use the existing
-server-side OpenAI configuration.
-
-The backend continues to accept `macos` and `ios` source values for historical
-data and existing clients, plus `badge` for future badge integration. The app in
-this repository sends `web`.
+Commands use the signed-in browser session, never badge credentials or server
+secrets. Timer controls compare the shared revision atomically; retries reuse
+the exact command ID and payload. The gateway owns wellness rows, timer history,
+pet intentions and receipts, while the AI worker owns generated pet responses.
+Older queued timer row edits are retained and shown as an upgrade conflict;
+they cannot overwrite the shared timer. Legacy wellness/pet uploads remain
+supported during the transition. Disable legacy direct writes only after the
+updated clients have been released and pending old writes have been reviewed.
 
 ## Vercel configuration
 
@@ -134,41 +127,44 @@ refuses an existing app, and verifies each copied file. Other browsers can use
 the verified ZIP and file-manager instructions. Double-tap RESET for the file
 drive; BOOTSEL is not used.
 
-The installable Tufty 2350 app is a local companion alpha using SQLite and real
-PowerSync core. Cloud sync, AI conversations, Wi-Fi setup, and account pairing
-are separate follow-up work. Read the exact build's physical qualification
-results before publishing it.
+The Tufty 2350 app source supports pair-once account authentication and shared
+account activity through SQLite and PowerSync. The public installer serves the
+exact version in its release manifest; source changes do not publish a package.
+Read that build's physical qualification results before publishing it.
 
 See [badge installer development and release instructions](../docs/badge-installer.md).
 From the repository root, `python3 badge/tools/package.py --stage-web` stages
 the package. `npm run app:check` (also run before each web build) checks the
 manifest, file sizes, and SHA-256 digests. Nothing is deployed by these commands.
 
-- Focus lasts 40 minutes and breaks last 10 minutes, with pause, resume, stop,
-  completion, and timestamp-based recovery after backgrounding.
-- Water and movement logs, hydration reminder state, and daily totals use UTC
-  day boundaries. Totals derive from raw activity rows; cached counters
-  are not uploaded over another device's data.
-- Pet artwork lives in `public/assets/`. Pet creation, resets, and AI
-  reactions remain server-owned. Reset retries reuse their request UUID.
-- The schema matches `sessions`, `wellness_events`, `daily_activity_summary`,
-  `pet_sessions`, and `pet_events`. React reads the local SQLite database with
-  PowerSync hooks; timer and wellness commands write locally first. A local-only
-  `ui_state` table remembers dismissed completion prompts across reloads.
-- The connector sends allowlisted timer, wellness, and reminder fields to the
-  Supabase Data API. Pet-event inserts send only their intent to `pet-ai` with
-  `action: "react"`. Creation and reset use `ensure_pet` and `reset_pet`. Pet
-  results arrive through sync rather than client writes to `pet_sessions`.
-- Each upload uses a fresh session lookup and pins the checked account's token
-  to its request. Failed uploads remain queued. Account-specific IndexedDB
-  databases survive React remounts; sign-out clears the local database and
-  warns before discarding pending changes.
+- Focus lasts 40 minutes and breaks last 10 minutes. Completion creates the
+  opposite phase paused; stopping creates the same phase paused. Starting that
+  phase is an explicit action on either device. Timer time derives from the
+  shared UTC timestamps and saved pause balance.
+- Daily focus/break totals count ended sessions, including stopped sessions.
+  Water, movement and pet totals come directly from the shared account
+  projection, with its UTC date. Before the first snapshot, totals show a dash;
+  offline rollover keeps the last confirmed day visible instead of inventing
+  zeros. The browser requests a projection refresh on connection/day changes.
+- Pet artwork lives in `public/assets/`. Pet identity, name and AI speech remain
+  server-owned. Creation and reset use `ensure_pet` and `reset_pet`; reset retries
+  reuse their request UUID.
+- `account_commands` is an insert-only PowerSync table. Each immutable intent
+  enters the normal durable upload queue. `pending_commands` stores transport
+  status only; it is never a separate source of account totals. Accepted timer
+  controls stay overlaid until the matching canonical revision downloads;
+  wellness and pet actions remain pending until their canonical event IDs
+  arrive. Rejected conflicts remain visible for the user to review.
+- Timer controls can be queued offline after the first account snapshot. Their
+  provisional state is labelled pending, and confirmed daily totals do not
+  increase until sync. Pet creation, reset and AI replies require a connection.
+- Each upload checks the current signed-in identity. Account-specific IndexedDB
+  databases survive React remounts; sign-out warns about queued actions and then
+  clears the account cache. No authentication or account state is shared with
+  another signed-in user.
 
-Once the app is loaded and account data is available, local timer and wellness
-changes persist in browser storage and queue while offline. Pet creation, pet
-reset, and new AI replies need a connection. This app has **no service worker**:
-it does not guarantee a cold start or page reload while offline. Browser storage
-can also be cleared or evicted by the browser.
+This app has **no service worker**: it does not guarantee a cold start or page
+reload without the app assets cached. Browser storage can be cleared or evicted.
 
 ## Verify
 
@@ -188,7 +184,7 @@ The production variant builds with reserved test service URLs and checks the
 emitted SQLite WASM and worker assets through Vite Preview. Run `npm run build`
 again afterward before using `dist` for a real deployment.
 
-Vitest covers timer transitions, daily summaries, upload contracts, retries, and
+Vitest covers revision conflicts, offline command chains, checkpoint acknowledgements, upload contracts, retries, and
 account isolation. Playwright exercises the browser app with mocked cloud
 endpoints and real PowerSync SQLite workers. It does not validate the deployed
 Supabase function, live PowerSync replication, or OpenAI inference. Chromium

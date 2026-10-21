@@ -92,3 +92,16 @@ export async function invokePetCommand(
   // Responses may be terminal rejections after a reset. They are acknowledged;
   // authoritative pet state and failure details arrive through PowerSync.
 }
+
+/** Refreshes the same UTC account projection consumed by the badge and web. */
+export async function refreshAccountProjection(
+  client: AuthClient, config: PublicConfig, expectedUserId: string,
+  request: Request = fetch,
+): Promise<void> {
+  const session = await requireSession(client, expectedUserId);
+  const response = await request(`${config.supabaseUrl.replace(/\/$/, "")}/functions/v1/badge-gateway`, {
+    method: "POST", headers: authHeaders(config, session), body: JSON.stringify({ action: "refresh" }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  await assertResponse(response, "Account refresh", false);
+}

@@ -524,7 +524,7 @@ svg {
 }
 .daily-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   flex: 1;
 }
 .metric {

@@ -1,156 +1,172 @@
-"""Offline timer and button state, independent of Badgeware and storage."""
-
+"""Account projection and pending-command view; no badge-only progress or timer."""
 import time
 
 FOCUS_MS = 40 * 60 * 1000
 BREAK_MS = 10 * 60 * 1000
-CHECKPOINT_MS = 60 * 1000
-MAX_STEP_MS = 60 * 1000
-COUNTERS = ("focus_count", "water_count", "stretch_count", "pet_count")
-BUTTONS = ("pet", "toggle", "water", "stretch")
+BUTTONS = ("pet", "toggle", "water", "stretch", "stop")
 
 
 def rtc_seconds():
-    """Return normalized Unix seconds only when the badge clock is set."""
     try:
         value = int(time.time())
-        year = time.gmtime(value)[0]
-        if not 2024 <= year < 2100:
+        if not 2024 <= time.gmtime(value)[0] < 2100:
             return None
         epoch = time.gmtime(0)[0]
-        if epoch == 2000:
-            value += 946684800
-        elif epoch != 1970:
-            return None
-        return value
+        return value + (946684800 if epoch == 2000 else 0) if epoch in (1970, 2000) else None
     except (ValueError, OSError, OverflowError):
         return None
 
 
+def unix_seconds(value, round_up=False):
+    """Parse server UTC timestamps without relying on host timezone or epoch."""
+    if not isinstance(value, str) or len(value) < 20:
+        raise ValueError("Invalid account timestamp")
+    if value[4:5] != "-" or value[7:8] != "-" or value[10:11] not in ("T", " ") or value[13:14] != ":" or value[16:17] != ":":
+        raise ValueError("Invalid account timestamp")
+    suffix = value[19:]
+    fractional = False
+    if suffix.startswith("."):
+        end = 1
+        while end < len(suffix) and suffix[end].isdigit():
+            end += 1
+        if end == 1:
+            raise ValueError("Invalid account timestamp")
+        fractional = any(c != "0" for c in suffix[1:end])
+        suffix = suffix[end:]
+    if suffix not in ("Z", "+00:00"):
+        raise ValueError("Account timestamp must be UTC")
+    year, month, day = int(value[:4]), int(value[5:7]), int(value[8:10])
+    hour, minute, second = int(value[11:13]), int(value[14:16]), int(value[17:19])
+    if not 2024 <= year < 2100 or not 1 <= month <= 12 or not 0 <= hour < 24 or not 0 <= minute < 60 or not 0 <= second < 60:
+        raise ValueError("Invalid account timestamp")
+    leap = year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+    days = (31, 29 if leap else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    if not 1 <= day <= days[month - 1]:
+        raise ValueError("Invalid account date")
+    count = (year - 1970) * 365 + (year - 1) // 4 - 1969 // 4 - (year - 1) // 100 + 1969 // 100 + (year - 1) // 400 - 1969 // 400
+    count += sum(days[:month - 1]) + day - 1
+    return count * 86400 + hour * 3600 + minute * 60 + second + (1 if round_up and fractional else 0)
+
+
+def remaining_seconds(timer, now):
+    base = timer.get("remaining_seconds_at_pause")
+    if base is None:
+        base = timer.get("planned_duration_seconds", 0)
+    if type(base) is not int or not 0 <= base <= 2400:
+        raise ValueError("Invalid account timer duration")
+    if timer.get("state") == "ended":
+        return 0
+    if timer.get("state") != "active" or now is None:
+        return base
+    resumed = unix_seconds(timer["last_resumed_at"], round_up=True)
+    return max(0, base - max(0, now - resumed))
+
+
+def transition_seconds(timer, now):
+    """Keep coarse badge timestamps after the exact synced web transition.
+
+    A web transition can carry milliseconds within the badge's current whole
+    second. Rounding its anchor up avoids sending a causally earlier action;
+    the gateway clamps permitted future skew to its current server time.
+    """
+    if type(now) is not int or timer is None:
+        return now
+    for key in ("last_resumed_at", "paused_at", "started_at"):
+        if timer.get(key) is not None:
+            now = max(now, unix_seconds(timer[key], round_up=True))
+    return now
+
+
+def optimistic_timer(timer, command):
+    kind = command["type"]
+    if not kind.startswith("timer_") or timer is None:
+        return timer
+    if command["expected_revision"] != timer.get("revision"):
+        return timer
+    if kind != "timer_start" and command["session_id"] != timer.get("id"):
+        return timer
+    result = dict(timer)
+    when = command["occurred_at"]
+    if kind == "timer_start":
+        phase = command["session_type"]
+        result = {"id": command["new_session_id"], "type": phase, "state": "active",
+                  "planned_duration_seconds": 2400 if phase == "focus" else 600,
+                  "started_at": when, "last_resumed_at": when, "paused_at": None,
+                  "remaining_seconds_at_pause": None}
+    elif kind == "timer_pause":
+        result.update(state="paused", paused_at=when,
+                      remaining_seconds_at_pause=remaining_seconds(timer, unix_seconds(when)))
+    elif kind == "timer_resume":
+        result.update(state="active", last_resumed_at=when, paused_at=None)
+    elif kind in ("timer_complete", "timer_stop"):
+        phase = ("break" if timer.get("type") == "focus" else "focus") if kind == "timer_complete" else timer.get("type", "focus")
+        duration = 2400 if phase == "focus" else 600
+        result = {"id": command["id"], "type": phase, "state": "paused",
+                  "planned_duration_seconds": duration, "started_at": when,
+                  "last_resumed_at": when, "paused_at": when, "remaining_seconds_at_pause": duration}
+    result["revision"] = str(int(command["expected_revision"]) + 1)
+    return result
+
+
 class AppState:
-    def __init__(self, snapshot=None, clock=rtc_seconds):
+    def __init__(self, clock=rtc_seconds):
         self._clock = clock
-        if snapshot is None:
-            snapshot = {"phase": "focus", "remaining_ms": FOCUS_MS,
-                        "running": False, "focus_count": 0, "water_count": 0,
-                        "stretch_count": 0, "pet_count": 0}
-        if snapshot.get("phase") not in ("focus", "break"):
-            raise ValueError("Invalid saved timer phase")
-        self.phase = snapshot["phase"]
-        maximum = FOCUS_MS if self.phase == "focus" else BREAK_MS
-        remaining = snapshot.get("remaining_ms")
-        if type(remaining) is not int or not 0 <= remaining <= maximum:
-            raise ValueError("Invalid saved timer duration")
-        self.remaining_ms = remaining
+        self.projection = {}
+        self.timer = None
+        self.pet = {}
+        self.summary = {}
+        self.phase = "focus"
+        self.remaining_ms = None
         self.running = False
-        for name in COUNTERS:
-            value = snapshot.get(name)
-            if type(value) is not int or not 0 <= value <= 1000000:
-                raise ValueError("Invalid saved counter")
-            setattr(self, name, value)
-        self.name = "Mochi"
-        self.reaction_ms = 0
-        self.speech = "A little focus. A little company."
-        self.speech_ms = 0
+        self.clock_valid = False
+        self.name = "Waiting for pet"
+        self.reaction_ms = self.speech_ms = 0
+        self.speech = "Waiting for account sync."
         self._held = set()
         self._wait_for_release = True
-        self._checkpoint_ms = 0
-        self._restore_dirty = False
-        self.clock_notice = None
-        if snapshot.get("running"):
-            saved_at = snapshot.get("clock_saved_s")
-            now = self._clock()
-            self._restore_dirty = True
-            if (type(saved_at) is not int or type(now) is not int
-                    or now < saved_at):
-                self.clock_notice = "Clock unavailable or changed. Timer paused."
-                self._say(self.clock_notice)
-            else:
-                self.running = True
-                self.remaining_ms = max(0, self.remaining_ms - (now - saved_at) * 1000)
-                if self.remaining_ms == 0:
-                    self._complete()
+        self.refresh({}, [])
 
-    def snapshot(self):
-        result = {"phase": self.phase, "remaining_ms": self.remaining_ms,
-                  "running": self.running,
-                  "clock_saved_s": self._clock() if self.running else None}
-        for name in COUNTERS:
-            result[name] = getattr(self, name)
-        return result
-
-    def pause(self):
-        self.running = False
-
-    def saved(self):
-        self._checkpoint_ms = 0
+    def refresh(self, projection, commands):
+        self.projection = projection
+        self.pet = projection.get("pet", {})
+        self.summary = projection.get("summary", {})
+        self.name = self.pet.get("name") or "Waiting for pet"
+        timer = projection.get("timer")
+        if timer is not None:
+            timer = dict(timer)
+            from badgegotchi_commands import revision
+            if not revision(timer.get("revision")):
+                # Old cached projection is display-only until the shared schema arrives.
+                timer = None
+        for command in commands:
+            timer = optimistic_timer(timer, command)
+        self.timer = timer
+        now = self._clock()
+        self.clock_valid = type(now) is int
+        self.phase = timer.get("type", "focus") if timer else "focus"
+        self.running = bool(timer and timer.get("state") == "active")
+        self.remaining_ms = remaining_seconds(timer, now) * 1000 if timer else None
+        self.focus_count = self.summary.get("ended_focus_count", self.summary.get("completed_focus_count", 0) + self.summary.get("stopped_focus_count", 0)) if self.summary else None
+        self.break_count = self.summary.get("ended_break_count", self.summary.get("completed_break_count", 0) + self.summary.get("stopped_break_count", 0)) if self.summary else None
+        self.water_count = self.summary.get("hydration_count")
+        self.stretch_count = self.summary.get("movement_count")
+        self.pet_count = self.summary.get("pet_count")
+        if not self.speech_ms:
+            self.speech = self.pet.get("speech") or "Waiting for account sync."
 
     def _say(self, text):
-        self.speech = text
-        self.speech_ms = 5000
-
-    def _increment(self, name):
-        setattr(self, name, min(1000000, getattr(self, name) + 1))
-
-    def _complete(self):
-        self.running = False
-        if self.phase == "focus":
-            self._increment("focus_count")
-            self.phase = "break"
-            self.remaining_ms = BREAK_MS
-            self._say("Focus complete! B starts your break.")
-        else:
-            self.phase = "focus"
-            self.remaining_ms = FOCUS_MS
-            self._say("Break complete. Ready when you are.")
+        self.speech, self.speech_ms = text, 5000
 
     def step(self, held, elapsed_ms):
-        """Advance elapsed time and return whether a durable save is due.
-
-        A single delayed frame can credit at most one minute. The foreground
-        app feeds a 16-second watchdog; a larger gap is not trusted elapsed
-        focus time. Phase transitions always stop, so no unattended chaining.
-        """
-        elapsed_ms = min(MAX_STEP_MS, max(0, elapsed_ms))
-        self.reaction_ms = max(0, self.reaction_ms - elapsed_ms)
-        self.speech_ms = max(0, self.speech_ms - elapsed_ms)
-        if self.speech_ms == 0:
-            self.speech = self.clock_notice or "A little focus. A little company."
-        changed = self._restore_dirty
-        self._restore_dirty = False
-        if self.running:
-            self.remaining_ms = max(0, self.remaining_ms - elapsed_ms)
-            self._checkpoint_ms += elapsed_ms
-            if self.remaining_ms == 0:
-                self._complete()
-                changed = True
-
+        self.reaction_ms = max(0, self.reaction_ms - max(0, elapsed_ms))
+        self.speech_ms = max(0, self.speech_ms - max(0, elapsed_ms))
         held = set(name for name in held if name in BUTTONS)
         if self._wait_for_release:
             self._wait_for_release = bool(held)
             self._held = held
-            return changed
+            return []
         pressed = held - self._held
         self._held = held
-        if "pet" in pressed:
-            self._increment("pet_count")
-            self.reaction_ms = 1800
-            self._say("Pet saved. A little moment together.")
-            changed = True
-        if "toggle" in pressed:
-            self.running = not self.running
-            self.clock_notice = ("Set badge clock to count while away."
-                                 if self.running and self._clock() is None else None)
-            self._say(("Focus" if self.phase == "focus" else "Break") +
-                      (" started. One step at a time." if self.running
-                       else " paused. B when you are ready."))
-            changed = True
-        if "water" in pressed:
-            self._increment("water_count")
-            self._say("Water saved. A small sip helps.")
-            changed = True
-        if "stretch" in pressed:
-            self._increment("stretch_count")
-            self._say("Stretch saved. Uncurl those shoulders.")
-            changed = True
-        return changed or (self.running and self._checkpoint_ms >= CHECKPOINT_MS)
+        if self.running and self.clock_valid and self.remaining_ms == 0:
+            return ["complete"]
+        return list(pressed) if len(pressed) == 1 and len(held) == 1 else []

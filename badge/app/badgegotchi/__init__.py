@@ -18,7 +18,6 @@ def request_exit(_pin=None):
 
 home_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=request_exit)
 
-from badgegotchi_state import AppState, rtc_seconds
 from badgegotchi_view import AppView
 from badgegotchi_storage import Store
 from badgegotchi_client import Client
@@ -26,8 +25,8 @@ from badgegotchi_client import Client
 
 badge.mode(HIRES | VSYNC)
 watchdog = machine.WDT(timeout=16000)
-view = AppView(screen, color, font, image, rect, "assets/capybara.png")
-view.message("Getting ready", "Opening saved progress and your account link.")
+view = AppView(screen, color, font, image, rect, "assets/animals")
+view.message("Getting ready", "Opening your account link and synced data.")
 badgeware.display.update()
 watchdog.feed()
 store = Store(heartbeat=watchdog.feed)
@@ -39,16 +38,14 @@ storage_ok = False
 
 try:
     store.open()
-    state = AppState(store.load())
     storage_ok = True
     client = Client(store, heartbeat=watchdog.feed)
+    state = client.state
 except Exception as exc:
     print("BADGEGOTCHI_OPEN_ERROR", type(exc).__name__, str(exc))
-    failure = "This badge could not open its saved data. Nothing was reset."
+    failure = "This badge could not open its account data. Press Home to exit."
 
 last_tick = ticks_ms()
-buttons = ((BUTTON_A, "pet"), (BUTTON_B, "toggle"),
-           (BUTTON_C, "water"), (BUTTON_UP, "stretch"))
 
 
 def update():
@@ -72,22 +69,6 @@ def update():
         failure = "Saved progress and pairing data are retained. Press Home to exit."
         view.message(failure_title, failure, error=True)
         return
-    held = [name for button, name in buttons if badge.held(button)] if client.controls_enabled else ()
-    previous = {key: getattr(state, key) for key in ("water_count", "stretch_count")}
-    if state.step(held, elapsed):
-        try:
-            if client.ready:
-                client.record_events(state, previous, rtc_seconds)
-            store.save(state.snapshot())
-            state.saved()
-        except Exception as exc:
-            state.pause()
-            storage_ok = False
-            print("BADGEGOTCHI_SAVE_ERROR", type(exc).__name__, str(exc))
-            failure_title = "Save unavailable"
-            failure = "Saving stopped. Existing data was not reset. Press Home to exit."
-            view.message(failure_title, failure, error=True)
-            return
     if exit_requested:
         return True
     if client.ready:
@@ -112,20 +93,10 @@ finally:
     # Badgeware resets back to its existing launcher after the app returns.
     # Closing is mandatory; a storage failure must never trigger a fresh DB.
     try:
-        if storage_ok and state is not None:
-            # Home resets the VM. Preserve running + RTC anchor so reopening
-            # accounts for time in the launcher without a background task.
-            state.step((), ticks_diff(ticks_ms(), last_tick))
-            watchdog.feed()
-            store.save(state.snapshot())
-    except Exception as exc:
-        print("BADGEGOTCHI_EXIT_SAVE_ERROR", type(exc).__name__, str(exc))
+        if client is not None:
+            client.close()
     finally:
-        try:
-            if client is not None:
-                client.close()
-        finally:
-            store.close()
+        store.close()
 
 if exit_requested:
     view.message("Returning home", "Release Home to return to the launcher.")

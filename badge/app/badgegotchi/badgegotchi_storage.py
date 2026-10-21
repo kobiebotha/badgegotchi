@@ -1,6 +1,6 @@
-"""Small, local-only PowerSync store on Badgeware's existing LittleFS mount.
+"""Bounded account projection on Badgeware's existing LittleFS mount.
 
-Versions 1/2 migrate additively, preserving the original local snapshot.
+Version 5 uses payload-only synced rows; their id identifies the kind.
 Cloud data is a bounded projection; durable commands live in the private queue.
 A leftover journal or unrecognized data is retained, never removed/reset.
 """
@@ -15,12 +15,12 @@ MAX_DATABASE_BYTES = 128 * 1024
 MIN_FREE_BYTES = 64 * 1024
 MAX_SYNC_PAGES = 88
 MAX_SYNC_LINE_BYTES = 8192
+MAX_SYNC_BATCH_RECORDS = 6
 MAX_PROJECTION_ROWS = 3
 MAX_PROJECTION_BYTES = 1536
 SCHEMA = ('{"tables":[{"name":"badge_state","local_only":true,'
           '"columns":[{"name":"snapshot","type":"text"}]},'
-          '{"name":"badge_projection","columns":[{"name":"kind","type":"text"},'
-          '{"name":"payload","type":"text"}]}]}')
+          '{"name":"badge_projection","columns":[{"name":"payload","type":"text"}]}]}')
 DEFAULTS = {
     "phase": "focus", "remaining_ms": 2400000, "running": False,
     "focus_count": 0, "water_count": 0, "stretch_count": 0, "pet_count": 0,
@@ -254,14 +254,19 @@ class Store:
             if self.version != "0.5.4/cratesio":
                 raise ValueError("Unsupported PowerSync core")
             schema_version = self._scalar("PRAGMA user_version") if before else None
-            if before and schema_version not in ("1", "2", "3"):
+            if before and schema_version not in ("1", "2", "3", "4", "5"):
                 raise ValueError("Unsupported database schema; retained unchanged")
             if before and self._scalar("PRAGMA quick_check") != "ok":
                 raise ValueError("Database integrity check failed; retained unchanged")
             if before and self._scalar("SELECT count(*) FROM ps_crud") != "0":
                 raise ValueError("Unexpected SQL outbox; retained unchanged")
-            if before and schema_version in ("1", "2") and self._scalar("SELECT count(*) FROM badge_state") != "1":
+            if before and schema_version in ("1", "2") and (self._scalar("SELECT count(*) FROM badge_state") != "1"
+                    or self._scalar("SELECT count(*) FROM badge_state WHERE id='current'") != "1"):
                 raise ValueError("Unexpected legacy records; retained unchanged")
+            if before:
+                allowed = "('account')" if schema_version in ("4", "5") else "('current','legacy','account')"
+                if self._scalar("SELECT count(*) FROM badge_state WHERE id NOT IN " + allowed) != "0":
+                    raise ValueError("Unexpected local records; retained unchanged")
             self._exec("PRAGMA page_size=1024")
             if self._scalar("PRAGMA page_size") != "1024":
                 raise ValueError("Unsupported database page size")
@@ -271,54 +276,29 @@ class Store:
             self._exec("PRAGMA synchronous=FULL")
             if self._scalar("PRAGMA journal_mode=DELETE") != "delete":
                 raise ValueError("DELETE journaling is required")
-            if before:
-                value = self._load_snapshot(legacy=schema_version == "1")
-                if schema_version != "3":
-                    # Validate before altering schema. Capture retained counters as
-                    # explicit legacy progress; never manufacture historical events.
-                    self._check_reserve()
-                    self._exec("BEGIN IMMEDIATE")
-                    try:
-                        self._exec("SELECT powersync_replace_schema(%s)" % _quote(SCHEMA))
-                        self._exec("INSERT INTO badge_state(id,snapshot) VALUES('legacy',%s)" % _quote(json.dumps(value)))
-                        self._exec("UPDATE badge_state SET snapshot=%s WHERE id='current'" % _quote(json.dumps(value)))
-                        self._exec("PRAGMA user_version=3")
-                        self._exec("COMMIT")
-                    except Exception:
-                        self._rollback()
-                        raise
-            else:
+            if not before or schema_version != "5":
+                self._check_reserve()
                 self._exec("BEGIN IMMEDIATE")
                 try:
                     self._exec("SELECT powersync_replace_schema(%s)" % _quote(SCHEMA))
-                    payload = json.dumps(DEFAULTS)
-                    self._exec("INSERT INTO badge_state(id,snapshot) VALUES('current',%s)" % _quote(payload))
-                    self._exec("PRAGMA user_version=3")
+                    # Explicitly authorized development reset: only old local
+                    # progress rows. Account binding, synced projection, native
+                    # checkpoints and private pending commands are untouched.
+                    self._exec("DELETE FROM badge_state WHERE id IN ('current','legacy')")
+                    self._exec("PRAGMA user_version=5")
                     self._exec("COMMIT")
                 except Exception:
                     self._rollback()
                     raise
             if self._scalar("SELECT count(*) FROM ps_crud") != "0":
                 raise ValueError("Unexpected SQL outbox; retained unchanged")
-            if int(self._scalar("SELECT count(*) FROM badge_state WHERE id NOT IN ('current','legacy','account')")):
+            if int(self._scalar("SELECT count(*) FROM badge_state WHERE id NOT IN ('account')")):
                 raise ValueError("Unexpected local records; retained unchanged")
             self.projection()
             return self
         except Exception:
             self.close()
             raise
-
-    def load(self):
-        if not self.opened:
-            raise ValueError("Database is not open")
-        self._last = None
-        return self._load_snapshot()
-
-    def _load_snapshot(self, legacy=False):
-        rows = self._exec("SELECT id,snapshot FROM badge_state WHERE id='current' LIMIT 2")
-        if len(rows) != 1 or rows[0][0] != "current" or len(rows[0][1]) > 512:
-            raise ValueError("Unsupported saved state; retained unchanged")
-        return _snapshot(json.loads(rows[0][1]), legacy)
 
     def _rollback(self):
         # SQLite may already have rolled back on FULL/IOERR. Do not mask the
@@ -327,10 +307,6 @@ class Store:
             self._exec("ROLLBACK")
         except Exception:
             pass
-
-    def legacy(self):
-        rows = self._exec("SELECT snapshot FROM badge_state WHERE id='legacy'")
-        return _snapshot(json.loads(rows[0][0])) if rows else None
 
     def bind_account(self, owner_id, device_id):
         for value in (owner_id, device_id):
@@ -348,11 +324,14 @@ class Store:
         return True
 
     def projection(self):
-        rows = self._exec("SELECT id,kind,payload FROM badge_projection LIMIT 4")
+        rows = self._exec("SELECT id,payload FROM badge_projection LIMIT 4")
         if len(rows) > MAX_PROJECTION_ROWS:
             raise ValueError("Badge projection exceeds storage contract")
         result = []
-        for key, kind, payload in rows:
+        for key, payload in rows:
+            # v4 cached rows use owner:kind ids. They remain readable offline
+            # until the compact stream replaces them at a covering checkpoint.
+            kind = key.rsplit(":", 1)[-1]
             if kind not in ("pet", "timer", "summary") or len(payload.encode()) > MAX_PROJECTION_BYTES:
                 raise ValueError("Unsupported badge projection")
             value = json.loads(payload)
@@ -377,67 +356,108 @@ class Store:
         if payload is not None and len(payload.encode()) > MAX_SYNC_LINE_BYTES:
             raise ValueError("Sync response is too large")
         if command == "line_text":
-            line = json.loads(payload)
-            if not isinstance(line, dict):
-                raise ValueError("Invalid sync line")
-            checkpoint = line.get("checkpoint")
-            if checkpoint is not None and len(checkpoint.get("buckets", [])) > 4:
-                raise ValueError("Unexpected sync buckets")
-            data = line.get("data")
-            if data is not None:
-                operations = data.get("data", [])
-                if len(operations) > MAX_PROJECTION_ROWS * 2:
-                    raise ValueError("Sync batch exceeds projection contract")
-                for op in operations:
-                    if op.get("op") in ("PUT", "REMOVE"):
-                        if op.get("object_type") != "badge_projection":
-                            raise ValueError("Unexpected synced table")
-                    if op.get("op") == "PUT":
-                        body = json.loads(op.get("data", "null"))
-                        if (not isinstance(body, dict) or body.get("kind") not in ("pet", "timer", "summary") or
-                                not isinstance(body.get("payload"), str) or
-                                len(body["payload"].encode()) > MAX_PROJECTION_BYTES):
-                            raise ValueError("Sync row exceeds projection contract")
-            # Stay away from the native FULL boundary. Never run destructive
-            # VACUUM/reset to make room; retain state for explicit recovery.
-            if int(self._scalar("PRAGMA page_count")) > MAX_SYNC_PAGES:
-                raise OSError("Sync storage budget reached; retained data needs recovery")
-            self._check_reserve()
-        argument = "NULL" if payload is None else _quote(payload)
+            self._sync_line(payload)
+            self._check_sync_budget()
         self._exec("BEGIN IMMEDIATE")
         try:
-            result = self._scalar("SELECT powersync_control(%s,%s)" % (_quote(command), argument))
+            result = self._apply_control(command, payload)
             self._exec("COMMIT")
         except Exception:
             self._rollback()
             raise
-        instructions = json.loads(result) if result is not None else None
+        return result
+
+    def _sync_line(self, payload):
+        line = json.loads(payload)
+        if not isinstance(line, dict):
+            raise ValueError("Invalid sync line")
+        checkpoint = line.get("checkpoint")
+        if checkpoint is not None and len(checkpoint.get("buckets", [])) > 4:
+            raise ValueError("Unexpected sync buckets")
+        data = line.get("data")
+        if data is not None:
+            if not isinstance(data, dict) or not isinstance(data.get("data", []), list):
+                raise ValueError("Invalid sync data")
+            operations = data.get("data", [])
+            if len(operations) > MAX_PROJECTION_ROWS * 2:
+                raise ValueError("Sync batch exceeds projection contract")
+            for op in operations:
+                if not isinstance(op, dict):
+                    raise ValueError("Invalid sync operation")
+                if op.get("op") in ("PUT", "REMOVE"):
+                    if op.get("object_type") != "badge_projection":
+                        raise ValueError("Unexpected synced table")
+                if op.get("op") == "PUT":
+                    body = json.loads(op.get("data", "null"))
+                    key = op.get("object_id")
+                    kind = key.rsplit(":", 1)[-1] if isinstance(key, str) else None
+                    # Raw PowerSync row JSON includes its selected id as well
+                    # as object_id. Preserve it unchanged for core checksums.
+                    if (not isinstance(body, dict) or kind not in ("pet", "timer", "summary") or
+                            body.get("kind", kind) != kind or body.get("id", key) != key or
+                            set(body) - {"id", "kind", "payload"} or
+                            not isinstance(body.get("payload"), str) or
+                            len(body["payload"].encode()) > MAX_PROJECTION_BYTES):
+                        raise ValueError("Sync row exceeds projection contract")
+        return line
+
+    def _check_sync_budget(self):
+        # Keep the same per-record headroom while checking filesystem reserve
+        # only once for a bounded batch. No transaction spans network I/O.
+        if int(self._scalar("PRAGMA page_count")) > MAX_SYNC_PAGES:
+            raise OSError("Sync storage budget reached; retained data needs recovery")
+        self._check_reserve()
+
+    def _apply_control(self, command, payload):
+        argument = "NULL" if payload is None else _quote(payload)
+        result = self._scalar("SELECT powersync_control(%s,%s)" % (_quote(command), argument))
+        return json.loads(result) if result is not None else None
+
+    def control_batch(self, payloads):
+        """Commit ordered download records together, keeping every native op.
+
+        Only data records may be batched: checkpoint/control markers are applied
+        separately after the preceding data commits. Validate the entire bounded
+        input before the first native call, then release instructions after commit.
+        """
+        if not isinstance(payloads, list) or not 1 <= len(payloads) <= MAX_SYNC_BATCH_RECORDS:
+            raise ValueError("Sync batch exceeds record limit")
+        size = operations = 0
+        for payload in payloads:
+            if not isinstance(payload, str):
+                raise ValueError("Invalid sync batch record")
+            size += len(payload.encode())
+            if size > MAX_SYNC_LINE_BYTES:
+                raise ValueError("Sync batch exceeds byte limit")
+            line = self._sync_line(payload)
+            if len(line) != 1 or not isinstance(line.get("data"), dict):
+                raise ValueError("Only sync data can be batched")
+            operations += len(line["data"].get("data", []))
+            if operations > MAX_SYNC_BATCH_RECORDS:
+                raise ValueError("Sync batch exceeds operation limit")
+        self._check_sync_budget()
+        instructions = []
+        self._exec("BEGIN IMMEDIATE")
+        try:
+            for payload in payloads:
+                # Page growth is still checked between native records, just as
+                # when each record had its own FULL journal transaction.
+                if int(self._scalar("PRAGMA page_count")) > MAX_SYNC_PAGES:
+                    raise OSError("Sync storage budget reached; retained data needs recovery")
+                result = self._apply_control("line_text", payload)
+                if not isinstance(result, list):
+                    raise ValueError("Invalid core batch response")
+                instructions.extend(result)
+            self._exec("COMMIT")
+        except Exception:
+            self._rollback()
+            raise
         return instructions
 
     def _check_reserve(self):
         database_size = os.stat(self.root + "/" + DATABASE)[6]
         if _free_bytes(self.root) < MIN_FREE_BYTES + database_size + 8192:
             raise OSError("Badge storage reserve is low; save stopped")
-
-    def save(self, snapshot):
-        if not self.opened:
-            raise ValueError("Database is not open")
-        value = _snapshot(snapshot)
-        if value == self._last:
-            return False
-        # Retain room for a worst-case rollback journal as well as the shared
-        # filesystem reserve. The app never consumes the rest of Badgeware's
-        # small state partition merely because SQLite has free pages left.
-        self._check_reserve()
-        self._exec("BEGIN IMMEDIATE")
-        try:
-            self._exec("UPDATE badge_state SET snapshot=%s WHERE id='current'" % _quote(json.dumps(value)))
-            self._exec("COMMIT")
-        except Exception:
-            self._rollback()
-            raise
-        self._last = value
-        return True
 
     def close(self):
         if self.opened:

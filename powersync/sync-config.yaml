@@ -88,10 +88,29 @@ streams:
       WHERE owner_id = auth.user_id()
         AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/auth/v1'
         AND auth.parameter('badge_scope') IS NULL
+  account_projection:
+    auto_subscribe: true
+    query: |
+      SELECT id, kind, payload
+      FROM badge_projection
+      WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/auth/v1'
+        AND auth.parameter('badge_scope') IS NULL
   badge_projection:
     auto_subscribe: false
     query: |
       SELECT id, kind, payload
+      FROM badge_projection
+      WHERE owner_id = auth.user_id()
+        AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/functions/v1/badge-gateway'
+        AND auth.parameter('badge_scope') = 'v1'
+        AND auth.parameter('device_id') IS NOT NULL
+  # Short row ids also identify the kind. Keep the original stream for badges
+  # installed before the payload-only client schema was introduced.
+  badge_projection_compact:
+    auto_subscribe: false
+    query: |
+      SELECT kind AS id, payload
       FROM badge_projection
       WHERE owner_id = auth.user_id()
         AND auth.parameter('iss') = 'https://bfccerfayrfolisawokp.supabase.co/functions/v1/badge-gateway'

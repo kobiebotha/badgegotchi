@@ -1,30 +1,19 @@
 import { authenticate, expect, metric, openDashboard, test } from './fixtures';
 
-test('production WASM and worker chunks support offline activity across reloads', async ({ context, page, backend }) => {
+test('production WASM workers load account data without inventing offline totals', async ({context,page,backend}) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
   await authenticate(context);
   await openDashboard(page);
-  await page.getByRole('button', { name: 'Start focus', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus paused', exact: true })).toBeVisible();
-  const paused = await page.getByRole('timer').innerText();
+  await expect(metric(page,'Glasses of water')).toHaveText('—');
+  await expect(metric(page,'Focus ended')).toHaveText('—');
+  await expect(page.getByText('Waiting for account totals…')).toBeVisible();
+  await expect(page.getByRole('button',{name:/Drink water/})).toBeDisabled();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Focus paused', exact: true })).toBeVisible();
-  await expect(page.getByRole('timer')).toHaveText(paused);
-  await page.getByRole('button', { name: 'Resume', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Stop', exact: true }).click();
-  await expect(metric(page, 'Focus ended')).toHaveText('1');
-  await page.getByRole('button', { name: /Drink water/ }).click();
-  await expect(metric(page, 'Glasses of water')).toHaveText('1');
-  await page.getByRole('button', { name: /Move & stretch/ }).click();
-  await expect(metric(page, 'Movement breaks')).toHaveText('1');
-  await page.reload();
-  await expect(metric(page, 'Focus ended')).toHaveText('1');
-  await expect(metric(page, 'Glasses of water')).toHaveText('1');
-  await expect(metric(page, 'Movement breaks')).toHaveText('1');
-  await expect(page.getByRole('button', { name: 'Start focus', exact: true })).toBeEnabled();
-  await expect(page.getByText('Your changes are saved on this device. Sync will retry automatically.')).toBeVisible();
-  expect(backend.requests.every((request) => new URL(request.url).hostname.endsWith('.test'))).toBe(true);
-  await page.screenshot({ path: test.info().outputPath('production-dashboard.png'), fullPage: true });
+  await expect(page.getByRole('heading',{name:'Let’s find your rhythm.'})).toBeVisible();
+  await expect(metric(page,'Movement breaks')).toHaveText('—');
+  await expect.poll(()=>backend.requests.some(r=>r.url.includes('/functions/v1/badge-gateway') && (r.body as {action?:string})?.action === 'refresh')).toBe(true);
+  expect(errors).toEqual([]);
+  expect(backend.requests.every(r=>new URL(r.url).hostname.endsWith('.test'))).toBe(true);
+  await page.screenshot({path:test.info().outputPath('production-account-dashboard.png'),fullPage:true});
 });

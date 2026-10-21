@@ -2,129 +2,363 @@
   "release": {
     "appId": "badgegotchi",
     "board": "tufty2350",
-    "description": "Local alpha: focus timer, pet and saved wellness totals. Requires the qualified Badgeware 1.29.0 runtime. Cloud sync and AI are not connected.",
+    "description": "Pair once using A/B/C, then share account totals, the focus/break timer, and your pet with the web app. Offline actions queue for sync. Requires the reviewed Badgeware 1.29.0 runtime and activated shared-command gateway.",
     "files": [
       {
-        "bytes": 3342,
+        "bytes": 4814,
         "path": "README.md",
-        "sha256": "37cb3151c4963b27a77018336db0dbde65bd107c5d7515fdb80018a6c5bec66d",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/README.md"
+        "sha256": "eae750adece9c7a59f8c1bcac3228b78f58af1b5a01d58b3670182ba9966dffc",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/README.md"
       },
       {
-        "bytes": 1280,
+        "bytes": 1961,
         "path": "THIRD_PARTY_NOTICES.txt",
-        "sha256": "cdfa830f9da76775cfb59d49e2fce809139a6c44497651b7015fba203174667e",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/THIRD_PARTY_NOTICES.txt"
+        "sha256": "7c9483ac9f977208a467262065f9d39c49aa0a960749b09f25d0d1e14b91fc70",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/THIRD_PARTY_NOTICES.txt"
       },
       {
-        "bytes": 3779,
+        "bytes": 3380,
         "path": "__init__.py",
-        "sha256": "339b5437cb1b1859c3ba42f4e5260fd24cc243eb8813e7c3c84c35db9fc17939",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/__init__.py"
+        "sha256": "697901299ab4f78218af3dc16428ee9eba2c794dc045776c257c7a72bd3433d9",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/__init__.py"
+      },
+      {
+        "bytes": 3865,
+        "path": "assets/animals/bear.png",
+        "sha256": "0f3fe3b067ea222a3f230d5307caef5396901fc3596f6970dc9982cedc467e46",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/bear.png"
       },
       {
         "bytes": 4022,
-        "path": "assets/capybara.png",
+        "path": "assets/animals/capybara.png",
         "sha256": "b7bf0a2b95239b8ff740da5090a5d6b8e4a02f623f50c1d30d853eca60f23dd3",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/assets/capybara.png"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/capybara.png"
       },
       {
-        "bytes": 3449,
+        "bytes": 4630,
+        "path": "assets/animals/cat.png",
+        "sha256": "8b237af074e23dd46046e9e99c871e55ced9272533dea33c20aeae38a98273a5",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/cat.png"
+      },
+      {
+        "bytes": 3535,
+        "path": "assets/animals/chameleon.png",
+        "sha256": "745e0a93638a106dd9123374381029c40d96d576a5009019d54f17c01d2cd699",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/chameleon.png"
+      },
+      {
+        "bytes": 4112,
+        "path": "assets/animals/cheeta.png",
+        "sha256": "36270b025a9d92a6f193f6330563f15287c3ccfc69a354e06c12407e552da570",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/cheeta.png"
+      },
+      {
+        "bytes": 4068,
+        "path": "assets/animals/cow.png",
+        "sha256": "4c5621bb829868e80812794cf1585180db8e2057aa2520e1c4224ef4e1215c24",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/cow.png"
+      },
+      {
+        "bytes": 3616,
+        "path": "assets/animals/dog.png",
+        "sha256": "29764da4860387f23905e5f0640f070c52f1df13c08049e1e471a5b7e8672854",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/dog.png"
+      },
+      {
+        "bytes": 2986,
+        "path": "assets/animals/duck.png",
+        "sha256": "a50ffc65f67537dd157515f3a25bd001ca88b2b61f495d84e79c41251ef10572",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/duck.png"
+      },
+      {
+        "bytes": 3854,
+        "path": "assets/animals/fox.png",
+        "sha256": "36f0f8a0fd304f79f0033c5b77cc7fc6ccec2544b6ef5f827d67ef1277d9c3d1",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/fox.png"
+      },
+      {
+        "bytes": 3864,
+        "path": "assets/animals/hamster.png",
+        "sha256": "7d9e45c5c00a60fd6e6e30065381738b31bb04c54e7ca08673f7fc87b4084351",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/hamster.png"
+      },
+      {
+        "bytes": 5357,
+        "path": "assets/animals/hedgehog.png",
+        "sha256": "ed6c8901af56b3dbc54562a70f811184285e534f3a62d464bdfa6377bf6c81fe",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/hedgehog.png"
+      },
+      {
+        "bytes": 3443,
+        "path": "assets/animals/hippo.png",
+        "sha256": "280dc80b2b8dba4d248e67a57360c5ef01053ebbfada71008d33ad64fcd27766",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/hippo.png"
+      },
+      {
+        "bytes": 3588,
+        "path": "assets/animals/monkey.png",
+        "sha256": "ab876cea8bf3df05637a2ac4e1fedede44a7b551f2893244c82f36b3568461c9",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/monkey.png"
+      },
+      {
+        "bytes": 3284,
+        "path": "assets/animals/octopus.png",
+        "sha256": "b53c62ad1fb03977067b7e4355148bbf7758e1805770deb19d8db3fbecb9c2bc",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/octopus.png"
+      },
+      {
+        "bytes": 4127,
+        "path": "assets/animals/otter.png",
+        "sha256": "2724e9d48f08a494a35eb865e50805839c4116d707baf09630b50367451ae560",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/otter.png"
+      },
+      {
+        "bytes": 4221,
+        "path": "assets/animals/owl.png",
+        "sha256": "8d91e90955b9c4cec75633d4bd9c42815bc8d3c0d15e4ae3aed61d063270c1fb",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/owl.png"
+      },
+      {
+        "bytes": 3804,
+        "path": "assets/animals/panda.png",
+        "sha256": "4c36d26b2f0d2b6b4fce37456a08a4164e499a7487465123e00af3d59a66f8fb",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/panda.png"
+      },
+      {
+        "bytes": 4151,
+        "path": "assets/animals/parrot.png",
+        "sha256": "b788d198c20ad0e7a571c4f266c9499773b2b030e622314cc880edc0a0cbd932",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/parrot.png"
+      },
+      {
+        "bytes": 5902,
+        "path": "assets/animals/peacock.png",
+        "sha256": "860e89b04fd56417f1c42936827aceb3433f61b6b5a376ab384395183f8412e9",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/peacock.png"
+      },
+      {
+        "bytes": 3019,
+        "path": "assets/animals/penguin.png",
+        "sha256": "a4468ea77071bf06fa609f39d2c4a67aa08fae5027b83860ac15ff0919ff7752",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/penguin.png"
+      },
+      {
+        "bytes": 3614,
+        "path": "assets/animals/pig.png",
+        "sha256": "0b148a6a6845911265be2606c6e841b54d9d31b4e38579186a9cb7b308c710d7",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/pig.png"
+      },
+      {
+        "bytes": 3527,
+        "path": "assets/animals/rabbit.png",
+        "sha256": "d32bafc7bdfb2018a05a91d06990d03db0134797386c86c8d442d28cbc91a01e",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/rabbit.png"
+      },
+      {
+        "bytes": 3946,
+        "path": "assets/animals/racoon.png",
+        "sha256": "5866cda63d32f5c9ecc92bcd9d60e2546f27260812b0acd5b5d2e0efabd2157b",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/racoon.png"
+      },
+      {
+        "bytes": 3450,
+        "path": "assets/animals/rhino.png",
+        "sha256": "ab61f93adcdaf6e0935797f1d45fc762efd9d1fb4eb2420d00a8ea0180d71ed3",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/rhino.png"
+      },
+      {
+        "bytes": 3873,
+        "path": "assets/animals/rooster.png",
+        "sha256": "d396a8c11ec6091580f3eeb3856eb0761cedde77a5b0ec82fd464d68bdb12e60",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/rooster.png"
+      },
+      {
+        "bytes": 3138,
+        "path": "assets/animals/seal.png",
+        "sha256": "d4ff5597b47a6aaa644fddfbd5ef11b01fa1e5e4f99eda6f1b8bf3c64f2585d7",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/seal.png"
+      },
+      {
+        "bytes": 3329,
+        "path": "assets/animals/sheep.png",
+        "sha256": "72c236e4c2548389b58efb73b6f841e6b98a063c45eebc326a0c0e21d6569a63",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/sheep.png"
+      },
+      {
+        "bytes": 3797,
+        "path": "assets/animals/sloth.png",
+        "sha256": "386fda06991834872340302c1fc1cb00ee73877a54c58632005623a21d973697",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/sloth.png"
+      },
+      {
+        "bytes": 2993,
+        "path": "assets/animals/snake.png",
+        "sha256": "8ac58bfaf06f0fde9746d73beec1cf3120ba3f5ea07045cf26b1256598da1ccc",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/snake.png"
+      },
+      {
+        "bytes": 3261,
+        "path": "assets/animals/turtle.png",
+        "sha256": "506679b2b61499979a0bcaf14ea58c5dc3bf128462edbd335a65b4d57591326c",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/assets/animals/turtle.png"
+      },
+      {
+        "bytes": 9636,
         "path": "badgegotchi-package.json",
-        "sha256": "65de51347e30637639d381cb3cc29c13662ec194a328ff93455e60b9a8224d5f",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/badgegotchi-package.json"
+        "sha256": "9e9e4447e63a685a40b195d2956181f24514628e791647323147d4f57ab4f11a",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi-package.json"
+      },
+      {
+        "bytes": 6571,
+        "path": "badgegotchi_client.py",
+        "sha256": "1e737effb8a013edf023b64a69acdc169d7593d39a64cdf8bf560da8f3b32eb5",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_client.py"
+      },
+      {
+        "bytes": 5936,
+        "path": "badgegotchi_commands.py",
+        "sha256": "1bd8adde9d6242e3290be7877bd742935c183853b23578ce7ac1f0bde00c84f3",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_commands.py"
+      },
+      {
+        "bytes": 442,
+        "path": "badgegotchi_config.py",
+        "sha256": "62aa7419bb5b0d3fcfd9d4b86bea7e62a1573c36ff6d7333e0cbf480342fce92",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_config.py"
+      },
+      {
+        "bytes": 1304,
+        "path": "badgegotchi_entropy.py",
+        "sha256": "45d7ef03d47473e666cde86b9b1a27bbbca160be13fd52c6767433f8000d9655",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_entropy.py"
+      },
+      {
+        "bytes": 12580,
+        "path": "badgegotchi_http.py",
+        "sha256": "67cc2a305c50a2d90dcee965743e97b035b050bea3ed977d495c58340298766f",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_http.py"
       },
       {
         "bytes": 179,
         "path": "badgegotchi_identity.py",
         "sha256": "94323ea709618b6cc00bdd22c93eba2ed6879efbc94c849f8a97b817b4eef625",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/badgegotchi_identity.py"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_identity.py"
       },
       {
         "bytes": 737049,
         "path": "badgegotchi_native.mpy",
         "sha256": "802223bc6d2f7daea4c04b975bf2c6208068ef968891557e726bd485d3efafa8",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/badgegotchi_native.mpy"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_native.mpy"
+      },
+      {
+        "bytes": 6623,
+        "path": "badgegotchi_pairing.py",
+        "sha256": "1b763d52f40bd26160bc4c32884727529832e8d42ffe954402a31ce4615dc901",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_pairing.py"
+      },
+      {
+        "bytes": 5016,
+        "path": "badgegotchi_private.py",
+        "sha256": "d61f7340efda551fba29f1dec681e3f5db94bd10552fe7aec34ef1f5b42e4065",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_private.py"
       },
       {
         "bytes": 2356,
         "path": "badgegotchi_runtime.py",
         "sha256": "d0b4210834c5ff6bc864514aaeadc7bfdd409ea16fffd27cae53ab63c517b547",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/badgegotchi_runtime.py"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_runtime.py"
       },
       {
-        "bytes": 6081,
+        "bytes": 7850,
         "path": "badgegotchi_state.py",
-        "sha256": "2d3391cf703cafe006ce62232bd0a93caa5f0ad562e32c10a9c7f03237740c88",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/badgegotchi_state.py"
+        "sha256": "df9f0551218b5fc1b6f7bad78b6e4411df33c17b0183f649236d7a15d5bb388f",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_state.py"
       },
       {
-        "bytes": 13566,
+        "bytes": 21063,
         "path": "badgegotchi_storage.py",
-        "sha256": "97e2f278c0b99e9fd0cf7e2ae3b50ae2feaf2a0681c6366daadf1f04313c1118",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/badgegotchi_storage.py"
+        "sha256": "38bb4c58c33ca97088891509488a7392347b950d5d472cc8836fae20f65e415c",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_storage.py"
       },
       {
-        "bytes": 5404,
+        "bytes": 9510,
+        "path": "badgegotchi_stream.py",
+        "sha256": "271d82a0b005059152196254ba835e4b87ace35066ff584e6800cc599a1ee4b1",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_stream.py"
+      },
+      {
+        "bytes": 18752,
+        "path": "badgegotchi_sync.py",
+        "sha256": "33395b15c912b60cb40311741cebe348145d6f132975ab9b29a97f1158eeb2c5",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_sync.py"
+      },
+      {
+        "bytes": 10050,
         "path": "badgegotchi_view.py",
-        "sha256": "39626ff5fbe6fb9f391780761e30b077b0946c289a4b12e3aca0b6f1f70bc890",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/badgegotchi_view.py"
+        "sha256": "9eab4039fd827c0c72f27caa1bdf6c9dc995c1a45a9a92a85bd93259f071268f",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/badgegotchi_view.py"
+      },
+      {
+        "bytes": 1422,
+        "path": "ca/sectigo-r46.der",
+        "sha256": "7bb647a62aeeac88bf257aa522d01ffea395e0ab45c73f93f65654ec38f25a06",
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/ca/sectigo-r46.der"
       },
       {
         "bytes": 123,
         "path": "icon.png",
         "sha256": "eff6ed5657e0ba0a83b2302d02e96caf328345c59abbc2d9f089a0495480e7f3",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/icon.png"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/icon.png"
       },
       {
         "bytes": 7048,
         "path": "licenses/Badgegotchi-CC0.txt",
         "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/licenses/Badgegotchi-CC0.txt"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/licenses/Badgegotchi-CC0.txt"
       },
       {
         "bytes": 52360,
         "path": "licenses/Compiler-runtime.txt",
         "sha256": "6a57108f1330eeec216c2da84109480b0a605fe1f314d63d53f2f76f00992911",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/licenses/Compiler-runtime.txt"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/licenses/Compiler-runtime.txt"
       },
       {
         "bytes": 3419,
         "path": "licenses/MicroPython-MIT.txt",
         "sha256": "80d3459978572b5bbb1dd274a98b01a625aeff467588ad69cefdf7eb607c1306",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/licenses/MicroPython-MIT.txt"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/licenses/MicroPython-MIT.txt"
       },
       {
         "bytes": 76870,
         "path": "licenses/Newlib.txt",
         "sha256": "9a59b4ee3af067045fe0ea78786201c42d54756fe48cbccf44f3dfc398474717",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/licenses/Newlib.txt"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/licenses/Newlib.txt"
       },
       {
         "bytes": 10175,
         "path": "licenses/PowerSync-Apache-2.0.txt",
         "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/licenses/PowerSync-Apache-2.0.txt"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/licenses/PowerSync-Apache-2.0.txt"
       },
       {
         "bytes": 36,
         "path": "licenses/PowerSync-NOTICE.txt",
         "sha256": "028e51bfcfd35acea0dac4598d9d83af3234d9a0e29d0c057c979e7e3e2c284c",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/licenses/PowerSync-NOTICE.txt"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/licenses/PowerSync-NOTICE.txt"
       },
       {
         "bytes": 106993,
         "path": "licenses/Rust-dependencies.txt",
         "sha256": "7c09006d51cf12797bd12af4d137d836c7271f6b7c12ad7cff3f0d4ab7fe23b0",
-        "url": "/badge-app/0.1.0-alpha.2-a03391f5a485/files/licenses/Rust-dependencies.txt"
+        "url": "/badge-app/0.1.0-alpha.8-b6363dde0d08/files/licenses/Rust-dependencies.txt"
       }
     ],
     "name": "Badgegotchi",
     "runtimeMpy": 7942,
-    "version": "0.1.0-alpha.2",
-    "zipBytes": 588293,
-    "zipSha256": "a03391f5a48549138a1591489266365ccde288b0f51045d00c818af9994d7111",
-    "zipUrl": "/badge-app/0.1.0-alpha.2-a03391f5a485/badgegotchi-0.1.0-alpha.2-a03391f5a485.zip"
+    "version": "0.1.0-alpha.8",
+    "zipBytes": 718973,
+    "zipSha256": "b6363dde0d0846f6ac8a0f076710907a1cb644f7f4455473297fde8f32ff7b2d",
+    "zipUrl": "/badge-app/0.1.0-alpha.8-b6363dde0d08/badgegotchi-0.1.0-alpha.8-b6363dde0d08.zip"
   },
   "schemaVersion": 1
 }

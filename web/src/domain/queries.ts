@@ -12,9 +12,13 @@ export const CURRENT_PET_QUERY = `
   SELECT * FROM pet_sessions ORDER BY updated_at DESC LIMIT 1`;
 
 export const ACTIVE_PET_EVENT_QUERY = `
-  SELECT * FROM pet_events WHERE status IN ('pending', 'processing')
-  AND pet_session_id = (SELECT id FROM pet_sessions ORDER BY updated_at DESC LIMIT 1)
-  ORDER BY created_at DESC LIMIT 1`;
+  SELECT event.* FROM badge_projection AS projection
+  JOIN pet_events AS event
+    ON event.id = json_extract(projection.payload, '$.latest_event_id')
+    AND event.pet_session_id = json_extract(projection.payload, '$.id')
+  WHERE projection.kind = 'pet'
+    AND json_extract(projection.payload, '$.status') IN ('pending', 'processing')
+  LIMIT 1`;
 
 /**
  * Query all source tables together so useQuery updates on local AND downloaded

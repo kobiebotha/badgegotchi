@@ -51,7 +51,7 @@ def validate_pairing(value):
 
 class PrivateFile:
     def __init__(self, name, default, validator, root=ROOT):
-        if name not in ("pairing.json", "events.json"):
+        if name not in ("pairing.json", "events.json", "commands.json"):
             raise ValueError("Unknown private file")
         if not root.startswith("/") or root.endswith("/") or "/../" in root:
             raise ValueError("Private data needs an absolute owned directory")
@@ -75,7 +75,8 @@ class PrivateFile:
             with open(marker) as source:
                 if source.read(128) != OWNER:
                     raise ValueError("Private directory belongs to another app")
-        allowed = ("owner.txt", "pairing.json", "pairing.json.next", "events.json", "events.json.next")
+        allowed = ("owner.txt", "pairing.json", "pairing.json.next", "events.json", "events.json.next",
+                   "commands.json", "commands.json.next")
         for name in os.listdir(self.root):
             if name not in allowed or os.stat(self.root + "/" + name)[0] & 0xf000 != 0x8000:
                 raise ValueError("Unrecognized private data; retained")

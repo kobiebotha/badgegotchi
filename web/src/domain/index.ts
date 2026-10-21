@@ -4,3 +4,5 @@ export * from "./timer";
 export * from "./queries";
 export * from "./rows";
 export * from "./repository";
+
+export * from "./shared";

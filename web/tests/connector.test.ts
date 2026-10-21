@@ -74,6 +74,45 @@ describe('SupabaseConnector', () => {
     }
   });
 
+  it('preserves legacy pending timer writes instead of overwriting the shared timer', async () => {
+    const { database, complete } = transaction([{ table:'sessions',op:UpdateType.PATCH,id:'old',opData:{state:'paused'} }]);
+    await expect(connector.uploadData(database)).rejects.toThrow('older app queued a timer edit');
+    expect(complete).not.toHaveBeenCalled();
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it.each(['accepted', 'rejected'] as const)('acknowledges a terminal %s command with its durable receipt', async (state) => {
+    const command = { id:'command-1',type:'timer_start',occurred_at:'2026-10-20T12:00:00Z',new_session_id:'command-1',session_type:'focus',expected_revision:'0' };
+    const receipt = { state,command_id:'command-1',revision:'1' };
+    request.mockResolvedValueOnce(Response.json(receipt));
+    const { database, complete } = transaction([{ table:'account_commands',op:UpdateType.PUT,id:command.id,opData:{payload:JSON.stringify(command)} }]);
+    database.execute = vi.fn(async () => ({})) as unknown as typeof database.execute;
+    await connector.uploadData(database);
+    expect(JSON.parse(request.mock.calls[0][1]!.body as string)).toEqual({action:'command',command});
+    expect(String(request.mock.calls[0][0])).toContain('/functions/v1/badge-gateway');
+    expect(database.execute).toHaveBeenCalledWith('UPDATE pending_commands SET status = ?, receipt = ? WHERE id = ?', [state,JSON.stringify(receipt),'command-1']);
+    expect(complete).toHaveBeenCalledOnce();
+  });
+
+  it('retries a lost command response with the same command identity and body', async () => {
+    const command = { id:'command-1',type:'hydration',occurred_at:'2026-10-20T12:00:00Z' };
+    const { database, complete } = transaction([{table:'account_commands',op:UpdateType.PUT,id:command.id,opData:{payload:JSON.stringify(command)}}]);
+    database.execute = vi.fn(async () => ({})) as unknown as typeof database.execute;
+    request.mockRejectedValueOnce(new Error('connection lost')).mockResolvedValueOnce(Response.json({state:'accepted',command_id:'command-1',revision:'0'}));
+    await expect(connector.uploadData(database)).rejects.toThrow('connection lost');
+    expect(complete).not.toHaveBeenCalled();
+    await connector.uploadData(database);
+    expect(request.mock.calls[0][1]!.body).toBe(request.mock.calls[1][1]!.body);
+    expect(complete).toHaveBeenCalledOnce();
+  });
+
+  it('retains commands if the service returns a mismatched receipt', async () => {
+    const { database, complete } = transaction([{table:'account_commands',op:UpdateType.PUT,id:'expected',opData:{payload:JSON.stringify({id:'expected',type:'hydration'})}}]);
+    request.mockResolvedValueOnce(Response.json({state:'accepted',command_id:'different',revision:'0'}));
+    await expect(connector.uploadData(database)).rejects.toThrow('invalid receipt');
+    expect(complete).not.toHaveBeenCalled();
+  });
+
   it('reads current tokens for every credentials request and rejects another account', async () => {
     expect(await connector.fetchCredentials()).toMatchObject({ token: 'token-1', endpoint: config.powersyncUrl });
     session = { ...session!, access_token: 'token-2' };
@@ -161,15 +200,15 @@ describe('SupabaseConnector', () => {
 
   it('maps normal CRUD operations and pins the checked identity to the request', async () => {
     await connector.uploadOperation({
-      table: 'sessions', op: UpdateType.PUT, id: 'session-1',
-      opData: { state: 'active', owner_id: 'user-2', id: 'forged-id' },
+      table: 'wellness_events', op: UpdateType.PUT, id: 'session-1',
+      opData: { type: 'hydration', owner_id: 'user-2', id: 'forged-id' },
     });
     await connector.uploadOperation({
-      table: 'sessions', op: UpdateType.PATCH, id: 'session-1', opData: { state: 'paused' },
+      table: 'wellness_events', op: UpdateType.PATCH, id: 'session-1', opData: { type: 'movement' },
     });
-    await connector.uploadOperation({ table: 'sessions', op: UpdateType.DELETE, id: 'session-1' });
+    await connector.uploadOperation({ table: 'wellness_events', op: UpdateType.DELETE, id: 'session-1' });
     expect(request.mock.calls.map(([, init]) => init?.method)).toEqual(['POST', 'PATCH', 'DELETE']);
-    expect(JSON.parse(request.mock.calls[0][1]!.body as string)).toEqual({ id: 'session-1', state: 'active' });
+    expect(JSON.parse(request.mock.calls[0][1]!.body as string)).toEqual({ id: 'session-1', type: 'hydration' });
     expect(String(request.mock.calls[1][0])).toContain('id=eq.session-1');
     expect(request.mock.calls[2][1]!.headers).toMatchObject({ Authorization: 'Bearer token-1' });
   });
@@ -192,7 +231,7 @@ describe('SupabaseConnector', () => {
 
   it('retains REST authorization/validation failures instead of losing local writes', async () => {
     const { database, complete } = transaction([
-      { table: 'sessions', op: UpdateType.PUT, id: 'a', opData: { state: 'active' } },
+      { table: 'wellness_events', op: UpdateType.PUT, id: 'a', opData: { type: 'hydration' } },
     ]);
     request.mockResolvedValueOnce(new Response(null, { status: 403 }));
     await expect(connector.uploadData(database)).rejects.toThrow('403');

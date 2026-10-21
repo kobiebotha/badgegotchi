@@ -224,20 +224,17 @@ class RealCoreTests(unittest.TestCase):
         self.store.close()
         self.temp.cleanup()
 
-    def test_actual_local_only_core_retains_running_timer_and_clock(self):
+    def test_account_only_store_has_no_badge_progress_and_retains_binding(self):
         self.store.open()
-        snapshot = self.store.load()
-        self.assertEqual(snapshot, storage.DEFAULTS)
-        snapshot.update(running=True, remaining_ms=123456, pet_count=3, water_count=2,
-                        clock_saved_s=1792526000)
-        self.assertTrue(self.store.save(snapshot))
-        self.assertFalse(self.store.save(snapshot))
+        self.assertEqual(self.native.exec("SELECT count(*) FROM badge_state"), [["0"]])
+        self.assertEqual(self.native.exec("PRAGMA user_version"), [["5"]])
+        owner = "11111111-1111-4111-8111-111111111111"
+        device = "22222222-2222-4222-8222-222222222222"
+        self.assertTrue(self.store.bind_account(owner, device))
+        self.store.close(); self.store.open()
+        self.assertFalse(self.store.bind_account(owner, device))
         self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
         self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
-        self.store.close()
-        self.store.open()
-        self.assertEqual(self.store.load(), snapshot)
-        self.assertEqual(self.store.version, "0.5.4/cratesio")
 
     def test_unknown_schema_version_stays_unchanged(self):
         self.store.open()
@@ -249,46 +246,72 @@ class RealCoreTests(unittest.TestCase):
             self.store.open()
         self.assertEqual(hashlib.sha256(path.read_bytes()).digest(), original)
 
-    def test_v1_migration_preserves_existing_progress_and_totals(self):
+    def test_old_schema_migration_discards_only_authorized_badge_progress(self):
         import json
-        self.store.open()
-        old = dict(storage.DEFAULTS)
-        old.pop("clock_saved_s")
-        old.update(remaining_ms=2321000, pet_count=7, water_count=4, stretch_count=2)
-        self.native.exec("UPDATE badge_state SET snapshot=%s" % storage._quote(json.dumps(old)))
-        self.native.exec("PRAGMA user_version=1")
-        self.store.close()
-        self.store.open()
-        old["clock_saved_s"] = None
-        self.assertEqual(self.store.load(), old)
-        self.assertEqual(self.native.exec("PRAGMA user_version"), [["3"]])
-        self.assertEqual(self.store.legacy(), old)
-        self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
-        self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
+        for version in (1, 2, 3):
+            with self.subTest(version=version):
+                self.store.open()
+                self.native.exec("DELETE FROM badge_state")
+                old = dict(storage.DEFAULTS, water_count=7, stretch_count=4)
+                if version == 1: old.pop("clock_saved_s")
+                payload = storage._quote(json.dumps(old))
+                self.native.exec("INSERT INTO badge_state(id,snapshot) VALUES('current',%s)" % payload)
+                if version == 3:
+                    self.native.exec("INSERT INTO badge_state(id,snapshot) VALUES('legacy',%s)" % payload)
+                    self.store.bind_account("11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222")
+                account = self.native.exec("SELECT snapshot FROM badge_state WHERE id='account'")
+                self.native.exec("PRAGMA user_version=%s" % version)
+                self.store.close(); self.store.open()
+                self.assertEqual(self.native.exec("PRAGMA user_version"), [["5"]])
+                self.assertEqual(self.native.exec("SELECT count(*) FROM badge_state WHERE id IN ('current','legacy')"), [["0"]])
+                self.assertEqual(self.native.exec("SELECT snapshot FROM badge_state WHERE id='account'"), account)
+                self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
+                self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
 
-    def test_v2_migration_retains_legacy_and_pins_account(self):
+    def test_discard_migration_is_transactional(self):
         import json
         self.store.open()
-        before = dict(storage.DEFAULTS, water_count=7, stretch_count=4)
-        self.store.save(before)
-        self.native.exec("PRAGMA user_version=2")
+        payload = storage._quote(json.dumps(storage.DEFAULTS))
+        self.native.exec("INSERT INTO badge_state(id,snapshot) VALUES('current',%s)" % payload)
+        self.native.exec("INSERT INTO badge_state(id,snapshot) VALUES('legacy',%s)" % payload)
+        self.native.exec("PRAGMA user_version=3")
         self.store.close()
+        original = self.store._exec
+        def interrupted(sql):
+            if sql == "PRAGMA user_version=5": raise OSError("migration interrupted")
+            return original(sql)
+        with patch.object(self.store, "_exec", interrupted), self.assertRaises(OSError):
+            self.store.open()
+        self.native.open(str(Path(self.root)/"state.sqlite"))
+        try:
+            self.assertEqual(self.native.exec("SELECT count(*) FROM badge_state WHERE id IN ('current','legacy')"), [["2"]])
+            self.assertEqual(self.native.exec("PRAGMA user_version"), [["3"]])
+        finally: self.native.close()
+
+    @unittest.skipUnless((ROOT/"badge/dist/backups/state-before-alpha5-20261020.sqlite").exists(), "Live snapshot is local qualification evidence")
+    def test_actual_alpha4_backup_migration_preserves_projection_and_core_checkpoints(self):
+        import shutil
+        source = ROOT/"badge/dist/backups/state-before-alpha5-20261020.sqlite"
+        source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+        self.assertEqual(source_hash, "3d50ef0ba677c67db6f1ac0aa4cbe0ffac178d87c652bdec44687d79176bcb4b")
+        self.store._owned_directory()
+        target = Path(self.root)/"state.sqlite"
+        shutil.copyfile(source, target)
+        self.native.open(str(target))
+        try:
+            before = {name: self.native.exec(query) for name, query in {
+                "account": "SELECT snapshot FROM badge_state WHERE id='account'",
+                "projection": "SELECT id,payload FROM badge_projection ORDER BY id",
+                "buckets": "SELECT * FROM ps_buckets ORDER BY name"}.items()}
+        finally: self.native.close()
         self.store.open()
-        self.assertEqual(self.store.legacy(), before)
-        changed = dict(before, water_count=8)
-        self.store.save(changed)
-        self.assertEqual(self.store.legacy(), before)
-        owner = "11111111-1111-4111-8111-111111111111"
-        device = "22222222-2222-4222-8222-222222222222"
-        self.assertTrue(self.store.bind_account(owner, device))
-        self.assertFalse(self.store.bind_account(owner, device))
-        with self.assertRaisesRegex(ValueError, "Different account"):
-            self.store.bind_account(device, owner)
-        self.store.close()
-        self.store.open()
-        self.assertEqual(self.store.load(), changed)
-        self.assertFalse(self.store.bind_account(owner, device))
+        self.assertEqual(self.native.exec("SELECT snapshot FROM badge_state WHERE id='account'"), before["account"])
+        self.assertEqual(self.native.exec("SELECT id,payload FROM badge_projection ORDER BY id"), before["projection"])
+        self.assertEqual(self.native.exec("SELECT * FROM ps_buckets ORDER BY name"), before["buckets"])
+        self.assertEqual(self.native.exec("SELECT count(*) FROM badge_state WHERE id IN ('current','legacy')"), [["0"]])
         self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
+        self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
+        self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), source_hash)
 
     def test_real_core_checkpoint_publishes_bounded_projection(self):
         import json
@@ -300,7 +323,7 @@ class RealCoreTests(unittest.TestCase):
         self.store.control("line_text", {"checkpoint": {
             "last_op_id": "1", "write_checkpoint": "9007199254740993",
             "buckets": [{"bucket": "bounded-test", "checksum": 1, "priority": 3, "count": 1}]}})
-        body = {"kind": "summary", "payload": json.dumps({"hydration_count": 5})}
+        body = {"id": "summary", "payload": json.dumps({"hydration_count": 5})}
         self.store.control("line_text", {"data": {"bucket": "bounded-test", "has_more": False,
             "after": None, "next_after": "1", "data": [{"op_id": "1", "op": "PUT",
                 "object_type": "badge_projection", "object_id": "summary", "checksum": 1, "data": json.dumps(body)}]}})
@@ -313,6 +336,57 @@ class RealCoreTests(unittest.TestCase):
         self.assertEqual(self.store.projection()[0]["payload"]["hydration_count"], 5)
         self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
         self.assertEqual(self.native.exec("SELECT count(*) FROM ps_crud"), [["0"]])
+
+    def test_payload_only_upgrade_keeps_offline_cache_and_replaces_old_row_ids(self):
+        import json
+        owner = "11111111-1111-4111-8111-111111111111"
+        device = "22222222-2222-4222-8222-222222222222"
+        legacy_schema = json.loads(storage.SCHEMA)
+        legacy_schema["tables"][1]["columns"].insert(0, {"name": "kind", "type": "text"})
+        self.store.open()
+        self.native.exec("BEGIN IMMEDIATE; SELECT powersync_replace_schema(%s); COMMIT" % storage._quote(json.dumps(legacy_schema)))
+        self.store.bind_account(owner, device)
+
+        def checkpoint(bucket, key, index, compact):
+            self.store.control("line_text", {"checkpoint": {
+                "last_op_id": str(index), "write_checkpoint": "9007199254740993",
+                "buckets": [{"bucket": bucket, "checksum": index, "priority": 3, "count": 1}]}})
+            body = {"id": key, "payload": json.dumps({"hydration_count": index})}
+            if not compact:
+                body["kind"] = "summary"
+            self.store.control("line_text", {"data": {"bucket": bucket, "data": [{
+                "op_id": str(index), "op": "PUT", "object_type": "badge_projection",
+                "object_id": key, "checksum": index, "data": json.dumps(body)}]}})
+            result = self.store.control("line_text", {"checkpoint_complete": {"last_op_id": str(index)}})
+            self.assertIn("DidCompleteSync", json.dumps(result))
+
+        self.store.control("start", {"checkpoint_mode": "requests"})
+        self.store.control("seed_checkpoint_request_id", "9007199254740993")
+        checkpoint("old-stream", owner + ":summary", 1, False)
+        self.store.control("stop")
+        self.native.exec("PRAGMA user_version=4")
+        account = self.native.exec("SELECT snapshot FROM badge_state WHERE id='account'")
+        buckets = self.native.exec("SELECT * FROM ps_buckets ORDER BY name")
+        self.store.close()
+        self.store.open()
+        self.assertEqual(self.native.exec("PRAGMA user_version"), [["5"]])
+        self.assertEqual([row[1] for row in self.native.exec("PRAGMA table_info(badge_projection)")], ["id", "payload"])
+        self.assertEqual(self.native.exec("SELECT snapshot FROM badge_state WHERE id='account'"), account)
+        self.assertEqual(self.native.exec("SELECT * FROM ps_buckets ORDER BY name"), buckets)
+        self.assertEqual(self.store.projection(), [{"id": owner + ":summary", "kind": "summary",
+                                                  "payload": {"hydration_count": 1}}])
+        # A new stream checkpoint removes the old bucket and its long ids in the
+        # same publish as the compact rows, without an empty/reset database.
+        self.store.control("start", {"checkpoint_mode": "requests"})
+        checkpoint("compact-stream", "summary", 2, True)
+        self.assertEqual(self.store.projection(), [{"id": "summary", "kind": "summary",
+                                                  "payload": {"hydration_count": 2}}])
+        stored = self.native.exec("SELECT data FROM ps_data__badge_projection")
+        self.assertEqual(len(stored), 1)
+        self.assertEqual(set(json.loads(stored[0][0])), {"id", "payload"})
+        self.assertEqual(json.loads(stored[0][0])["id"], "summary")
+        self.store.control("stop")
+        self.assertEqual(self.native.exec("PRAGMA integrity_check"), [["ok"]])
 
     def test_projection_budget_rejects_before_native_write(self):
         self.store.open()
@@ -347,12 +421,182 @@ class RealCoreTests(unittest.TestCase):
             self.store.open()
         self.assertEqual(hashlib.sha256(path.read_bytes()).digest(), original)
 
-    def test_corrupt_snapshot_is_retained(self):
+    def test_authorized_discard_does_not_adopt_invalid_old_snapshot(self):
         self.store.open()
-        self.native.exec("UPDATE badge_state SET snapshot='{}'")
+        self.native.exec("INSERT INTO badge_state(id,snapshot) VALUES('current','{}')")
+        self.native.exec("PRAGMA user_version=3")
+        self.store.close(); self.store.open()
+        self.assertEqual(self.native.exec("SELECT count(*) FROM badge_state"), [["0"]])
+        self.assertEqual(self.native.exec("PRAGMA user_version"), [["5"]])
+
+
+@unittest.skipUnless(HOST_LIBRARY.exists(), "Build pinned real-core host qualifier first")
+class RealCoreBatchTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = str(Path(self.temp.name) / "badge")
+        self.native = HostCore()
+        self.store = storage.Store(native=self.native, root=self.root).open()
+
+    def tearDown(self):
         self.store.close()
-        with self.assertRaisesRegex(ValueError, "Unsupported saved state"):
-            self.store.open()
+        self.temp.cleanup()
+
+    def checkpoint(self, count=12):
+        import json
+        self.store.control("start", {"checkpoint_mode": "requests"})
+        self.store.control("seed_checkpoint_request_id", "9007199254740993")
+        self.store.control("line_text", {"checkpoint": {
+            "last_op_id": str(count), "write_checkpoint": "9007199254740993",
+            "buckets": [{"bucket": "batch-test", "checksum": sum(range(1, count + 1)),
+                         "priority": 3, "count": count}]}})
+        result = []
+        for index in range(count):
+            body = {"id": "summary", "payload": json.dumps({"hydration_count": index})}
+            result.append(json.dumps({"data": {"bucket": "batch-test", "data": [{
+                "op_id": str(index + 1), "op": "PUT", "object_type": "badge_projection",
+                "object_id": "summary", "checksum": index + 1, "data": json.dumps(body)}]}}))
+        return result
+
+    def test_bad_later_record_rejects_entire_batch_before_native_write(self):
+        import json
+        records = self.checkpoint(2)
+        bad = json.loads(records[1])
+        bad["data"]["data"][0]["object_type"] = "sessions"
+        before = Path(self.root, "state.sqlite").read_bytes()
+        with patch.object(self.store, "_apply_control", wraps=self.store._apply_control) as applied:
+            with self.assertRaisesRegex(ValueError, "Unexpected synced table"):
+                self.store.control_batch([records[0], json.dumps(bad)])
+            applied.assert_not_called()
+        self.assertEqual(Path(self.root, "state.sqlite").read_bytes(), before)
+        self.assertEqual(self.store._scalar("SELECT count(*) FROM ps_oplog"), "0")
+
+    def test_mismatched_row_id_rejects_entire_batch_before_native_write(self):
+        import json
+        records = self.checkpoint(2)
+        for wrong_id in ("pet", None, 1):
+            with self.subTest(wrong_id=wrong_id):
+                bad = json.loads(records[1])
+                op = bad["data"]["data"][0]
+                body = json.loads(op["data"])
+                body["id"] = wrong_id
+                op["data"] = json.dumps(body)
+                before = Path(self.root, "state.sqlite").read_bytes()
+                with patch.object(self.store, "_apply_control", wraps=self.store._apply_control) as applied:
+                    with self.assertRaisesRegex(ValueError, "Sync row exceeds projection contract"):
+                        self.store.control_batch([records[0], json.dumps(bad)])
+                    applied.assert_not_called()
+                self.assertEqual(Path(self.root, "state.sqlite").read_bytes(), before)
+        self.assertEqual(self.store._scalar("SELECT count(*) FROM ps_oplog"), "0")
+
+    def test_batch_limits_reject_before_native_write(self):
+        import json
+        record = self.checkpoint(1)[0]
+        cases = [[], [record] * 7, [" " * 8193],
+                 [record, json.dumps({"checkpoint_complete": {"last_op_id": "1"}})],
+                 [json.dumps({"data": {"bucket": "batch-test", "data": []}, "checkpoint_complete": {}})]]
+        for payloads in cases:
+            with self.subTest(payload_count=len(payloads)), \
+                 patch.object(self.store, "_apply_control", wraps=self.store._apply_control) as applied:
+                with self.assertRaises(ValueError):
+                    self.store.control_batch(payloads)
+                applied.assert_not_called()
+        self.assertEqual(self.store._scalar("SELECT count(*) FROM ps_oplog"), "0")
+
+    def test_later_native_failure_rolls_back_prior_record(self):
+        import json
+        records = self.checkpoint(2)
+        apply = self.store._apply_control
+        calls = []
+        def interrupted(command, payload):
+            calls.append(payload)
+            if len(calls) == 2:
+                raise OSError("fixture write failure")
+            return apply(command, payload)
+        with patch.object(self.store, "_apply_control", interrupted):
+            with self.assertRaisesRegex(OSError, "fixture write failure"):
+                self.store.control_batch(records)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(self.store._scalar("SELECT count(*) FROM ps_oplog"), "0")
+        self.assertEqual(self.store.projection(), [])
+        self.assertEqual(self.store._scalar("PRAGMA integrity_check"), "ok")
+        self.store.control("stop")
+        self.store.close()
+        self.store.open()
+        instructions = self.store.control("start", {"checkpoint_mode": "requests"})
+        request = next(item["EstablishSyncStream"]["request"] for item in instructions if "EstablishSyncStream" in item)
+        self.assertEqual(request["buckets"], [])
+        self.store.control("seed_checkpoint_request_id", "9007199254740993")
+        self.store.control("line_text", {"checkpoint": {
+            "last_op_id": "2", "write_checkpoint": "9007199254740993",
+            "buckets": [{"bucket": "batch-test", "checksum": 3, "priority": 3, "count": 2}]}})
+        self.store.control_batch(records)
+        completed = self.store.control("line_text", {"checkpoint_complete": {"last_op_id": "2"}})
+        self.assertIn("DidCompleteSync", json.dumps(completed))
+        self.assertEqual(self.store.projection()[0]["payload"], {"hydration_count": 1})
+        self.assertEqual(self.store._scalar("PRAGMA integrity_check"), "ok")
+
+    def test_batch_preserves_checkpoint_and_reconnect_cursor(self):
+        import json
+        records = self.checkpoint(12)
+        self.store.control_batch(records[:6])
+        self.assertEqual(self.store.projection(), [])
+        self.store.control("stop")
+        self.store.close()
+        self.store.open()
+        instructions = self.store.control("start", {"checkpoint_mode": "requests"})
+        request = next(item["EstablishSyncStream"]["request"] for item in instructions if "EstablishSyncStream" in item)
+        self.assertEqual(request["buckets"], [{"name": "batch-test", "after": "6"}])
+        self.store.control("seed_checkpoint_request_id", "9007199254740993")
+        self.store.control("line_text", {"checkpoint": {
+            "last_op_id": "12", "write_checkpoint": "9007199254740993",
+            "buckets": [{"bucket": "batch-test", "checksum": 78, "priority": 3, "count": 12}]}})
+        self.store.control_batch(records[6:])
+        self.assertEqual(self.store.projection(), [])
+        completed = self.store.control("line_text", {"checkpoint_complete": {"last_op_id": "12"}})
+        self.assertIn("DidCompleteSync", json.dumps(completed))
+        self.assertEqual(self.store.projection()[0]["payload"], {"hydration_count": 11})
+        self.assertEqual(self.store._scalar("SELECT count(*) FROM ps_crud"), "0")
+        self.assertEqual(self.store._scalar("PRAGMA integrity_check"), "ok")
+
+    def test_batched_history_matches_per_record_with_fewer_transactions(self):
+        import json
+        # Repeat the same bounded 28-version history with the real core. The
+        # counter measures SQL commits, not physical LittleFS writes or timing.
+        measurements = []
+        for batch_size in (1, 6):
+            self.store.close()
+            root = str(Path(self.temp.name) / ("run-%s" % batch_size))
+            self.store = storage.Store(native=self.native, root=root).open()
+            sql = []
+            execute = self.store._exec
+            def observed(statement):
+                sql.append(statement)
+                return execute(statement)
+            self.store._exec = observed
+            records = self.checkpoint(28)
+            # Exclude setup/control commits so only the download's two markers
+            # and data transactions contribute to the result below.
+            sql.clear()
+            for offset in range(0, len(records), batch_size):
+                selected = records[offset:offset + batch_size]
+                if batch_size == 1:
+                    self.store.control("line_text", selected[0])
+                else:
+                    self.store.control_batch(selected)
+            completed = self.store.control("line_text", {"checkpoint_complete": {"last_op_id": "28"}})
+            self.assertIn("DidCompleteSync", json.dumps(completed))
+            measurements.append({"commits": sql.count("COMMIT") + 1,
+                "bytes": sum(len(record.encode()) for record in records),
+                "projection": self.store.projection(),
+                "buckets": self.store._exec("SELECT name,last_op,last_applied_op FROM ps_buckets ORDER BY name"),
+                "pages": int(self.store._scalar("PRAGMA page_count"))})
+        self.assertEqual([result["commits"] for result in measurements], [30, 7])
+        self.assertEqual(measurements[0]["bytes"], measurements[1]["bytes"])
+        self.assertEqual(measurements[0]["projection"], measurements[1]["projection"])
+        self.assertEqual(measurements[1]["projection"][0]["payload"], {"hydration_count": 27})
+        self.assertEqual(measurements[0]["buckets"], measurements[1]["buckets"])
+        self.assertLess(measurements[1]["pages"], storage.MAX_SYNC_PAGES)
 
 
 if __name__ == "__main__":

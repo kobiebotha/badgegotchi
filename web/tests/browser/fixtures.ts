@@ -116,6 +116,11 @@ export async function authenticate(context: BrowserContext): Promise<void> {
 export async function openDashboard(page: Page): Promise<void> {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Let’s find your rhythm.' })).toBeVisible();
+  if (process.env.BROWSER_BUILD === 'production') {
+    await expect(page.getByRole('button', { name: 'Restoring your timer…', exact: true })).toBeDisabled();
+    return;
+  }
+  await seedAccountProjection(page);
   await expect(page.getByRole('button', { name: 'Start focus', exact: true })).toBeEnabled();
 }
 
@@ -134,33 +139,33 @@ export async function databaseRows(page: Page, sql: string) {
 }
 
 export async function seedPet(page: Page): Promise<void> {
+  await expect(page.getByRole('heading', { name: 'Pebble', exact: true })).toBeVisible();
+}
+
+/** A downloaded account baseline; fixture writes are acknowledged before actions. */
+export async function seedAccountProjection(page: Page): Promise<void> {
   await page.evaluate(async ({ userId }) => {
     const modulePath = '/src/lib/database.ts';
     const { openUserDatabase } = await import(modulePath);
     const db = await openUserDatabase(userId);
-    // This is fixture setup, not a client mutation of server-owned pet data.
-    // Disconnect and acknowledge its fixture-only CRUD entry before reconnecting.
+    if (await db.getOptional("SELECT id FROM badge_projection WHERE kind = 'timer'")) return;
     await db.disconnect();
+    const day = new Date().toISOString().slice(0,10);
+    for (const [kind,payload] of [
+      ['timer', { revision:'0',id:null,type:'focus',state:'idle',planned_duration_seconds:2400,
+        started_at:null,last_resumed_at:null,paused_at:null,remaining_seconds_at_pause:2400 }],
+      ['summary', { day_key:day,ended_focus_count:0,ended_break_count:0,hydration_count:0,movement_count:0,pet_count:0 }],
+    ] as const) await db.execute('INSERT OR REPLACE INTO badge_projection (id,kind,payload) VALUES (?,?,?)', [userId+':'+kind,kind,JSON.stringify(payload)]);
     const stamp = new Date().toISOString();
     await db.execute(`INSERT INTO pet_sessions
       (id, animal_id, bio_name, bio_summary, latest_speech, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`, [
-      '22222222-2222-4222-8222-222222222222', 'capybara', 'Pebble',
-      'A patient little friend who believes in small steps.',
-      'One good moment at a time.', stamp, stamp,
-    ]);
-    for (let transaction = await db.getNextCrudTransaction(); transaction; transaction = await db.getNextCrudTransaction()) {
-      await transaction.complete();
-    }
+      VALUES (?, 'capybara', 'Pebble', 'A patient little friend.', 'One good moment at a time.', ?, ?)`,
+      ['22222222-2222-4222-8222-222222222222',stamp,stamp]);
+    for (let tx = await db.getNextCrudTransaction(); tx; tx = await db.getNextCrudTransaction()) await tx.complete();
     const connectorPath = '/src/lib/connector.ts';
     const supabasePath = '/src/lib/supabase.ts';
     const configPath = '/src/lib/config.ts';
-    const [{ SupabaseConnector }, { getSupabaseClient }, { requireConfig }] = await Promise.all([
-      import(connectorPath), import(supabasePath), import(configPath),
-    ]);
-    // Awaiting connect would wait for an initial network result; this fixture
-    // intentionally keeps the remote service unavailable.
-    void db.connect(new SupabaseConnector(getSupabaseClient(), requireConfig(), userId)).catch(() => undefined);
-  }, { userId });
-  await expect(page.getByRole('heading', { name: 'Pebble', exact: true })).toBeVisible();
+    const [{SupabaseConnector},{getSupabaseClient},{requireConfig}] = await Promise.all([import(connectorPath),import(supabasePath),import(configPath)]);
+    void db.connect(new SupabaseConnector(getSupabaseClient(),requireConfig(),userId)).catch(() => undefined);
+  }, {userId});
 }

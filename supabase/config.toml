@@ -47,3 +47,9 @@ enabled = true
 # through Auth itself. Badge credentials are opaque, not Supabase JWTs.
 verify_jwt = false
 entrypoint = "./functions/badge-gateway/index.ts"
+
+[functions.pet-worker]
+enabled = true
+# Independent service-secret authentication in the worker entrypoint.
+verify_jwt = false
+entrypoint = "./functions/pet-worker/index.ts"

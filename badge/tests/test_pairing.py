@@ -279,6 +279,7 @@ class QueueTests(unittest.TestCase):
 class StoreFake:
     def __init__(self):
         self.commands = []
+        self.batches = []
 
     def bind_account(self, *identity):
         self.identity = identity
@@ -294,6 +295,13 @@ class StoreFake:
             if json.loads(payload).get("checkpoint_complete"):
                 return [{"DidCompleteSync": {"applied_checkpoint_request_id": "9007199254740994"}}]
         return []
+
+    def control_batch(self, payloads):
+        self.batches.append(list(payloads))
+        instructions = []
+        for payload in payloads:
+            instructions.extend(self.control("line_text", payload))
+        return instructions
 
 
 class StreamFake:
@@ -406,6 +414,87 @@ class SyncTests(unittest.TestCase):
         self.assertEqual(self.sync.lines.pending[self.sync.lines.offset:], b'{"b":2}\n')
         self.assertEqual(self.sync.stream.parts, before)
 
+    def queue_data(self, index, padding=""):
+        body = {"id": "summary", "payload": json.dumps({"hydration_count": index, "text": padding})}
+        op = {"op_id": str(index + 1), "op": "PUT", "object_type": "badge_projection",
+              "object_id": "summary", "checksum": index + 1, "data": json.dumps(body)}
+        wire = (json.dumps({"data": {"bucket": "fixture", "data": [op]}}) + "\n").encode()
+        for offset in range(0, len(wire), 512):
+            self.sync.lines.feed(wire[offset:offset + 512])
+            while self.sync._line():
+                pass
+        return op
+
+    def test_download_batch_record_cap_and_timeout_preserve_order(self):
+        self.ready()
+        operations = [self.queue_data(i) for i in range(8)]
+        self.assertEqual([len(batch) for batch in self.store.batches], [6])
+        self.assertEqual(len(self.sync.batch), 2)
+        before = list(self.sync.stream.parts)
+        self.sync.step(100)
+        self.assertEqual([len(batch) for batch in self.store.batches], [6, 2])
+        self.assertEqual(self.sync.stream.parts, before)
+        received = [json.loads(line)["data"]["data"][0]
+                    for batch in self.store.batches for line in batch]
+        self.assertEqual(received, operations)
+        self.assertEqual(self.sync.batch_bytes, 0)
+
+    def test_download_batch_byte_cap_is_independent_of_record_count(self):
+        from badgegotchi_storage import MAX_SYNC_LINE_BYTES
+        self.ready()
+        for index in range(6):
+            self.queue_data(index, "x" * 1400)
+        self.assertTrue(self.store.batches)
+        self.assertLess(len(self.store.batches[0]), 6)
+        for batch in self.store.batches + [self.sync.batch]:
+            self.assertLessEqual(sum(len(line.encode()) for line in batch), MAX_SYNC_LINE_BYTES)
+
+    def test_idle_and_clean_eof_flush_without_marking_checkpoint_complete(self):
+        for ending in (PENDING, None):
+            with self.subTest(ending=ending is PENDING):
+                self.setUp()
+                self.ready()
+                self.queue_data(0)
+                self.sync.stream.parts = [ending]
+                self.sync.step()
+                self.assertEqual([len(batch) for batch in self.store.batches], [1])
+                self.assertFalse(self.sync.synced)
+                self.assertEqual(self.sync.batch, [])
+
+    def test_checkpoint_marker_follows_committed_download_batch(self):
+        self.ready()
+        self.queue_data(0)
+        self.assertFalse(self.store.batches)
+        self.sync.step()
+        self.assertEqual([len(batch) for batch in self.store.batches], [1])
+        lines = [json.loads(payload) for command, payload in self.store.commands if command == "line_text"]
+        self.assertIn("data", lines[-2])
+        self.assertIn("checkpoint_complete", lines[-1])
+        self.assertTrue(self.sync.synced)
+
+    def test_disconnect_discards_only_ram_downloads_for_replay(self):
+        self.ready()
+        self.queue_data(0)
+        self.assertEqual(len(self.sync.batch), 1)
+        self.queue.append("hydration", 1792526000)
+        self.sync.step()
+        self.assertEqual(self.sync.phase, "token")
+        self.assertEqual(self.sync.batch, [])
+        self.assertFalse(self.store.batches)
+        self.assertEqual(self.queue.count, 1)
+
+    def test_truncated_envelope_never_applies_buffered_record_or_completion(self):
+        self.ready()
+        self.queue_data(0)
+        self.sync.lines.feed(b'{"data":{"bucket":"fixture","data":[')
+        self.assertFalse(self.sync._line())
+        self.sync.stream.parts = [None]
+        self.sync.step()
+        self.assertEqual(self.sync.status, "OFFLINE")
+        self.assertEqual(self.store.batches, [])
+        self.assertEqual(self.sync.batch, [])
+        self.assertFalse(self.sync.synced)
+
 
 class RealCoreSupervisorTests(unittest.TestCase):
     def test_requests_mode_supervisor_publishes_one_projection_with_real_core(self):
@@ -435,7 +524,7 @@ class RealCoreSupervisorTests(unittest.TestCase):
                     def __init__(self, *args, **kwargs):
                         super().__init__(*args, **kwargs)
                         self.request_body = copy.deepcopy(args[1])
-                        payload = {"kind": "summary", "payload": json.dumps({"hydration_count": 5})}
+                        payload = {"id": "summary", "payload": json.dumps({"hydration_count": 5})}
                         lines = [
                             {"checkpoint": {"last_op_id": "1", "write_checkpoint": "9007199254740994",
                              "buckets": [{"bucket": "fixture", "checksum": 1, "priority": 3, "count": 1}]}},
@@ -445,6 +534,10 @@ class RealCoreSupervisorTests(unittest.TestCase):
                             {"checkpoint_complete": {"last_op_id": "1"}},
                         ]
                         self.parts = [(json.dumps(line) + "\n").encode() for line in lines] + [PENDING]
+                # Simulate upgrading while the old stream's persisted TTL is
+                # still live. The new request must exclude it immediately.
+                store.control("subscriptions", {"subscribe": {
+                    "stream": {"name": "badge_projection"}, "ttl": 300}})
                 sync = Sync(store, identity, queue, GatewayFake([token]), "https://sync.example", ("ca",),
                             http_factory=FixtureStream, json_factory=checkpoint_factory)
                 for _ in range(4):
@@ -458,7 +551,7 @@ class RealCoreSupervisorTests(unittest.TestCase):
                 self.assertEqual(request["parameters"], {})
                 self.assertTrue(request["raw_data"])
                 self.assertEqual(request["streams"], {"include_defaults": False,
-                    "subscriptions": [{"stream": "badge_projection", "parameters": None,
+                    "subscriptions": [{"stream": "badge_projection_compact", "parameters": None,
                                        "override_priority": None}]})
                 self.assertFalse(sync.synced)
                 self.assertEqual(store.projection(), [])
@@ -470,6 +563,9 @@ class RealCoreSupervisorTests(unittest.TestCase):
                 sync.step()
                 self.assertTrue(sync.synced)
                 self.assertEqual(store.projection()[0]["payload"], {"hydration_count": 5})
+                stored = json.loads(store._scalar("SELECT data FROM ps_data__badge_projection"))
+                self.assertEqual(set(stored), {"id", "payload"})
+                self.assertEqual(stored["id"], "summary")
                 self.assertEqual(store._scalar("SELECT count(*) FROM ps_crud"), "0")
                 self.assertEqual(store._scalar("PRAGMA integrity_check"), "ok")
             finally:
@@ -478,65 +574,85 @@ class RealCoreSupervisorTests(unittest.TestCase):
                 store.close()
 
 
-class AccountDetailsTests(unittest.TestCase):
-    def test_immutable_legacy_and_actual_account_day_are_distinct(self):
-        from badgegotchi_view import AppView
-        view = AppView.__new__(AppView)
-        rendered = []
-        view.header = lambda *args: None
-        view.box = lambda *args: None
-        view.text = lambda value, *args, **kwargs: rendered.append(value)
-        view.ink = view.green = view.muted = view.paper = None
-        client = SimpleNamespace(status="OFFLINE", legacy={"focus_count": 7, "water_count": 9,
-                                  "stretch_count": 4, "pet_count": 12}, queue=SimpleNamespace(count=2),
-                                  projection={"summary": {"day_key": "2026-10-19", "hydration_count": 3,
-                                              "movement_count": 2, "completed_focus_count": 1}})
-        before = copy.deepcopy(client.legacy)
-        view.details(client)
-        self.assertIn("Before pairing (kept on this badge)", rendered)
-        self.assertIn("Water 9", rendered)
-        self.assertIn("Account 2026-10-19", rendered)
-        self.assertIn("Water 3  Move 2  Focus 1", rendered)
-        self.assertFalse(any("today" in text.lower() for text in rendered))
-        self.assertEqual(client.legacy, before)
-
-    def test_details_never_invents_legacy_totals_for_a_fresh_badge(self):
-        from badgegotchi_view import AppView
-        view = AppView.__new__(AppView)
-        rendered = []
-        view.header = lambda *args: None
-        view.box = lambda *args: None
-        view.text = lambda value, *args, **kwargs: rendered.append(value)
-        view.ink = view.green = view.muted = view.paper = None
-        view.details(SimpleNamespace(status="OFFLINE", legacy=None, projection={}, queue=SimpleNamespace(count=0)))
-        self.assertIn("No earlier badge totals.", rendered)
-        self.assertNotIn("Water 0", rendered)
-
-    def test_details_are_read_only_and_exiting_requires_button_release(self):
+class AccountClientTests(unittest.TestCase):
+    def client(self, rows=()):
         from badgegotchi_client import Client
-        legacy = {"focus_count": 7, "water_count": 9, "stretch_count": 4, "pet_count": 12}
-        store = SimpleNamespace(legacy=lambda: dict(legacy), projection=lambda: [])
-        runtime = SimpleNamespace(status="OFFLINE", phase="token", generation=0, step=lambda elapsed: None)
+        from badgegotchi_commands import CommandQueue
+        entropy = Entropy()
+        memory = Memory({"version": 1, "owner_id": "owner", "device_id": "device", "commands": [], "awaiting": [], "notice": ""})
+        queue = CommandQueue(IDENTITY, entropy, memory)
+        store = SimpleNamespace(projection=lambda: list(rows))
+        runtime = SimpleNamespace(status="OFFLINE", phase="token", generation=0, synced=False, connected=False, step=lambda elapsed: None)
         with patch("badgegotchi_client.Pairing", return_value=SimpleNamespace(paired=True, record=IDENTITY)), \
              patch("badgegotchi_client.pairing_file"), patch("badgegotchi_client.Gateway"), \
-             patch("badgegotchi_client.UploadQueue"), patch("badgegotchi_client.Sync", return_value=runtime):
-            client = Client(store)
+             patch("badgegotchi_client.UploadQueue", return_value=SimpleNamespace(count=0)), \
+             patch("badgegotchi_client.CommandQueue", return_value=queue), \
+             patch("badgegotchi_client.Sync", return_value=runtime), \
+             patch("badgegotchi_entropy.secret_bytes", entropy):
+            client = Client(store, clock=lambda: 1792536000)
             client.step(["DOWN"], 0)
-            self.assertFalse(client.show_details)
+        return client, queue, runtime
+
+    def test_details_and_return_require_release_without_local_history(self):
+        client, queue, runtime = self.client()
+        self.assertFalse(client.show_details)
+        client.step([], 0)
+        client.step(["DOWN"], 0)
+        self.assertTrue(client.show_details)
+        self.assertFalse(client.controls_enabled)
+        client.step(["DOWN"], 1000)
+        self.assertTrue(client.show_details)
+        client.step([], 0)
+        client.step(["DOWN"], 0)
+        self.assertFalse(client.show_details)
+        client.step(["B"], 0)
+        self.assertFalse(client.controls_enabled)
+        client.step([], 0)
+        self.assertTrue(client.controls_enabled)
+        self.assertEqual(queue.count, 0)
+        self.assertFalse(hasattr(client, "legacy"))
+
+    def test_same_second_web_transition_badge_toggle_has_causal_timestamp(self):
+        from badgegotchi_state import unix_seconds
+        for state, expected in (("paused", "timer_resume"), ("active", "timer_pause")):
+            row = {"kind": "timer", "payload": {"id": "11111111-1111-4111-8111-111111111111", "revision": "7",
+                   "type": "focus", "state": state, "planned_duration_seconds": 2400,
+                   "remaining_seconds_at_pause": 2300, "started_at": "2026-10-20T22:00:00Z",
+                   "last_resumed_at": "2026-10-20T22:01:00.500Z",
+                   "paused_at": "2026-10-20T22:01:00.900Z" if state == "paused" else None}}
+            client, queue, runtime = self.client([row])
+            client.clock = lambda: unix_seconds("2026-10-20T22:01:00Z")
+            client._action("toggle")
+            captured = queue.capture()
+            self.assertEqual(captured["type"], expected)
+            self.assertEqual(captured["occurred_at"], "2026-10-20T22:01:01Z")
+            self.assertEqual(captured["expected_revision"], "7")
+
+    def test_revoked_or_blocked_timer_never_generates_completion_commands(self):
+        row = {"kind": "timer", "payload": {"id": "11111111-1111-4111-8111-111111111111", "revision": "1",
+               "type": "focus", "state": "active", "planned_duration_seconds": 2400,
+               "remaining_seconds_at_pause": 2400, "last_resumed_at": "2026-10-20T00:00:00Z"}}
+        for phase in ("blocked", "revoked"):
+            client, queue, runtime = self.client([row])
+            runtime.phase = phase
             client.step([], 0)
-            client.step(["DOWN"], 0)
-            self.assertTrue(client.show_details)
-            self.assertFalse(client.controls_enabled)
-            client.step(["DOWN"], 1000)
-            self.assertTrue(client.show_details)
-            client.step([], 0)
-            client.step(["DOWN"], 0)
-            self.assertFalse(client.show_details)
-            client.step(["B"], 0)
-            self.assertFalse(client.controls_enabled)
-            client.step([], 0)
-            self.assertTrue(client.controls_enabled)
-            self.assertEqual(client.legacy, legacy)
+            client.step([], 10000)
+            self.assertEqual(queue.count, 0)
+
+    def test_rejected_completion_requires_backoff_and_new_covering_sync(self):
+        row = {"kind": "timer", "payload": {"id": "11111111-1111-4111-8111-111111111111", "revision": "1",
+               "type": "focus", "state": "active", "planned_duration_seconds": 2400,
+               "remaining_seconds_at_pause": 2400, "last_resumed_at": "2026-10-20T00:00:00Z"}}
+        client, queue, runtime = self.client([row])
+        client.step([], 0); client.step([], 0)
+        self.assertEqual(queue.count, 1)
+        command = queue.capture()
+        queue.accepted({"state": "rejected", "command_id": command["id"], "revision": "1", "timer": {}})
+        for _ in range(20): client.step([], 1000)
+        self.assertEqual(queue.count, 0)
+        runtime.synced = True; runtime.generation += 1
+        client.step([], 0)
+        self.assertEqual(queue.count, 1)
 
 
 if __name__ == "__main__":

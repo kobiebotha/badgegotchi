@@ -4,7 +4,186 @@ Updated October 20, 2026. The owner approved activation on the exact development
 targets below. This document records completed work and the remaining ordered
 gates; do not rerun completed mutations merely because their commands are shown.
 
-## Activation status
+## Current installed update — alpha.8 compact sync verified
+
+The approved compact-projection migration `20261021004457` is deployed to
+Supabase `bfccerfayrfolisawokp`. PowerSync instance
+`6ad76c8f2f27853eb0b0a128` runs stream configuration version **6**, including
+the guarded explicit `badge_projection_compact` stream. Replication was healthy
+with zero lag at postflight. Six current projection payloads across two accounts
+decreased from **1743 to 1231 bytes**; canonical-data fingerprints and service-only
+refresh privileges were preserved. The original badge stream remains available
+for older apps.
+
+The checked USB updater installed
+`badge/dist/badgegotchi-0.1.0-alpha.8-b6363dde0d08.zip`, SHA-256
+`b6363dde0d0846f6ac8a0f076710907a1cb644f7f4455473297fde8f32ff7b2d`:
+718,973 ZIP bytes, 58 files, 1,237,894 installed bytes. It preserved all **167
+unrelated file hashes**, the existing pairing and account binding. The native
+module and firmware are unchanged; prior app and pre-migration schema-4 database
+backups are retained.
+
+The installed supervisor completed two covering checkpoints. The first replaced
+the three cached long row ids with `pet`, `summary`, and `timer`, reducing badge
+projection payloads from **928 to 655 bytes**. Three PUTs totaling 1841 data-record
+bytes used two batch flushes, with at most two records in a flush. Sync took
+21,302 ms; reopening reused the same persisted cursor, downloaded no data
+records, and synced in 12,980 ms. These measurements do not establish a speedup
+without an equivalent pre-change hardware baseline.
+
+Both passes verified schema **5**, the `id,payload` view without `kind`, only
+the active explicit compact subscription, fully applied checkpoints, integrity
+`ok`, **43 pages**, empty command/legacy/SQL queues, and an unchanged pairing
+fingerprint. Raw core rows retain their required matching `id` and `payload`.
+Cached totals and timer state were preserved; no account actions were generated.
+Alpha.8 fixes the service-generated matching `id` field rejected during the
+initial alpha.7 download; all **129 badge tests** pass with service-shaped
+fixtures. See [alpha.8 rollout evidence](../badge/evidence/sync-alpha8.json) and
+the [optimization record](badge-sync-optimization.md).
+
+Cloud and installed-badge qualification are complete. Public web/installer
+publication and the separately reviewed legacy-DML cutover remain distinct work;
+no agent Git push or Vercel deployment occurred. The following alpha.6 and
+alpha.5 records retain their historical qualification and publication status.
+
+## Historical installed update — alpha.6, UI only
+
+The owner requested removal of `Account YYYY-MM-DD` and related explanatory
+caption text. Alpha.6 shows current values directly: the main caption is removed,
+details is headed `Totals`, and pending text appears only for a nonzero count.
+
+The checked updater installed
+`badge/dist/badgegotchi-0.1.0-alpha.6-cabcbfa4568a.zip`, SHA-256
+`cabcbfa4568aff3eb7f959b0476dc42ebb5c28803ee3cbd5449fbf03b85f4efa`:
+717,504 ZIP bytes, 58 files, 1,232,547 installed bytes. The ZIP file set is unchanged;
+only the view, README, and package metadata differ from alpha.5. All sync,
+storage, client, state, native, and asset bytes are identical. The checked update
+preserved all 167 unrelated file hashes and preservation tree
+`4b02d5229fab4028ddca8d22afb8688be79f4b575ff0924e9679f405df195f74`.
+The previous app backup is `badge/dist/backups/app-before-alpha6-20261020` and the
+drive was safely ejected. See [alpha.6 evidence](../badge/evidence/display-alpha6.json).
+
+Local public installer staging and app/hash checks pass for alpha.6; 16
+command/view, 14 packaging, and 5 updater tests pass. No cloud/database mutation
+or fresh database check was part of this UI-only update. Post-update hardware
+visual confirmation was **not run**. Prior alpha.5 renderer/shared-state evidence
+remains the baseline; geometry is unchanged except fewer text lines, and another
+hardware/database test cycle is not required. The owner should press Reset once
+and reopen the app normally.
+
+Public web/installer publication and legacy-DML cutover remain pending. The
+owner must commit/push; the agent must not push or deploy to Vercel. Verify the
+deployed bundle/installer before applying the separately reviewed activation SQL.
+
+## Shared-state backend and alpha.5 qualification — unchanged by alpha.6
+
+The additive [shared-account migration](../supabase/migrations/20261020224246_shared_account_commands.sql)
+is deployed on the existing development targets listed below. It adds immutable
+command receipts, one account timer revision, atomic command/domain/AI-intent
+writes, always-present timer projections, and durable inference retry state.
+No canonical account history or saved pairing was reset. The owner authorized
+removing old badge-only progress; schema 4 performs that local cleanup.
+
+| Deployed component | Verified status |
+| --- | --- |
+| `badge-gateway` | ACTIVE, version 3, `verify_jwt=false`; owner Auth/session and opaque badge credential validation remain in the handler |
+| `pet-ai` | ACTIVE, version 6, `verify_jwt=true`; existing browser Auth validation preserved |
+| `pet-worker` | ACTIVE, version 1, `verify_jwt=false`; separate server-only `PET_WORKER_SECRET`, service-only claim/finish RPCs |
+| PowerSync | Active stream version **5**, including guarded browser projections; initial replication complete, no connection/table errors, about 5 KiB lag at postflight |
+| Worker schedule | `badgegotchi-pet-worker`, active every minute; last five observed runs succeeded |
+| Worker HTTP | Seven responses in the sampled 15-minute window: all HTTP 200, no timeouts |
+| Extensions | `pg_cron` 1.6.4, `pg_net` 0.20.4, `supabase_vault` 0.3.1 |
+
+The [transaction-wrapped worker setup](../supabase/operations/schedule-pet-worker.sql)
+is installed, including prompt AFTER INSERT wakeups and the independent retry
+schedule. Vault names `badgegotchi_pet_worker_url` and
+`badgegotchi_pet_worker_secret` exist; no secret values were read in postflight.
+Temporary plaintext provisioning material has been cleaned up. Unauthorized
+requests to the gateway, pet-ai, and worker each returned HTTP 401. This rollout
+retains existing Supabase browser authentication and badge JWKS trust; no new
+PowerSync service-auth change was needed.
+
+Read-only database checks verified the migration record, enabled timer-revision,
+pet-projection and worker-wakeup triggers, and private-table RLS. Authenticated
+clients cannot SELECT/INSERT command receipts or timer heads, and can only SELECT
+the owner-filtered public projection. `account_gateway`, `pet_ai_claim_next`,
+`pet_ai_claim`, and `pet_ai_finish` are invoker functions executable by the service
+role, not anon/authenticated. Each of two account owners has all three projection
+slots; the largest pet/summary/timer payloads were 308/289/222 bytes against the
+1,536-byte bound. At that initial postflight, all 13 observed pet events were
+completed, with no pending work.
+
+The final alpha.5 ZIP SHA-256 is
+`6565850affadb108bb3d43fa1056358b9c883969b05533a90de400f9f814dd78`:
+717,568 ZIP bytes, 58 files, 1,232,779 installed bytes. It was installed and
+qualified before the alpha.6 UI-only replacement; all 167 unrelated file hashes are unchanged. The actual badge
+Client passed schema-4, integrity, completed three-row projection checkpoint,
+queue-zero, 43-page database, and unchanged pairing-fingerprint checks. Confirmed
+initial state was Water 5 / Move 1 / Pets 0 with an idle timer.
+
+The shared-action roundtrip is now verified through the actual browser UI and
+**automated input to the installed badge Client's button handlers**, not human
+physical presses. Web start produced revision 1, badge pause revision 2, and web
+resume revision 3. The subsequent badge water, pet, and stop actions each reached
+a real checkpoint (generations 2, 3, and 4 in the final device run), with zero
+queued commands and a healthy database. Both clients reported Focus 1 / Break 0 /
+Water 6 / Move 1 / Pets 1; the web timer showed 40:00, Focus ready.
+
+Independent read-only SQL found exactly six accepted receipts, one each for
+`timer_start`, `timer_pause`, `timer_resume`, `hydration`, `pet`, and `timer_stop`,
+with no rejection reasons. All six matching pet intents completed on their first
+attempt without errors. Canonical state contains one ended/stopped focus session
+and exactly one paused focus successor at revision 4 with 2,400 seconds. No owner
+has more than one live timer. Focus 1 means ended/stopped; completed-focus count
+is still zero. Browser screenshot:
+`/private/tmp/badge-alpha5-web-shared-result.png` (host-only artifact).
+
+Installed-entrypoint UI qualification passed: two healthy frames in 375 ms.
+Main/details display bounds passed for all 30 animals and large-count/long-text
+fixtures. The [main screen](../badge/evidence/shared-state-alpha5-main.png) and
+[details screen](../badge/evidence/shared-state-alpha5-details.png) capture actual
+synced account state, not fixtures. See the final
+[alpha.5 evidence record](../badge/evidence/shared-state-alpha5.json).
+
+The fresh final checkpoint has three projection rows, one fully applied bucket,
+and zero command/legacy-upload/SQL CRUD queues. Database integrity is `ok` at
+43 pages / 44,032 bytes. Legacy `current`/`legacy` progress rows are absent; the
+single account binding and pairing fingerprint are preserved. The journal is
+empty after close. The host database backup matches the device SHA-256
+`f5f89970bd87444bf18b04193e2caf81c042574c10491e2a75e738565cf2895e`.
+The app was closed and normal machine reset completed with the expected USB
+disconnect. Human confirmation of normal launcher/reopen appearance is pending.
+
+Latest local checks passed: 152 web tests, TypeScript and production build;
+38 Edge Function tests; and the PostgreSQL/WASM command, CAS, receipt, security,
+worker recovery and failed-wakeup transaction suite. No native full-capacity
+stress test was run. That exact qualified ZIP was staged in the local public
+installer and has since been replaced locally by alpha.6. App checks, 89 installer unit tests, and a fresh production build pass;
+public/build manifests and hashes match all 58 files and 30 animal assets. These
+artifacts are ready for owner publication, not yet verified on the deployed site.
+
+**Deferred activation:**
+[activate-shared-commands.sql](../supabase/operations/activate-shared-commands.sql)
+has deliberately **not** been applied. Authenticated direct session/wellness DML
+remains enabled until the owner publishes the new web bundle. The additive
+migration advances the shared revision for legacy timer mutations during this
+transition. After new clients are available, the separate activation transaction
+checks for ambiguous timers, revokes old direct writes, and adds the one-live-timer
+constraint. Do not apply it merely because this document lists it.
+
+Remaining sequence: tell the owner to press Reset once and reopen alpha.6,
+have the owner commit/push the prepared web and installer changes,
+verify the deployed bundle and installer hashes, then perform the separately
+reviewed direct-DML cutover. The agent has performed no Git push or Vercel
+deployment and must not do either. No new pairing is needed. Public ingress limits, real
+concurrent-transaction testing, radio-loss/token-expiry/revocation timing and
+power-loss/capacity recovery remain separate gates.
+
+## Historical pairing activation status — alpha.3/alpha.4
+
+The following records the earlier pairing rollout and its then-current versions,
+counts and installer state. The current alpha.6 status and retained alpha.5 qualification above take precedence.
+
 
 - Applied and verified `20261020204932_badge_pairing_gateway`.
 - Applied `20261020214705_badge_projection_replication_grant` after the PowerSync
@@ -62,13 +241,14 @@ gates; do not rerun completed mutations merely because their commands are shown.
 | PowerSync endpoint / custom JWT audience | `https://6ad76c8f2f27853eb0b0a128.powersync.journeyapps.com` |
 | Badge issuer | `https://bfccerfayrfolisawokp.supabase.co/functions/v1/badge-gateway` |
 | Public badge JWKS | `https://bfccerfayrfolisawokp.supabase.co/functions/v1/badge-gateway/jwks` |
+| Dedicated pet worker | `https://bfccerfayrfolisawokp.supabase.co/functions/v1/pet-worker` |
 
 The instance is labeled **Production**, but the owner recorded it as a development
 target in the repository. The owner has now approved the specific activation
 steps recorded here. Verify [the link](../powersync/cli.yaml) still matches before
 any remaining mutation. No Vercel deployment or Git push is included.
 
-Activate only:
+Historical pairing activation scope (already completed):
 
 - [The pairing migration](../supabase/migrations/20261020204932_badge_pairing_gateway.sql): private pairing/device/credential/receipt tables, atomic RPCs, and the bounded public projection. Existing source history is preserved.
 - [The replication-read grant](../supabase/migrations/20261020214705_badge_projection_replication_grant.sql): only `SELECT` on `public.badge_projection` for the existing named PowerSync role; no writes or private-table access.
@@ -92,7 +272,7 @@ Local `auth/KeyStore.ts` compares audience values exactly. Use no trailing slash
 no additional audience setting is needed for this standard Cloud URL. The live
 service accepted that exact audience with the badge signer during activation.
 
-## Approved activation order and remaining gates
+## Historical pairing activation order and qualification gates
 
 Run from `/Users/kobie/projects/powersync/skunkworks/badgegotchi`. The installed
 Supabase CLI help and PowerSync CLI `0.10.2` help were inspected for these flags.
@@ -209,9 +389,9 @@ npx --yes powersync@0.10.2 status --instance-id=6ad76c8f2f27853eb0b0a128 --outpu
    public ingress limits, and broader capacity/power-loss qualification remain
    outside this completed pair-once wellness verification.
 
-## Evidence and remaining limits
+## Historical pairing evidence and remaining limits
 
-Local backend type checks and lint pass; **30 Deno tests** pass (12 gateway and
+At the alpha.4 pairing baseline, local backend type checks and lint passed; **30 Deno tests** passed (12 gateway and
 18 existing pet-AI tests). The saved PostgreSQL/WASM runner passes schema,
 owner/session/privilege, pairing/replay, revocation, atomic receipt, projection,
 Unicode-bound and rate-counter assertions. **17 actual sync-policy checks** pass
@@ -230,9 +410,10 @@ queues, preservation hashes and final backup. The two protocol fixes passed
 37 focused parser, actual-core, packaging and checked-update tests. No full-capacity
 native stress fixture was rerun.
 
-The initial shared behavior is hydration/movement upload and current pet/timer/
-daily-summary download. It does not implement shared timer CAS transitions,
-badge-generated AI intentions, credential rotation, or abandoned-claim cleanup.
+The alpha.4 baseline implemented hydration/movement upload and current pet/timer/
+daily-summary download. Alpha.5 adds shared timer CAS transitions and badge-generated
+AI intentions, as recorded above. Credential rotation and abandoned-claim cleanup
+remain outside this rollout.
 Device credentials last 180 days; issued PowerSync JWTs last 300 seconds. Further
 storage/power-loss qualification, real concurrent database transactions and live
 revocation timing remain separate acceptance evidence. Owner Auth integration
@@ -249,4 +430,5 @@ broad browser streams while badge credentials can still be accepted. Restoring
 service configuration is itself a scoped cloud action; report the failure and
 obtain any authorization not already covered by the activation approval.
 
-Full endpoint details are in the [gateway contract](../supabase/functions/badge-gateway/README.md).
+Full endpoint details are in the [pairing gateway contract](../supabase/functions/badge-gateway/README.md)
+and [shared command contract](../supabase/functions/badge-gateway/COMMANDS.md).

@@ -1,13 +1,12 @@
 # Installable Badgegotchi app
 
-The `0.1.0-alpha.4` candidate adds one-time A/B/C account pairing, automatic
-reconnect, durable water/movement uploads to Supabase, and a bounded PowerSync
-projection to the ordinary Badgeware app. Its 40-minute focus / 10-minute break
-timer remains local. Cloud activation and physical A/B/C pairing passed.
-Alpha.4 corrects the stream request and incrementally processes batched history;
-its installed-app wellness roundtrip and Home/reopen checks passed. The qualified
-alpha.2 installer release remains unchanged until a candidate is explicitly
-staged and published.
+The `0.1.0-alpha.8` development candidate reduces projection data and batches
+download writes while retaining the same account totals, timer, and pet used
+by the web app. Both clients queue
+immutable commands; Supabase applies them atomically and PowerSync downloads the
+canonical state. Alpha.5 qualification and rollout status are recorded in the
+[shared-state handoff](../docs/handoffs/badge-pairing-powersync.md). Alpha.4's
+pair-once wellness flow was previously verified on the device.
 
 Supported runtime: the measured Pimoroni Tufty 2350, MicroPython 1.29.0,
 `bw-1.29.0-gc` dated 2026-09-22 (GNU 13.3.1 MinSizeRel), `_mpy=7942`, softfp.
@@ -30,20 +29,30 @@ stops future badge token issuance and uploads; an already-issued short-lived
 PowerSync token can remain valid until it expires. General account switching
 and a user-facing reset/re-pair flow are not implemented in this candidate.
 
-C records hydration and Up records movement in a durable queue, bounded to 16
-events and uploaded in batches of at most eight. Request IDs and receipts make
-retrying an accepted batch safe. An event that cannot be queued is refused with
-a visible message. Account summary dates use UTC. The `badge_projection` stream
-contains at most three current records (`pet`, `timer`, `summary`), with a 1536-byte
-payload limit each. It does not replicate account event history. The badge shows
-account pet name/speech and daily wellness totals with the bundled capybara art.
+A pets the synced companion, B controls the shared timer, C logs water, and Up
+logs movement. Down opens account details, where B stops the timer. Home closes
+the app without pausing the account timer. Completion prepares the opposite
+phase paused; stopping prepares the same phase paused. The next B resumes it.
 
-The downloaded account timer projection is kept separate from the local timer.
-Badge timer controls, focus completions, pet interactions, and local acknowledgements
-are not uploaded; the badge makes no pet-state or AI writes. Down opens an info
-view with retained before-pairing counts, daily account summary, and queue count.
-Local lifetime totals are distinct from account daily totals. `SYNCED` requires
-an empty upload queue and a PowerSync checkpoint covering accepted uploads.
+All totals come from the latest synced daily account summary, using UTC day
+boundaries. The badge shows values without an account/date caption and only
+shows pending-action text while work is queued.
+Focus and Break count ended sessions, including stopped sessions. Pets counts
+pet presses. The synced animal selects matching artwork from the same 30 assets
+used by the web app. Name and speech also come from the account.
+
+A durable 16-command queue retains offline actions. Pending timer controls are
+provisional; totals remain confirmed values until sync. Owner-serialized timer
+revisions reject conflicting commands. Immutable command receipts prevent
+retries from recording duplicate events or completing a phase twice. AI reactions
+are queued independently and retried by a server worker; they do not block
+acceptance of timer or wellness actions. The old wellness queue drains existing
+accepted work through its original endpoint.
+
+The badge explicitly requests only `badge_projection_compact`, with at most three
+records (`pet`, `timer`, `summary`) and a 1536-byte payload limit each. A separate
+owner/issuer-guarded browser stream returns the same projection. `SYNCED` requires
+empty upload queues and a PowerSync checkpoint covering accepted commands.
 
 The app uses Badgeware's existing managed Wi-Fi lifecycle and configured access
 point with bounded retry delays. It does not create a second Wi-Fi manager or
@@ -62,7 +71,9 @@ identity file, identifying the actual native bytes packaged.
 ```sh
 # From the badgegotchi repository root, after final source review:
 sh badge/native/build.sh
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s badge/tests -v
+# Run focused Python checks; do not run the legacy full-capacity native stress suite.
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s badge/tests -p test_state.py -v
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s badge/tests -p test_packaging.py -v
 python3 badge/tools/package.py
 ```
 
@@ -111,10 +122,18 @@ python3 badge/tools/update.py OLD.zip NEW.zip /Volumes/<badge> --backup /path/to
 
 Use USB disk mode with no other app-copy process running. The directory swap is
 not power-failure atomic; retain both backups. The tool never opens `/state`.
-On first launch, alpha.3 migrates recognized schema 1/2 data additively to schema
-3, retaining the timer/counters and a separate legacy snapshot. It does not
-manufacture account events from historical local counts. Older app versions do
-not understand schema 3; downgrading just the app is unsupported.
+On first launch, alpha.5 transactionally migrates recognized schemas 1–3 to
+schema 4. The owner authorized discarding old badge-only progress in this dev
+environment. Only `current` and `legacy` progress rows are deleted; pairing,
+account binding, projection, and checkpoints remain. No history is imported or
+removed from the account. Downgrading just the app is unsupported.
+
+The current sync optimization candidate upgrades schemas 1–4 to schema 5. Its
+synced table stores only `payload`; the short row id (`pet`, `timer`, `summary`)
+also identifies the kind. Existing `owner:kind` rows remain readable offline
+until a covering checkpoint replaces them. The account binding, private command
+queue, and native checkpoints are preserved. See [sync optimization and rollout](../docs/badge-sync-optimization.md)
+before packaging or installing this candidate.
 
 ## Application lifecycle and storage
 
@@ -125,20 +144,25 @@ mount. Pairing identity and queued events live in a separate owner-marked
 synchronized, and renamed before success is reported. Nothing private is stored
 in the app package. No raw flash operations or second LittleFS mount are used.
 
-The local timer uses monotonic time while open and the badge RTC for time away.
-Unset or backward-moving clocks pause restoration; completion while away is
-recorded once on reopening. Saves occur on actions, completion, minute checkpoints,
-and normal Home exit. The Home interrupt only requests exit; the foreground loop
-finishes SQL, saves, closes network/database handles, and waits for Home release
-before resetting to the original launcher. SQL never runs in the interrupt.
+The timer derives remaining time from synced UTC session timestamps, overlaid
+with durable pending commands when offline. It has no separately saved local
+snapshot. The Home interrupt only requests exit; the foreground loop finishes
+SQL, closes network/database handles, and waits for Home release before returning
+to the original launcher. SQL never runs in the interrupt.
 
 SQLite uses one connection, DELETE journaling, full synchronization, an eight-page
 cache, a 128 KiB ceiling, and a free-space reserve. Startup validates ownership,
-filenames, schema, integrity, and snapshot shape. Nonempty leftover journals are
+filenames, schema, integrity, and bounded projection shape. Nonempty leftover journals are
 preserved and stop startup because missing truncate support prevents qualifying
 general recovery. Errors and unsupported data never trigger automatic deletion,
 repair, or reinitialization. Sync frames are limited to 8192 bytes; the projection
 and page guard keep this workload away from the native allocator's known limits.
+
+Downloads retain at most six operations and 8192 bytes in RAM before a single
+durable SQLite commit. The buffer flushes before checkpoint/control records,
+on network idle, or after 100 ms of foreground elapsed time. SQL transactions
+never span network reads. Every operation still reaches the PowerSync core in
+order; incomplete downloads do not become visible before a valid checkpoint.
 
 The app's secret adapter hashes an application/version prefix with 1536 fresh
 `os.urandom` bytes for each draw. This relies on the inspected stock RP2350/SDK
@@ -151,7 +175,7 @@ translates Python exceptions to SQLite errors. The normal watchdog remains activ
 ## Qualification
 
 Host tests exercise pairing persistence and approval, retry/idempotency behavior,
-revocation, bounded queue/projection handling, retained legacy data, timer and
+revocation, bounded queue/projection handling, legacy progress removal, timer and
 button handling, storage ownership and preservation, package integrity, and
 checked app updates. Native host fixtures use POSIX storage and are not device
 evidence. The native core's fixed 256 KiB arena is not qualified for arbitrary

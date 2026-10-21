@@ -1,25 +1,196 @@
 # Handoff: pair a Badgeware badge and sync it with the web app
 
-Prepared 2026-10-20. This document describes the next implementation; it does
-not claim that pairing or live badge sync already works. No device, cloud
-configuration, or deployment was changed while preparing this handoff.
+Updated 2026-10-20. The current status below supersedes the original planning
+baseline and proposed design retained later in this document. Do not rerun
+completed cloud activation or ask the owner to pair the badge again.
 
-## Current resumption point — October 20, 2026
+## Current installed update — alpha.8 compact sync verified
 
-The owner-approved development activation and requested pair-once wellness flow
-are now verified. Alpha.4 is installed on the original Badgeware firmware. Physical
-A/B/C pairing, saved authentication, actual PowerSync checkpoints, two badge water
-uploads, one approved web movement download, and Home/reopen without another code
-all passed. Pairing and legacy progress are preserved; queues are empty and the
-40 KiB database passes integrity checks. See [completed activation status](../badge-pairing-activation.md)
-and [alpha.4 evidence](../../badge/evidence/sync-fix-alpha4.json) before taking any
-next action. Do not rerun activation or ask the owner to pair again.
+The approved sync optimization is live on Supabase `bfccerfayrfolisawokp` and
+PowerSync instance `6ad76c8f2f27853eb0b0a128`. Migration
+`20261021004457_compact_badge_projection` reduces the six current projection
+payloads across two accounts from 1743 to 1231 bytes, with the canonical-data
+fingerprint and privileges unchanged. Stream configuration version **6** is
+active; replication was healthy with zero lag at the sampled postflight.
 
-The original design and historical baseline below remain reference material.
-Shared timer writes, live revocation/radio-loss/token-expiry qualification,
-power-loss/capacity recovery and public rollout are separate remaining work.
-The final browser test used localhost; no agent Git push or Vercel deployment
-was performed and the public installer still serves alpha.2.
+The checked USB updater installed
+`badge/dist/badgegotchi-0.1.0-alpha.8-b6363dde0d08.zip`: **718,973 ZIP bytes**,
+**58 files**, **1,237,894 installed bytes**, SHA-256
+`b6363dde0d0846f6ac8a0f076710907a1cb644f7f4455473297fde8f32ff7b2d`.
+All **167 unrelated file hashes** remain unchanged. The prior app is backed up
+at `badge/dist/backups/app-before-alpha8-20261020`; the original pre-migration
+44,032-byte schema-4 database is retained separately. The native module and
+Badgeware firmware are unchanged.
+
+Two bounded runs of the installed sync supervisor reached covering checkpoints.
+The first replaced the cached long row ids with `pet`, `summary`, and `timer`,
+reducing this badge's projection payloads from **928 to 655 bytes** (29.4%). It
+processed three PUT records, 1841 data-record bytes, in two batch flushes, with
+at most two records per flush. Sync took **21,302 ms**; close/reopen reused the
+same persisted cursor, downloaded no data records, and reached its checkpoint
+in **12,980 ms**. These timings have no equivalent pre-change hardware baseline
+and do not establish a measured speedup.
+
+Both runs verified schema **5**, the `id,payload` view without `kind`, a single
+active explicit `badge_projection_compact` subscription, fully applied
+checkpoints, a healthy **43-page** database, and empty private/SQL queues.
+Raw core rows retain the required matching `id` alongside `payload`. Pairing,
+cached account totals and timer state were preserved; qualification created no
+account actions. The first alpha.7 attempt exposed rejection of that normal
+service-generated `id`; alpha.8 fixes its validation and passes **129 badge
+tests**. See [alpha.8 rollout evidence](../../badge/evidence/sync-alpha8.json)
+and the [optimization record](../badge-sync-optimization.md).
+
+Cloud and installed-badge qualification are complete. Public web/installer
+publication and the separately reviewed legacy-DML cutover remain distinct
+work. No agent Git push or Vercel deployment occurred. The alpha.6 and alpha.5
+sections below retain historical status and qualification, not current rollout
+instructions.
+
+## Historical installed update — alpha.6 display refinement
+
+The owner requested current values without the `Account YYYY-MM-DD` badge
+caption. Alpha.6 removes that caption from the main view; details uses `Totals`
+without a date or explanatory account copy. Both views show pending-count text
+only when the count is nonzero.
+
+The checked updater installed
+`badge/dist/badgegotchi-0.1.0-alpha.6-cabcbfa4568a.zip`:
+**717,504 ZIP bytes**, **58 files**, **1,232,547 installed bytes**, SHA-256
+`cabcbfa4568aff3eb7f959b0476dc42ebb5c28803ee3cbd5449fbf03b85f4efa`.
+An independent comparison of both ZIPs found changes only in the view, README,
+and package metadata. Sync, storage, client, state, native code, and all assets
+are byte-identical to alpha.5. All 167 unrelated hashes and the preservation tree
+`4b02d5229fab4028ddca8d22afb8688be79f4b575ff0924e9679f405df195f74`
+remain unchanged. The previous app is backed up at
+`badge/dist/backups/app-before-alpha6-20261020`; the drive was safely ejected.
+
+The local public installer now stages alpha.6 and app/hash checks pass. The
+16 command/view, 14 packaging, and 5 checked-update tests pass. See
+[alpha.6 display evidence](../../badge/evidence/display-alpha6.json). No new cloud
+or database work was performed for this UI-only refinement. Hardware visual
+confirmation after this update was **not run**; the earlier alpha.5 render and
+shared-state qualification below remains the baseline, with unchanged geometry
+except fewer text lines. No additional hardware/database test cycle is required.
+The owner should press Reset once and reopen the app normally.
+
+Owner commit/push, verification of the deployed web/installer, and the separately
+reviewed legacy-DML cutover remain pending. No agent Git push or Vercel deployment
+was performed or is authorized by this handoff.
+
+## Shared-account backend and alpha.5 qualification baseline
+
+The owner requires one synced account state for totals, timer, wellness, and pet
+behavior on badge and web. Offline actions may remain durably queued and visibly
+pending; account totals come only from confirmed projections. The owner explicitly
+authorized deletion of old badge-only progress, with no import. Preserve canonical
+account history and the existing pairing.
+
+Alpha.5 implements shared commands with stable IDs, immutable receipts, account
+revision checks, and server-created pet intents. Completing a timer creates the
+opposite phase paused; stopping creates the same phase paused. The successor ID
+is the command ID, allowing offline start/pause/resume chains. Schema 4 removes
+legacy local progress while retaining account binding, synced projection, and
+pending uploads. See the [command contract](../../supabase/functions/badge-gateway/COMMANDS.md).
+
+The additive backend migration `20261020224246_shared_account_commands` is deployed
+to Supabase `bfccerfayrfolisawokp`. `badge-gateway` v3, `pet-ai` v6, and `pet-worker`
+v1 are ACTIVE. `pet-ai` retains platform JWT verification and Auth validation;
+the gateway and separate worker retain their own authentication boundaries.
+The worker uses a server-only secret, transactional pg_net wakeups, persistent
+leases/backoff, and a one-minute cron fallback. Named Vault entries are configured;
+temporary plaintext provisioning material has been removed. Unauthorized HTTP
+requests to all three routes returned 401.
+
+PowerSync instance `6ad76c8f2f27853eb0b0a128`, project
+`6ad76c8e02e1e50007a3552a`, now has stream version **5** active, including the
+separately guarded browser projection stream. Supabase browser auth and the
+existing badge JWKS trust are unchanged. Read-only postflight found complete
+initial replication, no connection/table errors, and about 5 KiB of replication
+lag at the sampled instant. The last five worker cron runs succeeded; seven
+recent worker HTTP responses were 200 with no timeouts. Private command receipts
+and timer heads remain inaccessible to browser roles, public projections are
+read-only under owner RLS, and command/worker RPCs remain service-only invoker
+functions. Projection payload maxima were 308/289/222 bytes for pet/summary/timer.
+
+## Historical shared-state qualification — alpha.5
+
+The final alpha.5 ZIP is **717,568 bytes**, contains **58 files**, and installs
+**1,232,779 bytes**. SHA-256:
+`6565850affadb108bb3d43fa1056358b9c883969b05533a90de400f9f814dd78`.
+At alpha.5 qualification, the checked updater installed it and the drive was
+ejected. Alpha.6 has since superseded it as recorded above. All **167 unrelated
+file hashes** are unchanged; the original Badgeware firmware remains installed.
+The actual on-device Client passed schema-4, database integrity, a completed
+three-projection checkpoint, empty queues, 43 database pages, and unchanged
+pairing fingerprint checks. Its initial confirmed state was Water 5 / Move 1 /
+Pets 0 with an idle account timer.
+
+The live shared-action roundtrip now passes using the actual browser UI and
+**automated button-handler input to the installed badge Client**; this was not
+another human physical-button test. Web start was accepted at revision 1, badge
+pause at revision 2, and web resume at revision 3. Badge water, pet, and stop
+then completed actual checkpoints at generations 2, 3, and 4 in the final device
+run. Final queues are empty and integrity passes. Both clients agree on Focus 1 /
+Break 0 / Water 6 / Move 1 / Pets 1; the web shows 40:00, Focus ready. Focus 1 is
+an ended/stopped phase, not a completed focus session.
+
+An independent read-only database check found exactly six accepted receipts—one
+each for start, pause, resume, hydration, pet, and stop—with no rejection reasons.
+All six corresponding pet reactions completed on attempt 1 without an error.
+There is one ended/stopped focus session and one paused focus successor at
+revision 4 with 2,400 seconds; no owner has more than one live timer. The browser
+screenshot is saved on the host at
+`/private/tmp/badge-alpha5-web-shared-result.png`.
+
+The installed entrypoint completed two healthy frames in 375 ms. Display-bounds
+checks passed across all 30 animals and main/details fixtures with large totals,
+long names, and long messages. The saved [main screen](../../badge/evidence/shared-state-alpha5-main.png)
+and [details screen](../../badge/evidence/shared-state-alpha5-details.png) show the
+actual synced account, not fixtures. The complete
+[alpha.5 evidence](../../badge/evidence/shared-state-alpha5.json) records these checks.
+
+A fresh final checkpoint contains all three projection rows. The 43-page database
+is 44,032 bytes and passes integrity checks; command, legacy-upload, and SQL CRUD
+queues are empty. No `current`/`legacy` progress rows remain; one account binding
+and one fully applied bucket remain, with unchanged pairing fingerprint. The
+closed journal is empty. The verified host backup matches the device byte hash
+`f5f89970bd87444bf18b04193e2caf81c042574c10491e2a75e738565cf2895e`.
+The app was closed and a normal machine reset completed with the expected USB
+disconnect; owner confirmation of normal launcher/reopen appearance is pending.
+
+Latest local verification: **152 web tests**, TypeScript, and the production
+build pass; **38 Edge Function tests** and the PostgreSQL/WASM command, security,
+receipt, failed-wakeup, and worker recovery suite pass. Client regressions cover
+same-second web/badge timestamps, latest-reaction pet controls, offline timer
+chains, and accepted events deleted by a later account reset. Native full-capacity
+stress was not rerun.
+
+At alpha.5 qualification, its exact ZIP and public installer artifacts were staged
+locally; alpha.6 now replaces that local installer candidate.
+App checks, 89 installer unit tests, and a fresh production build pass. Public and
+build-output manifests/hashes match all 58 files and 30 animal assets. This is a
+local publication candidate; no agent Git push or Vercel deployment occurred.
+
+Remaining work, in order:
+
+1. Tell the owner to press Reset once and reopen the installed alpha.6 app. Its
+   bytes are verified; this UI-only update does not require another agent-led
+   hardware/database test cycle.
+2. Ask the owner to commit and push the prepared changes to publish the new web
+   bundle and alpha.6 installer. The agent must not `git push` or deploy to Vercel.
+3. Verify the deployed bundle and installer hashes, then separately review/apply
+   [activate-shared-commands.sql](../../supabase/operations/activate-shared-commands.sql).
+   This gate intentionally remains deferred: legacy authenticated session/wellness
+   DML is still enabled so the deployed older web bundle keeps working. Activation
+   revokes that path and enforces one live timer per account.
+
+The prior alpha.4 pair-once wellness roundtrip, Home/reopen, and preservation
+checks remain valid historical evidence in
+[the activation record](../badge-pairing-activation.md) and
+[alpha.4 evidence](../../badge/evidence/sync-fix-alpha4.json). Live revocation,
+radio-loss/token-expiry timing, power-loss/capacity recovery, and public ingress
+limits remain separate qualification gates.
 
 ## Goal and explicit user requirements
 
@@ -40,7 +211,11 @@ User rules still apply: never `git push`; never blanket-stage files; use distinc
 local branches if work is split into PRs; no deployment to the powersync Vercel
 organization without approval. This handoff is not deployment authorization.
 
-## Start from this verified baseline
+## Historical starting baseline — before pairing implementation
+
+The component table and limitations in this section describe the original alpha.2
+starting point, not the currently installed alpha.6 app. The current status above
+and activation record take precedence.
 
 Repository: `/Users/kobie/projects/powersync/skunkworks/badgegotchi`.
 The current chat's working directory is the sibling `powerbadge` directory;
@@ -73,7 +248,7 @@ not passed. The separate `powerbadge/native/sqlite-hello/powersync/networking/`
 experiment demonstrated public HTTPS with temporary standalone firmware; that
 does not establish compatibility with the current Badgeware runtime.
 
-## Pairing experience
+## Original design reference — pairing experience
 
 Keep **Set up a badge** / `/install` available for installation. Add **Pair a
 badge** to the signed-in dashboard or account/device area, with a link to install

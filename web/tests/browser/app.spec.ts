@@ -164,117 +164,86 @@ test('email rate limits explain send failures and preserve an existing code afte
   await expect(page.getByRole('heading', { name: 'Let’s find your rhythm.' })).toBeVisible();
 });
 
-test('real PowerSync worker persists timer and wellness writes across reload during a cloud outage', async ({ context, page, backend }) => {
+test('real PowerSync worker persists offline intentions without fabricating confirmed account totals', async ({ context, page, backend }) => {
   await authenticate(context);
   await openDashboard(page);
-  await expect(page.getByRole('alert').filter({ hasText: 'Pet cloud request failed (503)' })).toBeVisible();
-  await page.getByRole('button', { name: 'Start focus', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
-  await expect(page.getByRole('timer')).toHaveText(/^(40:00|39:5\d)$/);
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus paused', exact: true })).toBeVisible();
-  const pausedText = await page.getByRole('timer').innerText();
+  await page.getByRole('button',{name:'Start focus',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Focus session',exact:true})).toBeVisible();
+  await expect(page.getByText('Timer change pending sync')).toBeVisible();
+  await page.getByRole('button',{name:'Pause',exact:true}).click();
+  await expect(page.getByRole('heading',{name:/^Focus (paused|ready)$/})).toBeVisible();
+  const paused = await page.getByRole('timer').innerText();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Focus paused', exact: true })).toBeVisible();
-  await expect(page.getByRole('timer')).toHaveText(pausedText);
-  await page.getByRole('button', { name: 'Resume', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Stop', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Start focus', exact: true })).toBeEnabled();
-  await expect(metric(page, 'Focus ended')).toHaveText('1');
-  await page.getByRole('button', { name: /Drink water/ }).click();
-  await page.getByRole('button', { name: /Move & stretch/ }).click();
-  await expect(metric(page, 'Glasses of water')).toHaveText('1');
-  await expect(metric(page, 'Movement breaks')).toHaveText('1');
-  await expect(page.getByText('Your changes are saved on this device. Sync will retry automatically.')).toBeVisible();
-  const sessions = await databaseRows(page, 'SELECT state, outcome FROM sessions');
-  expect(sessions).toEqual([{ state: 'ended', outcome: 'stopped' }]);
-  expect((await databaseRows(page, 'SELECT id FROM wellness_events')).length).toBe(2);
+  await expect(page.getByRole('heading',{name:/^Focus (paused|ready)$/})).toBeVisible();
+  await expect(page.getByRole('timer')).toHaveText(paused);
+  await page.getByRole('button',{name:/^(Resume|Start focus)$/}).click();
+  await expect(page.getByRole('heading',{name:'Focus session',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Stop',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Focus ready',exact:true})).toBeVisible();
+  await expect(metric(page,'Focus ended')).toHaveText('0');
+  await page.getByRole('button',{name:/Drink water/}).click();
+  await page.getByRole('button',{name:/Move & stretch/}).click();
+  await expect(metric(page,'Glasses of water')).toHaveText('0');
+  await expect(metric(page,'Movement breaks')).toHaveText('0');
+  const before = await databaseRows(page,'SELECT id,payload FROM pending_commands ORDER BY sequence');
+  expect(before).toHaveLength(6);
+  expect(await databaseRows(page,'SELECT id FROM sessions')).toEqual([]);
+  expect(await databaseRows(page,'SELECT id FROM wellness_events')).toEqual([]);
+  // The SDK insert-only table retains commands in ps_crud, not a competing row.
+  expect(await databaseRows(page,'SELECT * FROM account_commands')).toEqual([]);
   await page.reload();
-  await expect(metric(page, 'Focus ended')).toHaveText('1');
-  await expect(metric(page, 'Glasses of water')).toHaveText('1');
-  await expect(metric(page, 'Movement breaks')).toHaveText('1');
-  const pendingUploads = await page.evaluate(async ({ userId }) => {
-    const modulePath = '/src/lib/database.ts';
-    const { openUserDatabase } = await import(modulePath);
-    return (await (await openUserDatabase(userId)).getUploadQueueStats()).count;
-  }, { userId });
-  expect(pendingUploads).toBeGreaterThan(0);
-  expect(backend.requests.some((request) => request.url.includes('/functions/v1/pet-ai'))).toBe(true);
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('dialog').getByRole('heading', { name: 'You have unsynced changes' })).toBeVisible();
-  await page.getByRole('button', { name: 'Keep going', exact: true }).click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(metric(page, 'Focus ended')).toHaveText('1');
-  await expect(metric(page, 'Glasses of water')).toHaveText('1');
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await page.getByRole('button', { name: 'Discard changes & sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Meet your companion' })).toBeVisible();
-  // The fake session is reinstalled by authenticate on reload. This opens the
-  // same user's database again and checks the real SDK cleared its local rows.
-  await page.reload();
-  await expect(page.getByRole('heading', { name: 'Let’s find your rhythm.' })).toBeVisible();
-  await expect(metric(page, 'Focus ended')).toHaveText('0');
-  await expect(metric(page, 'Glasses of water')).toHaveText('0');
-  await expect(metric(page, 'Movement breaks')).toHaveText('0');
+  await expect(page.getByRole('heading',{name:'Focus ready',exact:true})).toBeVisible();
+  expect(await databaseRows(page,'SELECT id,payload FROM pending_commands ORDER BY sequence')).toEqual(before);
+  await expect(page.getByText('Daily totals show confirmed account activity.',{exact:false})).toBeVisible();
+  await expect.poll(() => backend.requests.some(r => r.url.includes('/functions/v1/badge-gateway') && (r.body as {action?:string})?.action === 'command')).toBe(true);
+  await page.getByRole('button',{name:'Sign out',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'You have unsynced changes',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Keep going',exact:true}).click();
+  expect(await databaseRows(page,'SELECT id FROM pending_commands')).toHaveLength(6);
+  await page.getByRole('button',{name:'Sign out',exact:true}).click();
+  await page.getByRole('button',{name:'Discard changes & sign out',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Meet your companion'})).toBeVisible();
 });
 
-test('seeded companion queues one pet intention and retains local wellness while the pet is waiting', async ({ context, page, backend }) => {
-  await authenticate(context);
-  await openDashboard(page);
-  await seedPet(page);
-  await expect(page.getByRole('img', { name: 'Pebble, your capybara companion' })).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath('dashboard-desktop.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Pet Pebble', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Pet Pebble', exact: true })).toBeDisabled();
-  await page.getByRole('button', { name: /Drink water/ }).click();
-  await expect(metric(page, 'Glasses of water')).toHaveText('1');
-  expect(await databaseRows(page, 'SELECT event_type, source_device, status FROM pet_events')).toEqual([
-    { event_type: 'pet_pet', source_device: 'web', status: 'pending' },
-  ]);
-  await page.setViewportSize({ width: 375, height: 812 });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: test.info().outputPath('dashboard-mobile.png'), fullPage: true });
-  await page.reload();
-  await expect(page.getByRole('heading', { name: 'Pebble', exact: true })).toBeVisible();
-  await expect(metric(page, 'Glasses of water')).toHaveText('1');
-  expect(backend.requests.filter((request) => request.url.includes('/rest/v1/pet_sessions'))).toHaveLength(0);
-});
-
-test('an overdue persisted timer completes once after restoration and offers the 10-minute break', async ({ context, page, backend }) => {
+test('synced pet identity is used for every durable pet intention and responsive layout', async ({ context, page, backend }) => {
   void backend;
   await authenticate(context);
   await openDashboard(page);
-  await page.getByRole('button', { name: 'Start focus', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
-  const expireTimer = () => page.evaluate(async ({ userId }) => {
-      const modulePath = '/src/lib/database.ts';
-      const { openUserDatabase } = await import(modulePath);
-      const db = await openUserDatabase(userId);
-      const elapsed = new Date(Date.now() - 41 * 60 * 1000).toISOString();
-      await db.execute("UPDATE sessions SET last_resumed_at = ? WHERE state = 'active'", [elapsed]);
-    }, { userId });
-  await expireTimer();
+  await seedPet(page);
+  await expect(page.getByRole('img',{name:'Pebble, your capybara companion'})).toBeVisible();
+  await page.getByRole('button',{name:'Pet Pebble',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Pet Pebble',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:/Drink water/}).click();
+  await expect(metric(page,'Glasses of water')).toHaveText('0');
+  const commands = (await databaseRows(page,'SELECT payload FROM pending_commands ORDER BY sequence')).map(row => JSON.parse(row.payload as string));
+  expect(commands.map(c=>c.type)).toEqual(['pet','hydration']);
+  expect(commands[0].pet_session_id).toBe('22222222-2222-4222-8222-222222222222');
+  expect(await databaseRows(page,'SELECT id FROM pet_events')).toEqual([]);
+  for (const width of [1440,375]) {
+    await page.setViewportSize({width,height:1000});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({path:test.info().outputPath(`account-dashboard-${width}.png`),fullPage:true});
+  }
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Focus complete', exact: true })).toBeVisible();
-  await expect(metric(page, 'Focus ended')).toHaveText('1');
-  await expect(page.getByRole('timer')).toHaveText('00:00');
-  expect(await databaseRows(page, 'SELECT state, outcome FROM sessions')).toEqual([
-    { state: 'ended', outcome: 'completed' },
-  ]);
-  await page.getByRole('button', { name: 'Skip break', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Start focus', exact: true })).toBeEnabled();
-  await page.reload();
-  await expect(page.getByRole('button', { name: 'Start focus', exact: true })).toBeEnabled();
-  await expect(page.getByRole('heading', { name: 'Focus complete', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Start focus', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Focus session', exact: true })).toBeVisible();
-  await expireTimer();
-  await expect(page.getByRole('heading', { name: 'Focus complete', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Start a 10 min break' }).click();
-  await expect(page.getByRole('heading', { name: 'Break session', exact: true })).toBeVisible();
-  await expect(page.getByRole('timer')).toHaveText(/^(10:00|09:5\d)$/);
-  expect((await databaseRows(page, "SELECT planned_duration_seconds FROM sessions WHERE state = 'active'"))[0])
-    .toEqual({ planned_duration_seconds: 600 });
-  await expect(metric(page, 'Focus ended')).toHaveText('2');
+  await expect(page.getByRole('heading',{name:'Pebble',exact:true})).toBeVisible();
+  expect(await databaseRows(page,'SELECT id FROM pending_commands')).toHaveLength(2);
+});
+
+test('an expired shared focus moves to a paused break once and keeps completion pending', async ({ context, page, backend }) => {
+  void backend;
+  await authenticate(context);
+  await openDashboard(page);
+  await page.getByRole('button',{name:'Start focus',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Focus session',exact:true})).toBeVisible();
+  // Advance only the UI clock. The queued command retains its original timestamp.
+  await page.clock.install();
+  await page.clock.fastForward(41*60*1000);
+  await expect(page.getByRole('heading',{name:'Break ready',exact:true})).toBeVisible();
+  await expect(page.getByRole('timer')).toHaveText('10:00');
+  const commands = (await databaseRows(page,'SELECT payload FROM pending_commands ORDER BY sequence')).map(row=>JSON.parse(row.payload as string));
+  expect(commands.map(c=>c.type)).toEqual(['timer_start','timer_complete']);
+  await expect(metric(page,'Focus ended')).toHaveText('0');
+  await page.getByRole('button',{name:'Start break',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Break session',exact:true})).toBeVisible();
+  expect(await databaseRows(page,'SELECT id FROM pending_commands')).toHaveLength(3);
 });

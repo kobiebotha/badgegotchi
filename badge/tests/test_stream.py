@@ -16,7 +16,7 @@ def encoded(value):
 def operation(index, kind="PUT", padding=""):
     return {"op_id": str(9007199254741000 + index), "op": kind,
             "object_type": "badge_projection", "object_id": "summary", "checksum": index + 1,
-            "data": json.dumps({"kind": "summary", "payload": json.dumps({"hydration_count": index, "text": padding})})}
+            "data": json.dumps({"id": "summary", "payload": json.dumps({"hydration_count": index, "text": padding})})}
 
 
 def data_line(operations):
@@ -182,18 +182,27 @@ class RealCoreHistoryTests(unittest.TestCase):
                         super().__init__(*args, **kwargs)
                         self.parts = [wire[i:i + MAX_FRAGMENT] for i in range(0, len(wire), MAX_FRAGMENT)] + [PENDING]
                 native_lines = []
+                batches = []
                 control = store.control
+                control_batch = store.control_batch
                 def observed_control(command, payload=None):
                     if command == "line_text":
                         native_lines.append(payload)
                     return control(command, payload)
                 store.control = observed_control
+                def observed_batch(payloads):
+                    batches.append(list(payloads))
+                    native_lines.extend(payloads)
+                    return control_batch(payloads)
+                store.control_batch = observed_batch
                 sync = Sync(store, identity, queue, GatewayFake([token]), "https://sync.example", ("ca",),
                             http_factory=HistoryStream, json_factory=checkpoint_factory)
                 for _ in range(200):
                     before = len(native_lines)
                     sync.step()
-                    self.assertLessEqual(len(native_lines) - before, 1)
+                    # One operation is parsed each frame, with up to six data
+                    # records committed before an immediately following marker.
+                    self.assertLessEqual(len(native_lines) - before, storage.MAX_SYNC_BATCH_RECORDS + 1)
                     self.assertNotEqual(sync.phase, "blocked")
                     if sync.synced:
                         break
@@ -201,6 +210,8 @@ class RealCoreHistoryTests(unittest.TestCase):
                 self.assertTrue(sync.synced)
                 received = [json.loads(line)["data"]["data"] for line in native_lines if "data" in json.loads(line)]
                 self.assertEqual(received, [[op] for op in operations])
+                self.assertTrue(all(set(json.loads(op["data"])) == {"id", "payload"} for op in operations))
+                self.assertEqual([len(batch) for batch in batches], [6, 6, 6, 6, 4])
                 self.assertTrue(all(len(line.encode()) <= MAX_LINE for line in native_lines))
                 self.assertEqual(store.projection()[0]["payload"]["hydration_count"], 27)
                 self.assertEqual(store._scalar("SELECT count(*) FROM ps_crud"), "0")
